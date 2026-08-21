@@ -1,0 +1,15 @@
+
+const PageNotFound = () => {
+  return (
+     <div class="ct_page_not_found_bg">
+    
+
+<div class="ct_page_not_found_section">
+  <h1 class="ct_page_not_found_error">404</h1>
+  <div class="ct_page_not_found_page">Ooops!!! The page you are looking for is not found</div>
+</div>
+  </div>
+  )
+}
+
+export default PageNotFound
