@@ -1,7 +1,7 @@
 import { lazy } from "react";
-import Dealer from "../pages/dealer";
-import Vans from "../pages/vans";
-import VanDetail from "../pages/vans/VanDetail.jsx";
+const Dealer = lazy(() => import("../pages/dealer"));
+const Vans = lazy(() => import("../pages/vans"));
+const VanDetail = lazy(() => import("../pages/vans/VanDetail.jsx"));
 
 const Login = lazy(() => import("../pages/auth/Login"));
 const Dashboard = lazy(() => import("../pages/dashboard"));
@@ -12,7 +12,7 @@ const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 
 export const pageRoutes = {
   login: "/login",
-  dashboard: "/dashboard",
+  dashboard: "/",
   dealers: "/dealers",
   vans: "/vans",
   van_detail: "/van-detail",
