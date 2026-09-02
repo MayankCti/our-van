@@ -1,24 +1,42 @@
 import { lazy } from "react";
-const Dealer = lazy(() => import("../pages/dealer"));
-const Vans = lazy(() => import("../pages/vans"));
-const VanDetail = lazy(() => import("../pages/vans/VanDetail.jsx"));
+import Notifications from "../pages/auth/Notifications";
+import EditProfile from "../pages/auth/EditProfile";
+import ChangePassword from "../pages/auth/ChangePassword";
 
+const Vans = lazy(() => import("../pages/vans"));
+const Owners = lazy(() => import("../pages/owners"));
+const Dealer = lazy(() => import("../pages/dealer"));
 const Login = lazy(() => import("../pages/auth/Login"));
 const Dashboard = lazy(() => import("../pages/dashboard"));
+const VanDetail = lazy(() => import("../pages/vans/VanDetail"));
+const PageNotFound = lazy(() => import("../pages/PageNotFound"));
+const OwnerDetail = lazy(() => import("../pages/owners/OwnerDetail"));
+const ServiceProviders = lazy(() => import("../pages/service providers"));
+const ComponentsLibrary = lazy(() => import("../pages/components library"));
+const WarrantyProviders = lazy(() => import("../pages/warranty providers"));
+const ServiceProviderDetail = lazy(() => import("../pages/service providers/ServiceProviderDetail"));
+const WarrantyProviderDetail = lazy(() => import("../pages/warranty providers/WarrantyProviderDetail"));
+
 // const Dealers = lazy(() => import("../pages/Dealers"));
 // const CreateDealer = lazy(() => import("../pages/CreateDealer"));
 // const Profile = lazy(() => import("../pages/Profile"));
-const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 
 export const pageRoutes = {
   login: "/login",
   dashboard: "/",
+  editProfile: "/edit-profile",
+  notifications: "/notifications",
+  changePassword: "/change-password",
   dealers: "/dealers",
   vans: "/vans",
   van_detail: "/van-detail",
   owners: "/owners",
+  owner_detail: "/owner-detail",
   service_providers: "/service-providers",
+  service_provider_detail: "/service-provider-detail",
   warranty_providers: "/warranty-providers",
+  warranty_provider_detail: "/warranty-provider-detail",
+
   components_library: "/components-library",
 };
 
@@ -35,6 +53,19 @@ export const AllRoutes = [
     element: <Dashboard />,
     isPrivate: true,
   },
+  {
+    name: "Change Password",
+    path: pageRoutes.changePassword,
+    element: <ChangePassword />,
+    isPrivate: true,
+  },
+  {
+    name: "Notifications",
+    path: pageRoutes.notifications,
+    element: <Notifications />,
+    isPrivate: true,
+  },
+
   {
     name: "Dealer",
     path: pageRoutes.dealers,
@@ -53,18 +84,62 @@ export const AllRoutes = [
     element: <VanDetail />,
     isPrivate: true,
   },
+  {
+    name: "Owners",
+    path: pageRoutes.owners,
+    element: <Owners />,
+    isPrivate: true,
+  },
+  {
+    name: "Owner Detail",
+    path: pageRoutes.owner_detail,
+    element: <OwnerDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "Service Provider",
+    path: pageRoutes.service_providers,
+    element: <ServiceProviders />,
+    isPrivate: true,
+  },
+  {
+    name: "Service Provider Details",
+    path: pageRoutes.service_provider_detail,
+    element: <ServiceProviderDetail />,
+    isPrivate: true,
+  },
+
+  {
+    name: "Warranty Provider",
+    path: pageRoutes.warranty_providers,
+    element: <WarrantyProviders />,
+    isPrivate: true,
+  },
+  {
+    name: "Warranty Provider Details",
+    path: pageRoutes.warranty_provider_detail,
+    element: <WarrantyProviderDetail />,
+    isPrivate: true,
+  },
+
+  {
+    name: "Components Library",
+    path: pageRoutes.components_library,
+    element: <ComponentsLibrary />,
+    isPrivate: true,
+  },
   //   {
   //     name: "Create Dealer",
   //     path: pageRoutes.create_dealer,
   //     element: <CreateDealer />,
   //     isPrivate: true,
   //   },
-  //   {
-  //     name: "Profile",
-  //     path: pageRoutes.profile,
-  //     element: <Profile />,
-  //     isPrivate: true,
-  //   },
+  {
+    name: "EditProfile",
+    path: pageRoutes.editProfile,
+    element: <EditProfile />,
+    isPrivate: true,
+  },
   {
     name: "Page Not Found",
     path: "*",
