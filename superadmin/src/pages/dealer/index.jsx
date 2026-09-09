@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom"
 import Header from "../../layout/Header"
 import Layout from "../../layout/Layout"
+import { pageRoutes } from "../../routes/PageRoutes"
 
 const Dealer = () => {
   return (
@@ -54,7 +56,7 @@ const Dealer = () => {
                     <td>145</td>
                     <td>13 Jul 2026</td>
                     <td>
-                      <a href="dealer-details.html" class="ct_action_link">View Details</a>
+                      <Link to={pageRoutes.dealerDetail} class="ct_action_link">View Details</Link>
                     </td>
                   </tr>
 
@@ -65,7 +67,7 @@ const Dealer = () => {
                     <td>145</td>
                     <td>13 Jul 2026</td>
                     <td>
-                      <a href="dealer-details.html" class="ct_action_link">View Details</a>
+                      <Link to={pageRoutes.dealerDetail} class="ct_action_link">View Details</Link>
                     </td>
                   </tr>
 
@@ -76,7 +78,7 @@ const Dealer = () => {
                     <td>145</td>
                     <td>13 Jul 2026</td>
                     <td>
-                      <a href="dealer-details.html" class="ct_action_link">View Details</a>
+                      <Link to={pageRoutes.dealerDetail} class="ct_action_link">View Details</Link>
                     </td>
                   </tr>
 
@@ -87,7 +89,7 @@ const Dealer = () => {
                     <td>145</td>
                     <td>13 Jul 2026</td>
                     <td>
-                      <a href="dealer-details.html" class="ct_action_link">View Details</a>
+                      <Link to={pageRoutes.dealerDetail} class="ct_action_link">View Details</Link>
                     </td>
                   </tr>
 
@@ -98,7 +100,7 @@ const Dealer = () => {
                     <td>145</td>
                     <td>13 Jul 2026</td>
                     <td>
-                      <a href="dealer-details.html" class="ct_action_link">View Details</a>
+                      <Link to={pageRoutes.dealerDetail} class="ct_action_link">View Details</Link>
                     </td>
                   </tr>
 

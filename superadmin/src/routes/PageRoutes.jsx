@@ -2,6 +2,8 @@ import { lazy } from "react";
 import Notifications from "../pages/auth/Notifications";
 import EditProfile from "../pages/auth/EditProfile";
 import ChangePassword from "../pages/auth/ChangePassword";
+import FogotPassword from "../pages/auth/FogotPassword";
+import DealerDetail from "../pages/dealer/DealerDetail";
 
 const Vans = lazy(() => import("../pages/vans"));
 const Owners = lazy(() => import("../pages/owners"));
@@ -23,11 +25,13 @@ const WarrantyProviderDetail = lazy(() => import("../pages/warranty providers/Wa
 
 export const pageRoutes = {
   login: "/login",
+  fogotPassword: "/fogot-password",
   dashboard: "/",
   editProfile: "/edit-profile",
   notifications: "/notifications",
   changePassword: "/change-password",
   dealers: "/dealers",
+  dealerDetail: "/dealer-detail",
   vans: "/vans",
   van_detail: "/van-detail",
   owners: "/owners",
@@ -47,6 +51,13 @@ export const AllRoutes = [
     element: <Login />,
     isPrivate: false,
   },
+  {
+    name: "FogotPassword",
+    path: pageRoutes.fogotPassword,
+    element: <FogotPassword />,
+    isPrivate: false,
+  },
+
   {
     name: "Dashboard",
     path: pageRoutes.dashboard,
@@ -70,6 +81,12 @@ export const AllRoutes = [
     name: "Dealer",
     path: pageRoutes.dealers,
     element: <Dealer />,
+    isPrivate: true,
+  },
+  {
+    name: "Dealer Detail",
+    path: pageRoutes.dealerDetail,
+    element: <DealerDetail />,
     isPrivate: true,
   },
   {

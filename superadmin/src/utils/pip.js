@@ -6,3 +6,8 @@ export const pipSetAccessToken = (token) => {
 export const pipGetAccessToken = () => {
   return localStorage.getItem("ourvan-token");
 };
+
+export const logout = () => {
+  localStorage.removeItem("ourvan-token");
+  localStorage.removeItem("ourvan-user");
+};

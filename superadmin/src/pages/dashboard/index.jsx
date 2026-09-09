@@ -460,36 +460,7 @@ const Dashboard = () => {
         </div>
       </div>
       {/* Add Component Modal E */}
-      {/*Log out Modal */}
-      <div class="modal fade" id="ct_logout_modal_post" tabindex="-1" aria-labelledby="ct_delete_postLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content border-0 ct_border_radius_20">
-            <div class="modal-header pb-0 border-0">
-              <button type="button" class="btn-close ct_close" data-bs-dismiss="modal" aria-label="Close"><i
-                class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" style={{ paddingInline: "40px" }}>
-              <div class="ct_delete_post_modal">
-                <figure>
-                  <figcaption class="mt-0 ">
-                    <h4 class="ct_fs_28 ct_fw_500 mb-2">You are about to LogOut</h4>
-                    <p class="mb-0 ct_fs_18 ct_fw_400 ct_para_clr mb-1">Are you sure you want to logout ?
-                    </p>
-                  </figcaption>
-                </figure>
-                <div class="d-flex justify-content-center border-0 gap-3 ct_modal_footer ct_flex_col_575 mb-5 mt-4">
-                  <button type="button" class="action-button-previous w-100 text-center"
-                    data-bs-dismiss="modal">No, This was a Mistake</button>
-                  <a href="login.html"
-                    class="ct_form_next action-button w-100 text-center">Yes, Log Me Out
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </Layout>
   )
 }
