@@ -1,9 +1,25 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { pageRoutes } from '../routes/PageRoutes';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useSidebar } from './Layout';
 
 const Sidebar = () => {
-    const { pathname } = useLocation()
+    const { pathname } = useLocation();
+    const { closeSidebar } = useSidebar() || {};
+
+    const handleClose = () => {
+        if (closeSidebar) {
+            closeSidebar();
+        }
+    };
+
+    useEffect(() => {
+        if (closeSidebar) {
+            closeSidebar();
+        }
+    }, [pathname]);
+
+
     const sidebarMenu = [
         {
             name: "Dashboard",
@@ -85,11 +101,15 @@ const Sidebar = () => {
     ];
 
     return (
-        <div class="ct_side_bar">
-            <div class="ct_close_sidebar">
-                <i class="fa-solid fa-xmark"></i>
+        <div className="ct_side_bar">
+            <div
+                className="ct_close_sidebar"
+                style={{ cursor: "pointer" }}
+                onClick={handleClose}
+            >
+                <i className="fa-solid fa-xmark"></i>
             </div>
-            <div class="ct_admin_logo">
+            <div className="ct_admin_logo">
                 <img src="assets/img/logo.png" alt="" />
             </div>
             <ul>
@@ -99,6 +119,7 @@ const Sidebar = () => {
                         <NavLink
                             to={item.path}
                             className={({ isActive }) => isActive ? "active" : ""}
+                            onClick={handleClose}
                         >
                             {item.icon}
 
@@ -111,4 +132,4 @@ const Sidebar = () => {
     )
 }
 
-export default Sidebar
+export default Sidebar

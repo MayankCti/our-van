@@ -6,11 +6,11 @@ const PrivateRoute = ({ children }) => {
   const location = useLocation();
   const isAuth = pipGetAccessToken();
 
-  // if (!isAuth) {
-  //   return (
-  //     <Navigate to={pageRoutes.Login} state={{ from: location }} replace />
-  //   );
-  // }
+  if (!isAuth) {
+    return (
+      <Navigate to={pageRoutes.login} state={{ from: location }} replace />
+    );
+  }
 
   return children;
 };

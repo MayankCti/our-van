@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import Notifications from "../pages/auth/Notifications";
 import EditProfile from "../pages/auth/EditProfile";
+import MyProfile from "../pages/auth/MyProfile";
 import ChangePassword from "../pages/auth/ChangePassword";
 import FogotPassword from "../pages/auth/FogotPassword";
 import DealerDetail from "../pages/dealer/DealerDetail";
@@ -27,6 +28,7 @@ export const pageRoutes = {
   login: "/login",
   fogotPassword: "/fogot-password",
   dashboard: "/",
+  myProfile: "/my-profile",
   editProfile: "/edit-profile",
   notifications: "/notifications",
   changePassword: "/change-password",
@@ -152,6 +154,12 @@ export const AllRoutes = [
   //     isPrivate: true,
   //   },
   {
+    name: "My Profile",
+    path: pageRoutes.myProfile,
+    element: <MyProfile />,
+    isPrivate: true,
+  },
+  {
     name: "EditProfile",
     path: pageRoutes.editProfile,
     element: <EditProfile />,
@@ -163,4 +171,4 @@ export const AllRoutes = [
     element: <PageNotFound />,
     isPrivate: false,
   },
-];
+];

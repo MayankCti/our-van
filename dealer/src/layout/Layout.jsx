@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
-const Layout = ({ children }) => {
-  return (
-    <main>
+export const SidebarContext = createContext();
+export const useSidebar = () => useContext(SidebarContext);
 
-      <Sidebar />
-      <div className="ct_right_panel">
-        <Header />
-        {children}
-      </div>
-    </main>
+const Layout = ({ children }) => {
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const toggleSidebar = () => setShowSidebar((prev) => !prev);
+  const closeSidebar = () => setShowSidebar(false);
+  const openSidebar = () => setShowSidebar(true);
+
+  return (
+    <SidebarContext.Provider value={{ showSidebar, setShowSidebar, toggleSidebar, closeSidebar, openSidebar }}>
+      <main className={showSidebar ? 'ct_show' : ''}>
+        <Sidebar />
+        <div className="ct_right_panel">
+          <Header />
+          {children}
+        </div>
+      </main>
+    </SidebarContext.Provider>
   );
 };
 

@@ -2,6 +2,7 @@ import { lazy } from "react";
 
 const Login = lazy(() => import("../pages/auth/Login"));
 const FogotPassword = lazy(() => import("../pages/auth/FogotPassword"));
+const MyProfile = lazy(() => import("../pages/auth/MyProfile"));
 const EditProfile = lazy(() => import("../pages/auth/EditProfile"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Notifications = lazy(() => import("../pages/auth/Notifications"));
@@ -17,6 +18,7 @@ export const pageRoutes = {
   login: "/login",
   fogotPassword: "/fogot-password",
   dashboard: "/",
+  myProfile: "/my-profile",
   editProfile: "/edit-profile",
   notifications: "/notifications",
   changePassword: "/change-password",
@@ -43,6 +45,12 @@ export const AllRoutes = [
     name: "Dashboard",
     path: pageRoutes.dashboard,
     element: <Dashboard />,
+    isPrivate: true,
+  },
+  {
+    name: "MyProfile",
+    path: pageRoutes.myProfile,
+    element: <MyProfile />,
     isPrivate: true,
   },
   {

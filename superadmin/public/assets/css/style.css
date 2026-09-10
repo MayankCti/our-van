@@ -359,7 +359,7 @@
      border-bottom: 1px solid #E5E7EB;
      position: sticky;
      top: 0px;
-     z-index: 999;
+     z-index: 1;
  }
 
  .ct_menu_bar,

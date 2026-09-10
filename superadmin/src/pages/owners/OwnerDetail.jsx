@@ -26,7 +26,7 @@ const OwnerDetail = () => {
                             {/* Top Card */}
                             <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-4">
                                 <div class="d-flex align-items-center gap-4 ct_flex_col_575">
-                                    <img src="assets/img/profile_img.png"
+                                    <img src="image.png"
                                         class="rounded-circle"
                                         width="85"
                                         height="85"

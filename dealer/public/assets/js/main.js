@@ -1,13 +1,14 @@
 $(document).ready(function () {
-  $(".ct_menu_bar").click(function () {
+  $(document).on("click", ".ct_menu_bar", function () {
     $("main").addClass("ct_show");
   });
-  $(".ct_close_sidebar").click(function () {
+  $(document).on("click", ".ct_close_sidebar", function () {
     $("main").removeClass("ct_show");
   });
 
   //   Dash Graph js S
 });
+
 
 
 
