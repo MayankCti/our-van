@@ -91,3 +91,186 @@ export const getVanProgress = createAsyncThunk(
     }
   }
 );
+
+// Get Vans List (paginated with search)
+export const getVansList = createAsyncThunk(
+  "van/getVansList",
+  async (props = {}, { rejectWithValue }) => {
+    const { page = 1, limit = 10, search = "", callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_VANS_API || "/dealer/vans/get",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          search: search || undefined,
+        },
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Dealer Owners List (paginated with search)
+export const getDealerOwnersList = createAsyncThunk(
+  "van/getDealerOwnersList",
+  async (props = {}, { rejectWithValue }) => {
+    const { page = 1, limit = 10, search = "", callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_OWNERS_API || "/dealer/vans/get/owners",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          search: search || undefined,
+        },
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Dealer Dashboard details
+export const getDealerDashboard = createAsyncThunk(
+  "van/getDealerDashboard",
+  async (props = {}, { rejectWithValue }) => {
+    const { callback } = props || {};
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_DASHBOARD_API || "/dealer/dashboard",
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Available Components List (for step 3 selection)
+export const getComponentsList = createAsyncThunk(
+  "van/getComponentsList",
+  async (props = {}, { rejectWithValue }) => {
+    const { callback } = props || {};
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_COMPONENTS_API || "/dealer/vans/components",
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Create / Save Van Step-3 Components
+export const createVanStep3 = createAsyncThunk(
+  "van/createVanStep3",
+  async (props, { rejectWithValue }) => {
+    const { vanId, payload, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_STEP_3_API || "/dealer/vans/:vanId/step-3").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data: payload,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Create / Save Van Step-4 Warranty Details
+export const createVanStep4 = createAsyncThunk(
+  "van/createVanStep4",
+  async (props, { rejectWithValue }) => {
+    const { vanId, payload, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_STEP_4_API || "/dealer/vans/:vanId/step-4").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data: payload,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+

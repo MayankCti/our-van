@@ -38,6 +38,8 @@ const VehicleInformation = () => {
     const [ownerId, setOwnerId] = useState(savedDraft?.ownerId || null);
     const [step1Data, setStep1Data] = useState(savedDraft?.step1Data || {});
     const [step2Data, setStep2Data] = useState(savedDraft?.step2Data || {});
+    const [step3Data, setStep3Data] = useState(savedDraft?.step3Data || {});
+    const [step4Data, setStep4Data] = useState(savedDraft?.step4Data || {});
 
     // Fetch progress if vanId exists (either from URL query or session draft)
     useEffect(() => {
@@ -52,6 +54,8 @@ const VehicleInformation = () => {
                             const vd = data?.vehicle_details;
                             const owner = data?.owner;
                             const images = data?.vehicle_images;
+                            const comps = data?.components || data?.van_components;
+                            const warranty = data?.warranty || data?.warranty_details || data?.van_warranty;
 
                             if (data?.van_id) {
                                 setVanId(data.van_id);
@@ -86,6 +90,25 @@ const VehicleInformation = () => {
                                 }));
                             }
 
+                            if (comps && Array.isArray(comps) && comps.length > 0) {
+                                setStep3Data(comps);
+                            }
+
+                            if (warranty) {
+                                setStep4Data((prev) => ({
+                                    ...prev,
+                                    provider: warranty?.provider || warranty?.warranty_provider || prev.provider || '',
+                                    coverage_type: warranty?.coverage_type || prev.coverage_type || 'Mechanical',
+                                    start_date: warranty?.start_date || prev.start_date || '',
+                                    expiry_date: warranty?.expiry_date || prev.expiry_date || '',
+                                    claim_instructions: warranty?.claim_instructions || prev.claim_instructions || '',
+                                    claim_email: warranty?.claim_email || prev.claim_email || '',
+                                    claim_phone: warranty?.claim_phone || prev.claim_phone || '',
+                                    warranty_document_url: warranty?.warranty_document || warranty?.document_url || prev.warranty_document_url || null,
+                                    file_name: warranty?.file_name || prev.file_name || '',
+                                }));
+                            }
+
                             // If this was opened fresh with a query param and no draft step, set step to API's current_step
                             if (!savedDraft?.step && data?.current_step) {
                                 setStep(data.current_step);
@@ -105,8 +128,10 @@ const VehicleInformation = () => {
             ownerId,
             step1Data,
             step2Data,
+            step3Data,
+            step4Data,
         });
-    }, [step, vanId, ownerId, step1Data, step2Data]);
+    }, [step, vanId, ownerId, step1Data, step2Data, step3Data, step4Data]);
 
     const nextStep = () => setStep(prev => Math.min(prev + 1, 7));
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
@@ -140,6 +165,46 @@ const VehicleInformation = () => {
         nextStep();
     };
 
+    const handleStep3Prev = (data) => {
+        if (data) {
+            setStep3Data(data);
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        prevStep();
+    };
+
+    const handleStep3Success = (response, data) => {
+        if (data) {
+            setStep3Data(data);
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        nextStep();
+    };
+
+    const handleStep4Prev = (data) => {
+        if (data) {
+            setStep4Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        prevStep();
+    };
+
+    const handleStep4Success = (response, data) => {
+        if (data) {
+            setStep4Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        nextStep();
+    };
+
     const handleStepSelect = (stepId) => {
         setStep(stepId);
     };
@@ -151,6 +216,8 @@ const VehicleInformation = () => {
         setOwnerId(null);
         setStep1Data({});
         setStep2Data({});
+        setStep3Data({});
+        setStep4Data({});
     };
 
     return (
@@ -186,8 +253,22 @@ const VehicleInformation = () => {
                             ownerId={ownerId}
                         />
                     )}
-                    {step === 3 && <Step3Components onPrev={prevStep} onNext={nextStep} />}
-                    {step === 4 && <Step4Warranty onPrev={prevStep} onNext={nextStep} />}
+                    {step === 3 && (
+                        <Step3Components
+                            onPrev={handleStep3Prev}
+                            onNext={handleStep3Success}
+                            initialData={step3Data}
+                            vanId={vanId}
+                        />
+                    )}
+                    {step === 4 && (
+                        <Step4Warranty
+                            onPrev={handleStep4Prev}
+                            onNext={handleStep4Success}
+                            initialData={step4Data}
+                            vanId={vanId}
+                        />
+                    )}
                     {step === 5 && <Step5Documents onPrev={prevStep} onNext={nextStep} />}
                     {step === 6 && <Step6Maintenance onPrev={prevStep} onNext={nextStep} />}
                     {step === 7 && <Step7Review onPrev={prevStep} modalTargetId="#successModal" />}

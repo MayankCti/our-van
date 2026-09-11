@@ -31,7 +31,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         engine: initialData?.engine || initialData?.engine_details || vanStep1Data?.engine || vanStep1Data?.engine_details || '',
         chassis_number: initialData?.chassis_number || vanStep1Data?.chassis_number || '',
         color: initialData?.color || initialData?.vehicle_colour || vanStep1Data?.color || vanStep1Data?.vehicle_colour || '',
-        vehicle_photos: (initialData?.vehicle_images?.length > 0 || activeVanId) ? ['existing_photo'] : [],
+        vehicle_photos: (selectedFiles.length > 0 ? selectedFiles : (photoPreviews.length > 0 || initialData?.vehicle_images?.length > 0 || activeVanId) ? ['existing_photo'] : []),
     }), [
         activeVanId,
         initialData?.van_id,
@@ -42,6 +42,8 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         initialData?.model,
         initialData?.registration_number,
         vanStep1Data?.van_name,
+        selectedFiles.length,
+        photoPreviews.length,
     ]);
 
     // Load existing vehicle images from progress API
@@ -64,7 +66,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         }
     }, [initialData?.vehicle_images, vanStep1Data?.vehicle_images, deleteImageIds]);
 
-    const handleFiles = (files, setFieldValue, setFieldTouched) => {
+    const handleFiles = (files, setFieldValue, setFieldTouched, setFieldError) => {
         const fileList = Array.from(files);
         if (fileList.length === 0) return;
 
@@ -81,15 +83,22 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         const updatedPreviews = [...photoPreviews, ...newPreviews];
         setPhotoPreviews(updatedPreviews);
 
+        const photoValue = updatedPreviews.length > 0
+            ? (updatedFiles.length > 0 ? updatedFiles : ['existing_photo'])
+            : [];
+
         if (typeof setFieldValue === 'function') {
-            setFieldValue('vehicle_photos', updatedPreviews.length > 0 ? (updatedFiles.length > 0 ? updatedFiles : ['existing_photo']) : []);
+            setFieldValue('vehicle_photos', photoValue, false);
+        }
+        if (typeof setFieldError === 'function') {
+            setFieldError('vehicle_photos', undefined);
         }
         if (typeof setFieldTouched === 'function') {
-            setFieldTouched('vehicle_photos', true, true);
+            setFieldTouched('vehicle_photos', false, false);
         }
     };
 
-    const handleRemovePhoto = (index, setFieldValue, setFieldTouched) => {
+    const handleRemovePhoto = (index, setFieldValue, setFieldTouched, setFieldError) => {
         const itemToRemove = photoPreviews[index];
         if (!itemToRemove) return;
 
@@ -116,11 +125,25 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         const updatedPreviews = photoPreviews.filter((_, i) => i !== index);
         setPhotoPreviews(updatedPreviews);
 
+        const photoValue = updatedPreviews.length > 0
+            ? (updatedSelectedFiles.length > 0 ? updatedSelectedFiles : ['existing_photo'])
+            : [];
+
         if (typeof setFieldValue === 'function') {
-            setFieldValue('vehicle_photos', updatedPreviews.length > 0 ? (updatedSelectedFiles.length > 0 ? updatedSelectedFiles : ['existing_photo']) : []);
+            setFieldValue('vehicle_photos', photoValue, false);
         }
-        if (typeof setFieldTouched === 'function') {
-            setFieldTouched('vehicle_photos', true, true);
+
+        if (photoValue.length === 0) {
+            if (typeof setFieldTouched === 'function') {
+                setFieldTouched('vehicle_photos', true, true);
+            }
+        } else {
+            if (typeof setFieldError === 'function') {
+                setFieldError('vehicle_photos', undefined);
+            }
+            if (typeof setFieldTouched === 'function') {
+                setFieldTouched('vehicle_photos', false, false);
+            }
         }
     };
 
@@ -192,17 +215,21 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
                 handleSubmit,
                 setFieldValue,
                 setFieldTouched,
+                setFieldError,
             }) => {
                 const handleDrop = (e) => {
                     e.preventDefault();
                     setIsDragging(false);
                     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                        handleFiles(e.dataTransfer.files, setFieldValue, setFieldTouched);
+                        handleFiles(e.dataTransfer.files, setFieldValue, setFieldTouched, setFieldError);
                     }
                 };
 
                 const handleFileInputChange = (e) => {
-                    handleFiles(e.target.files, setFieldValue, setFieldTouched);
+                    if (e.target.files && e.target.files.length > 0) {
+                        handleFiles(e.target.files, setFieldValue, setFieldTouched, setFieldError);
+                    }
+                    e.target.value = '';
                 };
 
                 return (
@@ -438,7 +465,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
                                                         <button
                                                             type="button"
                                                             className="img-remove"
-                                                            onClick={() => handleRemovePhoto(index, setFieldValue, setFieldTouched)}
+                                                            onClick={() => handleRemovePhoto(index, setFieldValue, setFieldTouched, setFieldError)}
                                                             title="Remove photo"
                                                         >
                                                             <i className="fa-solid fa-xmark"></i>

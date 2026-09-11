@@ -2,12 +2,12 @@ import React from 'react';
 
 const Loader = () => {
   return (
-    <div class="ct_loader_main">
-      <div class="loader">
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
+    <div className="ct_loader_main">
+      <div className="loader">
+        <div className="circle"></div>
+        <div className="circle"></div>
+        <div className="circle"></div>
+        <div className="circle"></div>
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ export const pageRoutes = {
   van_detail: "/van-detail",
   vehicle_information: "/vehicle-information",
   owners: "/owners",
+  dealers: "/dealers",
 };
 
 export const AllRoutes = [
@@ -92,6 +93,12 @@ export const AllRoutes = [
   {
     name: "Owners",
     path: pageRoutes.owners,
+    element: <Owners />,
+    isPrivate: true,
+  },
+  {
+    name: "Dealers",
+    path: pageRoutes.dealers,
     element: <Owners />,
     isPrivate: true,
   },

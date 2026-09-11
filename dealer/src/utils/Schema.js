@@ -130,3 +130,81 @@ export const step2OwnerDetailsSchema = Yup.object().shape({
         .max(20, "Mobile number cannot exceed 20 characters")
         .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid mobile number"),
 });
+
+// Step 3: Single Component Validation Schema
+export const step3ComponentItemSchema = Yup.object().shape({
+    manufacturer: Yup.string()
+        .trim()
+        .required("Please enter manufacturer name")
+        .min(2, "Manufacturer name must be at least 2 characters")
+        .max(100, "Manufacturer name cannot exceed 100 characters"),
+    installation_date: Yup.string()
+        .required("Please select installation date")
+        .test("not-future", "Installation date cannot be in the future", function (val) {
+            if (!val) return true;
+            const selected = new Date(val);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            return selected <= today;
+        }),
+    warranty_period_months: Yup.number()
+        .required("Please select warranty period")
+        .positive("Warranty period must be greater than 0"),
+    replacement_schedule: Yup.string()
+        .nullable()
+        .test("valid-replacement", "Replacement schedule date must be after installation date", function (val) {
+            const { installation_date } = this.parent;
+            if (!val) return true;
+            const repDate = new Date(val);
+            if (installation_date) {
+                return repDate >= new Date(installation_date);
+            }
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return repDate >= today;
+        }),
+    maintenance_notes: Yup.string()
+        .max(500, "Maintenance notes cannot exceed 500 characters")
+        .nullable(),
+    file: Yup.mixed()
+        .test("required-file", "Please upload component image or manual", function (value) {
+            const { existing_file_url, file_name } = this.parent;
+            return Boolean(value || existing_file_url || file_name);
+        }),
+});
+
+// Step 4: Warranty Details Schema
+export const step4WarrantySchema = Yup.object().shape({
+    provider: Yup.string()
+        .trim()
+        .required("Please enter warranty provider name")
+        .min(2, "Warranty provider must be at least 2 characters")
+        .max(100, "Warranty provider cannot exceed 100 characters"),
+    coverage_type: Yup.string()
+        .trim()
+        .required("Please select coverage type"),
+    start_date: Yup.string()
+        .required("Please select start date"),
+    expiry_date: Yup.string()
+        .required("Please select expiry date")
+        .test("is-after-start", "Expiry date must be after start date", function (val) {
+            const { start_date } = this.parent;
+            if (!val || !start_date) return true;
+            return new Date(val) > new Date(start_date);
+        }),
+    claim_instructions: Yup.string()
+        .max(1000, "Claim instructions cannot exceed 1000 characters")
+        .nullable(),
+    claim_email: emailValidation,
+    claim_phone: Yup.string()
+        .trim()
+        .required("Please enter claim phone number")
+        .min(7, "Phone number must be at least 7 digits")
+        .max(20, "Phone number cannot exceed 20 characters")
+        .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid phone number"),
+    warranty_document: Yup.mixed().nullable(),
+});
+
+
+
+

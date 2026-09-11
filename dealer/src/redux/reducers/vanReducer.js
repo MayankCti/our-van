@@ -1,14 +1,58 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createVanStep1, createVanStep2, getVanProgress } from "../actions/vanAction";
+import {
+  createVanStep1,
+  createVanStep2,
+  createVanStep3,
+  createVanStep4,
+  getVanProgress,
+  getVansList,
+  getDealerOwnersList,
+  getDealerDashboard,
+  getComponentsList,
+} from "../actions/vanAction";
 
 const initialState = {
   isLoading: false,
   vanStep1Data: null,
   vanStep2Data: null,
+  vanStep3Data: null,
+  vanStep4Data: null,
   vanProgressData: null,
   vanId: null,
   ownerId: null,
   error: null,
+  // Vans list & pagination
+  vansList: [],
+  vansMeta: {
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
+  isVansLoading: false,
+  vansError: null,
+  // Owners list & pagination
+  ownersList: [],
+  ownersMeta: {
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
+  isOwnersLoading: false,
+  ownersError: null,
+  // Dashboard details
+  dashboardData: null,
+  isDashboardLoading: false,
+  dashboardError: null,
+  // Components Master List (Step 3)
+  componentsList: [],
+  isComponentsLoading: false,
+  componentsError: null,
 };
 
 const vanSlice = createSlice({
@@ -27,6 +71,12 @@ const vanSlice = createSlice({
     setVanStep2Data: (state, action) => {
       state.vanStep2Data = action.payload;
     },
+    setVanStep3Data: (state, action) => {
+      state.vanStep3Data = action.payload;
+    },
+    setVanStep4Data: (state, action) => {
+      state.vanStep4Data = action.payload;
+    },
     setVanProgressData: (state, action) => {
       state.vanProgressData = action.payload;
     },
@@ -34,6 +84,8 @@ const vanSlice = createSlice({
       state.isLoading = false;
       state.vanStep1Data = null;
       state.vanStep2Data = null;
+      state.vanStep3Data = null;
+      state.vanStep4Data = null;
       state.vanProgressData = null;
       state.vanId = null;
       state.ownerId = null;
@@ -85,6 +137,55 @@ const vanSlice = createSlice({
       state.error = action.payload || action.error?.message;
     });
 
+    // createVanStep3
+    builder.addCase(createVanStep3.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(createVanStep3.fulfilled, (state, action) => {
+      state.isLoading = false;
+      const resData = action?.payload?.data || action?.payload;
+      state.vanStep3Data = resData;
+      state.error = null;
+    });
+    builder.addCase(createVanStep3.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload || action.error?.message;
+    });
+
+    // createVanStep4
+    builder.addCase(createVanStep4.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(createVanStep4.fulfilled, (state, action) => {
+      state.isLoading = false;
+      const resData = action?.payload?.data || action?.payload;
+      state.vanStep4Data = resData;
+      state.error = null;
+    });
+    builder.addCase(createVanStep4.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload || action.error?.message;
+    });
+
+    // getComponentsList
+    builder.addCase(getComponentsList.pending, (state) => {
+      state.isComponentsLoading = true;
+      state.componentsError = null;
+    });
+    builder.addCase(getComponentsList.fulfilled, (state, action) => {
+      state.isComponentsLoading = false;
+      const payload = action?.payload || {};
+      state.componentsList = Array.isArray(payload?.data) ? payload.data : [];
+      state.componentsError = null;
+    });
+    builder.addCase(getComponentsList.rejected, (state, action) => {
+      state.isComponentsLoading = false;
+      state.componentsError = action.payload || action.error?.message;
+    });
+
+
     // getVanProgress
     builder.addCase(getVanProgress.pending, (state) => {
       state.isLoading = true;
@@ -108,6 +209,62 @@ const vanSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload || action.error?.message;
     });
+
+    // getVansList
+    builder.addCase(getVansList.pending, (state) => {
+      state.isVansLoading = true;
+      state.vansError = null;
+    });
+    builder.addCase(getVansList.fulfilled, (state, action) => {
+      state.isVansLoading = false;
+      const payload = action?.payload || {};
+      state.vansList = Array.isArray(payload?.data) ? payload.data : [];
+      if (payload?.meta) {
+        state.vansMeta = payload.meta;
+      }
+      state.vansError = null;
+    });
+    builder.addCase(getVansList.rejected, (state, action) => {
+      state.isVansLoading = false;
+      state.vansError = action.payload || action.error?.message;
+      state.vansList = [];
+    });
+
+    // getDealerOwnersList
+    builder.addCase(getDealerOwnersList.pending, (state) => {
+      state.isOwnersLoading = true;
+      state.ownersError = null;
+    });
+    builder.addCase(getDealerOwnersList.fulfilled, (state, action) => {
+      state.isOwnersLoading = false;
+      const payload = action?.payload || {};
+      state.ownersList = Array.isArray(payload?.data) ? payload.data : [];
+      if (payload?.meta) {
+        state.ownersMeta = payload.meta;
+      }
+      state.ownersError = null;
+    });
+    builder.addCase(getDealerOwnersList.rejected, (state, action) => {
+      state.isOwnersLoading = false;
+      state.ownersError = action.payload || action.error?.message;
+      state.ownersList = [];
+    });
+
+    // getDealerDashboard
+    builder.addCase(getDealerDashboard.pending, (state) => {
+      state.isDashboardLoading = true;
+      state.dashboardError = null;
+    });
+    builder.addCase(getDealerDashboard.fulfilled, (state, action) => {
+      state.isDashboardLoading = false;
+      const payload = action?.payload || {};
+      state.dashboardData = payload?.data || null;
+      state.dashboardError = null;
+    });
+    builder.addCase(getDealerDashboard.rejected, (state, action) => {
+      state.isDashboardLoading = false;
+      state.dashboardError = action.payload || action.error?.message;
+    });
   },
 });
 
@@ -116,7 +273,10 @@ export const {
   setOwnerId,
   setVanStep1Data,
   setVanStep2Data,
+  setVanStep3Data,
+  setVanStep4Data,
   setVanProgressData,
   resetVanState,
 } = vanSlice.actions;
 export default vanSlice.reducer;
+
