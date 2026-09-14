@@ -1,10 +1,38 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { pageRoutes } from '../../../routes/PageRoutes';
 
 const SuccessModal = ({ modalId = "successModal", onAddAnother, redirectUrl = pageRoutes.vans }) => {
+    const navigate = useNavigate();
+
+    const cleanupModalDOM = () => {
+        const modalEl = document.getElementById(modalId);
+        if (modalEl && window.bootstrap?.Modal) {
+            const instance = window.bootstrap.Modal.getInstance(modalEl);
+            if (instance) {
+                instance.hide();
+            }
+        }
+        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+    };
+
+    const handleGoToVans = () => {
+        cleanupModalDOM();
+        navigate(redirectUrl);
+    };
+
+    const handleAddAnother = () => {
+        cleanupModalDOM();
+        if (typeof onAddAnother === 'function') {
+            onAddAnother();
+        }
+    };
+
     return (
-        <div className="modal fade" id={modalId} tabIndex="-1" aria-hidden="true">
+        <div className="modal fade" id={modalId} tabIndex="-1" aria-hidden="true" data-bs-backdrop="static">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content border-0 rounded-4">
                     <div className="modal-body text-center p-5">
@@ -19,7 +47,7 @@ const SuccessModal = ({ modalId = "successModal", onAddAnother, redirectUrl = pa
                             </div>
                         </div>
 
-                        <h3 className="ct_fs_20 ct_head_clr ct_fw_600 mx-auto text-center" style={{ maxWidth: "220px" }}>
+                        <h3 className="ct_fs_20 ct_head_clr ct_fw_600 mx-auto text-center" style={{ maxWidth: "240px" }}>
                             Van Profile Created Successfully
                         </h3>
 
@@ -28,17 +56,16 @@ const SuccessModal = ({ modalId = "successModal", onAddAnother, redirectUrl = pa
                         </p>
 
                         <div className="d-flex flex-column gap-3">
-                            <Link
-                                to={redirectUrl}
-                                data-bs-dismiss="modal"
-                                className="action-button w-100 text-center text-decoration-none"
-                            >
-                                Go to My Vans
-                            </Link>
                             <button
                                 type="button"
-                                data-bs-dismiss="modal"
-                                onClick={onAddAnother}
+                                onClick={handleGoToVans}
+                                className="action-button w-100 text-center text-decoration-none border-0"
+                            >
+                                Go to My Vans
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAddAnother}
                                 className="previous action-button-previous w-100 border-0"
                             >
                                 Add Another Van

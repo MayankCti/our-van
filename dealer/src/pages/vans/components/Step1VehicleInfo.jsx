@@ -20,19 +20,22 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
     const activeVanId = vanId || reduxVanId || initialData?.van_id || mergedData?.van_id;
 
     // Stable initial values mapped from API response and props
-    const initialValues = useMemo(() => ({
-        van_id: activeVanId || '',
-        van_name: initialData?.van_name || vanStep1Data?.van_name || '',
-        vin: initialData?.vin || initialData?.vin_number || vanStep1Data?.vin || vanStep1Data?.vin_number || '',
-        make: initialData?.make || vanStep1Data?.make || '',
-        model: initialData?.model || vanStep1Data?.model || '',
-        manufacture_year: initialData?.manufacture_year || initialData?.year || vanStep1Data?.manufacture_year || vanStep1Data?.year || '',
-        registration_number: initialData?.registration_number || vanStep1Data?.registration_number || '',
-        engine: initialData?.engine || initialData?.engine_details || vanStep1Data?.engine || vanStep1Data?.engine_details || '',
-        chassis_number: initialData?.chassis_number || vanStep1Data?.chassis_number || '',
-        color: initialData?.color || initialData?.vehicle_colour || vanStep1Data?.color || vanStep1Data?.vehicle_colour || '',
-        vehicle_photos: (selectedFiles.length > 0 ? selectedFiles : (photoPreviews.length > 0 || initialData?.vehicle_images?.length > 0 || activeVanId) ? ['existing_photo'] : []),
-    }), [
+    const initialValues = useMemo(() => {
+        const hasExistingImages = (initialData?.vehicle_images?.length > 0) || (vanStep1Data?.vehicle_images?.length > 0);
+        return {
+            van_id: activeVanId || '',
+            van_name: initialData?.van_name || vanStep1Data?.van_name || '',
+            vin: initialData?.vin || initialData?.vin_number || vanStep1Data?.vin || vanStep1Data?.vin_number || '',
+            make: initialData?.make || vanStep1Data?.make || '',
+            model: initialData?.model || vanStep1Data?.model || '',
+            manufacture_year: initialData?.manufacture_year || initialData?.year || vanStep1Data?.manufacture_year || vanStep1Data?.year || '',
+            registration_number: initialData?.registration_number || vanStep1Data?.registration_number || '',
+            engine: initialData?.engine || initialData?.engine_details || vanStep1Data?.engine || vanStep1Data?.engine_details || '',
+            chassis_number: initialData?.chassis_number || vanStep1Data?.chassis_number || '',
+            color: initialData?.color || initialData?.vehicle_colour || vanStep1Data?.color || vanStep1Data?.vehicle_colour || '',
+            vehicle_photos: hasExistingImages ? ['existing_photo'] : [],
+        };
+    }, [
         activeVanId,
         initialData?.van_id,
         initialData?.van_name,
@@ -40,10 +43,29 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         initialData?.vin_number,
         initialData?.make,
         initialData?.model,
+        initialData?.manufacture_year,
+        initialData?.year,
         initialData?.registration_number,
+        initialData?.engine,
+        initialData?.engine_details,
+        initialData?.chassis_number,
+        initialData?.color,
+        initialData?.vehicle_colour,
+        initialData?.vehicle_images,
         vanStep1Data?.van_name,
-        selectedFiles.length,
-        photoPreviews.length,
+        vanStep1Data?.vin,
+        vanStep1Data?.vin_number,
+        vanStep1Data?.make,
+        vanStep1Data?.model,
+        vanStep1Data?.manufacture_year,
+        vanStep1Data?.year,
+        vanStep1Data?.registration_number,
+        vanStep1Data?.engine,
+        vanStep1Data?.engine_details,
+        vanStep1Data?.chassis_number,
+        vanStep1Data?.color,
+        vanStep1Data?.vehicle_colour,
+        vanStep1Data?.vehicle_images,
     ]);
 
     // Load existing vehicle images from progress API
@@ -64,7 +86,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
                 return newItems.length > 0 ? [...prev, ...newItems] : prev;
             });
         }
-    }, [initialData?.vehicle_images, vanStep1Data?.vehicle_images, deleteImageIds]);
+    }, [initialData?.vehicle_images, vanStep1Data?.vehicle_images]);
 
     const handleFiles = (files, setFieldValue, setFieldTouched, setFieldError) => {
         const fileList = Array.from(files);
@@ -461,7 +483,15 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
                                             <div className="upload-imgs ct_custom_scroll mt-3 d-flex flex-wrap gap-2">
                                                 {photoPreviews.map((preview, index) => (
                                                     <div className="img-item position-relative" key={index}>
-                                                        <img src={preview.url} alt={preview.name || `Vehicle preview ${index + 1}`} />
+                                                        <img
+                                                            src={preview.url}
+                                                            alt={preview.name || `Vehicle preview ${index + 1}`}
+                                                            style={{ cursor: 'pointer' }}
+                                                            onClick={() => {
+                                                                if (preview.url) window.open(preview.url, '_blank');
+                                                            }}
+                                                            title="Click to view full image in new tab"
+                                                        />
                                                         <button
                                                             type="button"
                                                             className="img-remove"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import { pageRoutes } from '../../routes/PageRoutes';
@@ -14,7 +14,7 @@ import Step6Maintenance from './components/Step6Maintenance';
 import Step7Review from './components/Step7Review';
 import SuccessModal from './components/SuccessModal';
 import { pipGetVanDraft, pipSaveVanDraft, pipClearVanDraft } from '../../utils/pip';
-import { getVanProgress } from '../../redux/slices/vanSlice';
+import { getVanProgress, resetVanState } from '../../redux/slices/vanSlice';
 
 const steps = [
     { id: 1, name: "Vehicle Information" },
@@ -28,6 +28,7 @@ const steps = [
 
 const VehicleInformation = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const queryVanId = searchParams.get('van_id') || searchParams.get('id');
 
@@ -40,6 +41,8 @@ const VehicleInformation = () => {
     const [step2Data, setStep2Data] = useState(savedDraft?.step2Data || {});
     const [step3Data, setStep3Data] = useState(savedDraft?.step3Data || {});
     const [step4Data, setStep4Data] = useState(savedDraft?.step4Data || {});
+    const [step5Data, setStep5Data] = useState(savedDraft?.step5Data || {});
+    const [step6Data, setStep6Data] = useState(savedDraft?.step6Data || {});
 
     // Fetch progress if vanId exists (either from URL query or session draft)
     useEffect(() => {
@@ -109,6 +112,51 @@ const VehicleInformation = () => {
                                 }));
                             }
 
+                            const docs = data?.documents || data?.van_documents || data?.vehicle_documents || data?.step_5;
+                            if (docs) {
+                                if (Array.isArray(docs)) {
+                                    const docMap = {};
+                                    docs.forEach((doc) => {
+                                        const type = doc.document_type?.toLowerCase();
+                                        if (type && doc.file_url) {
+                                            docMap[type] = doc.file_url;
+                                        }
+                                    });
+                                    setStep5Data((prev) => ({
+                                        ...prev,
+                                        service_book: docMap.service_book || prev.service_book || null,
+                                        user_manual: docMap.user_manual || prev.user_manual || null,
+                                        registration_certificate: docMap.registration_certificate || prev.registration_certificate || null,
+                                        insurance_certificate: docMap.insurance_certificate || prev.insurance_certificate || null,
+                                        purchase_invoice: docMap.purchase_invoice || prev.purchase_invoice || null,
+                                        compliance_certificate: docMap.compliance_certificate || prev.compliance_certificate || null,
+                                    }));
+                                } else {
+                                    setStep5Data((prev) => ({
+                                        ...prev,
+                                        service_book: docs?.service_book || docs?.service_book_url || prev.service_book || null,
+                                        user_manual: docs?.user_manual || docs?.user_manual_url || prev.user_manual || null,
+                                        registration_certificate: docs?.registration_certificate || docs?.registration_certificate_url || prev.registration_certificate || null,
+                                        insurance_certificate: docs?.insurance_certificate || docs?.insurance_certificate_url || prev.insurance_certificate || null,
+                                        purchase_invoice: docs?.purchase_invoice || docs?.purchase_invoice_url || prev.purchase_invoice || null,
+                                        compliance_certificate: docs?.compliance_certificate || docs?.compliance_certificate_url || prev.compliance_certificate || null,
+                                    }));
+                                }
+                            }
+
+                            const maintenance = data?.maintenance || data?.van_maintenance || data?.step_6 || data?.maintenance_setup;
+                            if (maintenance) {
+                                setStep6Data((prev) => ({
+                                    ...prev,
+                                    first_service_date: maintenance?.first_service_date ? maintenance.first_service_date.split('T')[0] : prev.first_service_date || '',
+                                    assigned_service_centre: maintenance?.assigned_service_centre || prev.assigned_service_centre || '',
+                                    notes: maintenance?.notes || prev.notes || '',
+                                    reminder_before_days: maintenance?.reminder_before_days ?? prev.reminder_before_days ?? 7,
+                                    notify_push: maintenance?.notify_push ?? prev.notify_push ?? 1,
+                                    notify_email: maintenance?.notify_email ?? prev.notify_email ?? 1,
+                                }));
+                            }
+
                             // If this was opened fresh with a query param and no draft step, set step to API's current_step
                             if (!savedDraft?.step && data?.current_step) {
                                 setStep(data.current_step);
@@ -130,8 +178,10 @@ const VehicleInformation = () => {
             step2Data,
             step3Data,
             step4Data,
+            step5Data,
+            step6Data,
         });
-    }, [step, vanId, ownerId, step1Data, step2Data, step3Data, step4Data]);
+    }, [step, vanId, ownerId, step1Data, step2Data, step3Data, step4Data, step5Data, step6Data]);
 
     const nextStep = () => setStep(prev => Math.min(prev + 1, 7));
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
@@ -205,12 +255,53 @@ const VehicleInformation = () => {
         nextStep();
     };
 
+    const handleStep5Prev = (data) => {
+        if (data) {
+            setStep5Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        prevStep();
+    };
+
+    const handleStep5Success = (response, data) => {
+        if (data) {
+            setStep5Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        nextStep();
+    };
+
+    const handleStep6Prev = (data) => {
+        if (data) {
+            setStep6Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        prevStep();
+    };
+
+    const handleStep6Success = (response, data) => {
+        if (data) {
+            setStep6Data((prev) => ({ ...prev, ...data }));
+        }
+        if (vanId) {
+            dispatch(getVanProgress({ vanId }));
+        }
+        nextStep();
+    };
+
     const handleStepSelect = (stepId) => {
         setStep(stepId);
     };
 
     const handleReset = () => {
         pipClearVanDraft();
+        dispatch(resetVanState());
         setStep(1);
         setVanId(null);
         setOwnerId(null);
@@ -218,6 +309,9 @@ const VehicleInformation = () => {
         setStep2Data({});
         setStep3Data({});
         setStep4Data({});
+        setStep5Data({});
+        setStep6Data({});
+        navigate(pageRoutes.vehicle_information, { replace: true });
     };
 
     return (
@@ -269,9 +363,30 @@ const VehicleInformation = () => {
                             vanId={vanId}
                         />
                     )}
-                    {step === 5 && <Step5Documents onPrev={prevStep} onNext={nextStep} />}
-                    {step === 6 && <Step6Maintenance onPrev={prevStep} onNext={nextStep} />}
-                    {step === 7 && <Step7Review onPrev={prevStep} modalTargetId="#successModal" />}
+                    {step === 5 && (
+                        <Step5Documents
+                            onPrev={handleStep5Prev}
+                            onNext={handleStep5Success}
+                            initialData={step5Data}
+                            vanId={vanId}
+                        />
+                    )}
+                    {step === 6 && (
+                        <Step6Maintenance
+                            onPrev={handleStep6Prev}
+                            onNext={handleStep6Success}
+                            initialData={step6Data}
+                            vanId={vanId}
+                        />
+                    )}
+                    {step === 7 && (
+                        <Step7Review
+                            onPrev={prevStep}
+                            vanId={vanId}
+                            onComplete={handleReset}
+                            modalTargetId="#successModal"
+                        />
+                    )}
                 </form>
             </div>
 

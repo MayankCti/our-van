@@ -4,11 +4,16 @@ import {
   createVanStep2,
   createVanStep3,
   createVanStep4,
+  createVanStep5,
+  createVanStep6,
   getVanProgress,
   getVansList,
   getDealerOwnersList,
   getDealerDashboard,
   getComponentsList,
+  getVanReview,
+  publishVan,
+  getVanDetails,
 } from "../actions/vanAction";
 
 const initialState = {
@@ -17,7 +22,17 @@ const initialState = {
   vanStep2Data: null,
   vanStep3Data: null,
   vanStep4Data: null,
+  vanStep5Data: null,
+  vanStep6Data: null,
   vanProgressData: null,
+  vanReviewData: null,
+  isReviewLoading: false,
+  reviewError: null,
+  isPublishing: false,
+  publishError: null,
+  vanDetailsData: null,
+  isVanDetailsLoading: false,
+  vanDetailsError: null,
   vanId: null,
   ownerId: null,
   error: null,
@@ -77,6 +92,12 @@ const vanSlice = createSlice({
     setVanStep4Data: (state, action) => {
       state.vanStep4Data = action.payload;
     },
+    setVanStep5Data: (state, action) => {
+      state.vanStep5Data = action.payload;
+    },
+    setVanStep6Data: (state, action) => {
+      state.vanStep6Data = action.payload;
+    },
     setVanProgressData: (state, action) => {
       state.vanProgressData = action.payload;
     },
@@ -86,6 +107,8 @@ const vanSlice = createSlice({
       state.vanStep2Data = null;
       state.vanStep3Data = null;
       state.vanStep4Data = null;
+      state.vanStep5Data = null;
+      state.vanStep6Data = null;
       state.vanProgressData = null;
       state.vanId = null;
       state.ownerId = null;
@@ -165,6 +188,38 @@ const vanSlice = createSlice({
       state.error = null;
     });
     builder.addCase(createVanStep4.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload || action.error?.message;
+    });
+
+    // createVanStep5
+    builder.addCase(createVanStep5.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(createVanStep5.fulfilled, (state, action) => {
+      state.isLoading = false;
+      const resData = action?.payload?.data || action?.payload;
+      state.vanStep5Data = resData;
+      state.error = null;
+    });
+    builder.addCase(createVanStep5.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload || action.error?.message;
+    });
+
+    // createVanStep6
+    builder.addCase(createVanStep6.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(createVanStep6.fulfilled, (state, action) => {
+      state.isLoading = false;
+      const resData = action?.payload?.data || action?.payload;
+      state.vanStep6Data = resData;
+      state.error = null;
+    });
+    builder.addCase(createVanStep6.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload || action.error?.message;
     });
@@ -265,6 +320,50 @@ const vanSlice = createSlice({
       state.isDashboardLoading = false;
       state.dashboardError = action.payload || action.error?.message;
     });
+
+    // getVanReview
+    builder.addCase(getVanReview.pending, (state) => {
+      state.isReviewLoading = true;
+      state.reviewError = null;
+    });
+    builder.addCase(getVanReview.fulfilled, (state, action) => {
+      state.isReviewLoading = false;
+      state.vanReviewData = action?.payload?.data || action?.payload || null;
+      state.reviewError = null;
+    });
+    builder.addCase(getVanReview.rejected, (state, action) => {
+      state.isReviewLoading = false;
+      state.reviewError = action.payload || action.error?.message;
+    });
+
+    // publishVan (Step 7)
+    builder.addCase(publishVan.pending, (state) => {
+      state.isPublishing = true;
+      state.publishError = null;
+    });
+    builder.addCase(publishVan.fulfilled, (state) => {
+      state.isPublishing = false;
+      state.publishError = null;
+    });
+    builder.addCase(publishVan.rejected, (state, action) => {
+      state.isPublishing = false;
+      state.publishError = action.payload || action.error?.message;
+    });
+
+    // getVanDetails (Van Detail page)
+    builder.addCase(getVanDetails.pending, (state) => {
+      state.isVanDetailsLoading = true;
+      state.vanDetailsError = null;
+    });
+    builder.addCase(getVanDetails.fulfilled, (state, action) => {
+      state.isVanDetailsLoading = false;
+      state.vanDetailsData = action?.payload?.data || action?.payload || null;
+      state.vanDetailsError = null;
+    });
+    builder.addCase(getVanDetails.rejected, (state, action) => {
+      state.isVanDetailsLoading = false;
+      state.vanDetailsError = action.payload || action.error?.message;
+    });
   },
 });
 
@@ -275,6 +374,8 @@ export const {
   setVanStep2Data,
   setVanStep3Data,
   setVanStep4Data,
+  setVanStep5Data,
+  setVanStep6Data,
   setVanProgressData,
   resetVanState,
 } = vanSlice.actions;

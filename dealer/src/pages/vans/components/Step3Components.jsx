@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { getComponentsList, createVanStep3 } from '../../../redux/slices/vanSlice';
-import { step3ComponentItemSchema } from '../../../utils/Schema';
 
 const renderComponentIcon = (iconKey, name = "") => {
     const key = (iconKey || "").toLowerCase();
@@ -183,11 +182,21 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                 const restoredCustoms = [];
 
                 initialArr.forEach((item, idx) => {
-                    const tempId = item.temp_id || (item.is_custom ? `custom_${idx + 1}` : `component_${item.component_type_id || item.id}`);
+                    const compTypeId = item.component_type_id !== undefined && item.component_type_id !== null
+                        ? item.component_type_id
+                        : (!item.is_custom ? item.id : null);
+                    const tempId = item.temp_id || (item.is_custom ? `custom_${idx + 1}` : `component_${compTypeId}`);
+
+                    // Extract file information from backend progress response (item.files array) or direct properties
+                    const firstFile = (item.files && Array.isArray(item.files) && item.files.length > 0) ? item.files[0] : null;
+                    const existingFileUrl = item.existing_file_url || item.file_url || item.image_url || firstFile?.file_url || null;
+                    const existingFileName = item.file_name || firstFile?.file_name || (item.file ? item.file.name : '') || (existingFileUrl ? existingFileUrl.split('/').pop() : '');
+                    const isImg = existingFileUrl ? /\.(png|jpe?g|webp)$/i.test(existingFileUrl) || (firstFile?.mime_type && firstFile.mime_type.startsWith('image/')) : false;
+
                     restoredMap[tempId] = {
                         temp_id: tempId,
-                        component_type_id: item.is_custom ? null : (item.component_type_id || item.id),
-                        component_name: item.component_name || item.name || '',
+                        component_type_id: item.is_custom ? null : compTypeId,
+                        component_name: item.component_name || item.component_type_name || item.name || '',
                         is_custom: Boolean(item.is_custom),
                         icon_key: item.icon_key || '',
                         manufacturer: item.manufacturer || '',
@@ -196,16 +205,16 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                         replacement_schedule: item.replacement_schedule ? item.replacement_schedule.split('T')[0] : '',
                         maintenance_notes: item.maintenance_notes || '',
                         file: item.file || null,
-                        file_name: item.file_name || (item.file ? item.file.name : ''),
-                        file_preview: item.file_preview || null,
-                        existing_file_url: item.image_url || item.file_url || null,
+                        file_name: existingFileName,
+                        file_preview: item.file_preview || (isImg ? existingFileUrl : null),
+                        existing_file_url: existingFileUrl,
                     };
 
                     if (item.is_custom) {
                         restoredCustoms.push({
                             temp_id: tempId,
                             id: null,
-                            name: item.component_name || item.name || `Custom ${idx + 1}`,
+                            name: item.component_name || item.component_type_name || item.name || `Custom ${idx + 1}`,
                             slug: 'custom',
                             icon_key: 'custom',
                             is_custom: true,
@@ -427,7 +436,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
             return;
         }
 
-        const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+        const previewUrl = URL.createObjectURL(file);
 
         setSelectedComponents((prev) => {
             const current = prev[activeComponentId];
@@ -1053,27 +1062,48 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
 
                                             {/* File Attachment / Preview */}
                                             {(activeComponent.file_name || activeComponent.file_preview || activeComponent.existing_file_url) && (
-                                                <div className="mt-3 p-2 bg-light rounded d-flex align-items-center justify-content-between border" style={{ maxWidth: '380px' }}>
-                                                    <div className="d-flex align-items-center gap-2 text-truncate">
-                                                        {activeComponent.file_preview ? (
-                                                            <img
-                                                                src={activeComponent.file_preview}
-                                                                alt="preview"
-                                                                style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px' }}
-                                                            />
-                                                        ) : (
-                                                            <i className="fa-solid fa-file-pdf text-danger fs-4"></i>
-                                                        )}
-                                                        <span className="ct_fs_14 text-truncate">{activeComponent.file_name || 'Uploaded File'}</span>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-outline-danger border-0"
-                                                        onClick={handleRemoveFile}
-                                                        title="Remove file"
-                                                    >
-                                                        <i className="fa-solid fa-xmark"></i>
-                                                    </button>
+                                                <div className="upload-imgs ct_custom_scroll mt-3 d-flex flex-wrap gap-2">
+                                                    {(() => {
+                                                        const fileUrl = activeComponent.file_preview || activeComponent.existing_file_url;
+                                                        const isImg = activeComponent.file
+                                                            ? activeComponent.file.type.startsWith('image/')
+                                                            : (activeComponent.file_preview && !activeComponent.file_preview.toLowerCase().endsWith('.pdf')) ||
+                                                            (activeComponent.existing_file_url && /\.(png|jpe?g|webp)$/i.test(activeComponent.existing_file_url));
+
+                                                        return (
+                                                            <div className={`img-item position-relative ${!isImg ? 'doc-item' : ''}`}>
+                                                                {isImg && fileUrl ? (
+                                                                    <img
+                                                                        src={fileUrl}
+                                                                        alt={activeComponent.file_name || "Component file"}
+                                                                        style={{ cursor: 'pointer' }}
+                                                                        onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                                                                        title="Click to view full image in new tab"
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-center p-1"
+                                                                        style={{ cursor: 'pointer' }}
+                                                                        onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                                                                        title={activeComponent.file_name || "Click to view document in new tab"}
+                                                                    >
+                                                                        <i className="fa-solid fa-file-pdf text-danger fs-4 mb-1"></i>
+                                                                        <span className="ct_fs_10 text-truncate w-100 ct_fw_600 text-dark">
+                                                                            {activeComponent.file_name ? (activeComponent.file_name.length > 10 ? activeComponent.file_name.substring(0, 10) + '...' : activeComponent.file_name) : 'PDF'}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    className="img-remove"
+                                                                    onClick={handleRemoveFile}
+                                                                    title="Remove file"
+                                                                >
+                                                                    <i className="fa-solid fa-xmark"></i>
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
                                             )}
                                         </div>

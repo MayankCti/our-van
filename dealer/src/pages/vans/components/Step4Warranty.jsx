@@ -59,8 +59,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
             return;
         }
 
-        const isImg = file.type.startsWith('image/');
-        const previewUrl = isImg ? URL.createObjectURL(file) : null;
+        const previewUrl = URL.createObjectURL(file);
 
         setFieldValue('warranty_document', file);
         setFieldValue('file_name', file.name);
@@ -285,27 +284,48 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
 
                                     {/* Attached File Preview */}
                                     {(values.file_name || values.doc_preview || values.existing_doc_url) && (
-                                        <div className="mt-3 p-2 bg-light rounded d-flex align-items-center justify-content-between border" style={{ maxWidth: '400px' }}>
-                                            <div className="d-flex align-items-center gap-2 text-truncate">
-                                                {values.doc_preview ? (
-                                                    <img
-                                                        src={values.doc_preview}
-                                                        alt="preview"
-                                                        style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '4px' }}
-                                                    />
-                                                ) : (
-                                                    <i className="fa-solid fa-file-pdf text-danger fs-3"></i>
-                                                )}
-                                                <span className="ct_fs_14 text-truncate">{values.file_name || 'Warranty Document'}</span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-danger border-0"
-                                                onClick={() => handleRemoveFile(setFieldValue, values)}
-                                                title="Remove file"
-                                            >
-                                                <i className="fa-solid fa-xmark"></i>
-                                            </button>
+                                        <div className="upload-imgs ct_custom_scroll mt-3 d-flex flex-wrap gap-2">
+                                            {(() => {
+                                                const fileUrl = values.doc_preview || values.existing_doc_url;
+                                                const isImg = values.warranty_document instanceof File
+                                                    ? values.warranty_document.type.startsWith('image/')
+                                                    : (values.doc_preview && !values.doc_preview.toLowerCase().endsWith('.pdf')) ||
+                                                      (values.existing_doc_url && /\.(png|jpe?g|webp)$/i.test(values.existing_doc_url));
+
+                                                return (
+                                                    <div className={`img-item position-relative ${!isImg ? 'doc-item' : ''}`}>
+                                                        {isImg && fileUrl ? (
+                                                            <img
+                                                                src={fileUrl}
+                                                                alt={values.file_name || "Warranty document"}
+                                                                style={{ cursor: 'pointer' }}
+                                                                onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                                                                title="Click to view full image in new tab"
+                                                            />
+                                                        ) : (
+                                                            <div
+                                                                className="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-center p-1"
+                                                                style={{ cursor: 'pointer' }}
+                                                                onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                                                                title={values.file_name || "Click to view document in new tab"}
+                                                            >
+                                                                <i className="fa-solid fa-file-pdf text-danger fs-4 mb-1"></i>
+                                                                <span className="ct_fs_10 text-truncate w-100 ct_fw_600 text-dark">
+                                                                    {values.file_name ? (values.file_name.length > 10 ? values.file_name.substring(0, 10) + '...' : values.file_name) : 'PDF'}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="img-remove"
+                                                            onClick={() => handleRemoveFile(setFieldValue, values)}
+                                                            title="Remove file"
+                                                        >
+                                                            <i className="fa-solid fa-xmark"></i>
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                 </div>

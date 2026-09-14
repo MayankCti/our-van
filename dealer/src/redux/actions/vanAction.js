@@ -274,3 +274,160 @@ export const createVanStep4 = createAsyncThunk(
   }
 );
 
+// Create / Save Van Step-5 Documents Upload
+export const createVanStep5 = createAsyncThunk(
+  "van/createVanStep5",
+  async (props, { rejectWithValue }) => {
+    const { vanId, payload, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_STEP_5_API || "/dealer/vans/:vanId/step-5/upload").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data: payload,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Create / Save Van Step-6 Maintenance Setup
+export const createVanStep6 = createAsyncThunk(
+  "van/createVanStep6",
+  async (props, { rejectWithValue }) => {
+    const { vanId, payload, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_STEP_6_API || "/dealer/vans/:vanId/step-6").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data: payload,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Van Review Details (for Step 7)
+export const getVanReview = createAsyncThunk(
+  "van/getVanReview",
+  async (props, { rejectWithValue }) => {
+    const { vanId, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_REVIEW_API || "/dealer/vans/:vanId/review").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Publish / Create Van Profile (Step 7)
+export const publishVan = createAsyncThunk(
+  "van/publishVan",
+  async (props, { rejectWithValue }) => {
+    const { vanId, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_VAN_PUBLISH_API || "/dealer/vans/:vanId/publish").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Single Van Details (for Van Details page)
+export const getVanDetails = createAsyncThunk(
+  "van/getVanDetails",
+  async (props, { rejectWithValue }) => {
+    const { vanId, callback } = props;
+    try {
+      const endpoint = (import.meta.env.VITE_GET_VAN_DETAILS_API || "/dealer/vans/get/:vanId").replace(
+        ":vanId",
+        vanId
+      );
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+
+

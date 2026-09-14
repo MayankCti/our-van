@@ -205,6 +205,24 @@ export const step4WarrantySchema = Yup.object().shape({
     warranty_document: Yup.mixed().nullable(),
 });
 
+// Step 6: Maintenance Setup Schema
+export const step6MaintenanceSchema = Yup.object().shape({
+    first_service_date: Yup.string()
+        .required("Please select first service date"),
+    assigned_service_centre: Yup.string()
+        .trim()
+        .max(150, "Service centre cannot exceed 150 characters")
+        .nullable(),
+    notes: Yup.string()
+        .max(500, "Notes cannot exceed 500 characters")
+        .nullable(),
+    reminder_before_days: Yup.number()
+        .required("Please select reminder days")
+        .positive("Reminder days must be greater than 0"),
+    notify_push: Yup.mixed(),
+    notify_email: Yup.mixed(),
+});
+
 
 
 
