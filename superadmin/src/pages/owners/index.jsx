@@ -1,120 +1,246 @@
-import { Link } from "react-router-dom"
-import Layout from "../../layout/Layout"
-import { pageRoutes } from "../../routes/PageRoutes"
-import Header from "../../layout/Header"
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Layout from "../../layout/Layout";
+import Header from "../../layout/Header";
+import { pageRoutes } from "../../routes/PageRoutes";
+import PaginationDropdown from "../../components/table/PaginationDropdown";
+import Pagination from "../../components/table/Pagination";
+import useDebounce from "../../hooks/useDebounce";
+import { getOwnersList } from "../../redux/slices/ownerSlice";
 
 const Owners = () => {
-   return (
+  const dispatch = useDispatch();
 
-      <Layout>
-         <div class="ct_right_panel">
-            <Header />
-            <div class="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-between gap-3 ct_flex_col_575">
-               <div>
-                  <h4 class="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Owners</h4>
-                  <p class="mb-0 ct_para_clr">Manage all registered van owners across the platform.</p>
-               </div>
-            </div>
-            <div class="ct_px_30 mt-4 pb-4">
-               <div class="container-fluid">
-                  {/* Search */}
-                  <div class="mb-4 position-relative">
-                     <svg class="ct_search_icon" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 15L11.25 11.25M0.5 6.75C0.5 3.29822 3.29822 0.5 6.75 0.5C10.2018 0.5 13 3.29822 13 6.75C13 10.2018 10.2018 13 6.75 13C3.29822 13 0.5 10.2018 0.5 6.75Z" stroke="#475569" stroke-linecap="round" stroke-linejoin="round" />
-                     </svg>
-                     <input
-                        type="text"
-                        class="form-control ct_input ct_input_ps_40 ct_fs_14"
-                        placeholder="Search by owner name, email..." />
-                  </div>
-                  {/* Table */}
-                  <div class="table-responsive ct_custom_table">
-                     <table class="table ct_custom_table align-middle mb-0">
-                        <thead>
-                           <tr>
-                              <th>#</th>
-                              <th>Owner Name</th>
-                              <th>Email</th>
-                              <th>Assigned Van</th>
-                              <th>Dealer</th>
-                              <th>Date Registered</th>
-                              <th>Action</th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                           <tr>
-                              <td>1</td>
-                              <td>John Smith</td>
-                              <td>john.smith@email.com</td>
-                              <td>Jayco Journey</td>
-                              <td>ABC Caravans</td>
-                              <td>13 Jul 2026</td>
-                              <td>
-                                 <Link to={pageRoutes?.owner_detail} class="ct_action_link">
-                                    View Details
-                                 </Link>
-                              </td>
-                           </tr>
-                           <tr>
-                              <td>2</td>
-                              <td>Emma Wilson</td>
-                              <td>emma.w@email.com</td>
-                              <td>Nova Terra</td>
-                              <td>Horizon Vans</td>
-                              <td>17 Sep 2026</td>
-                              <td>
-                                 <Link to={pageRoutes?.owner_detail} class="ct_action_link">
-                                    View Details
-                                 </Link>
-                              </td>
-                           </tr>
-                           <tr>
-                              <td>3</td>
-                              <td>David Brown</td>
-                              <td>david.b@email.com</td>
-                              <td>Horizon LX</td>
-                              <td>VanLife</td>
-                              <td>26 Jan 2026</td>
-                              <td>
-                                 <Link to={pageRoutes?.owner_detail} class="ct_action_link">
-                                    View Details
-                                 </Link>
-                              </td>
-                           </tr>
-                           <tr>
-                              <td>4</td>
-                              <td>Olivia Taylor</td>
-                              <td>olivia.t@email.com</td>
-                              <td>New Age Road Owl</td>
-                              <td>Freedom Campers</td>
-                              <td>5 Oct 2026</td>
-                              <td>
-                                 <Link to={pageRoutes?.owner_detail} class="ct_action_link">
-                                    View Details
-                                 </Link>
-                              </td>
-                           </tr>
-                           <tr>
-                              <td>5</td>
-                              <td>Michael Wilson</td>
-                              <td>michael.w@email.com</td>
-                              <td>Sunliner Habitat</td>
-                              <td>Sydney Caravans</td>
-                              <td>11 Apr 2026</td>
-                              <td>
-                                 <Link to={pageRoutes?.owner_detail} class="ct_action_link">
-                                    View Details
-                                 </Link>
-                              </td>
-                           </tr>
-                        </tbody>
-                     </table>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </Layout>
-   )
-}
+  const {
+    ownersList = [],
+    ownersMeta = {},
+    isOwnersLoading = false,
+  } = useSelector((state) => state.ownerReducer || {});
 
-export default Owners
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 400);
+
+  const [listPerPages, setListPerPages] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to first page when debounced search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  // Fetch owners list when page, limit, or debounced search changes
+  useEffect(() => {
+    dispatch(
+      getOwnersList({
+        page: currentPage,
+        limit: listPerPages,
+        search: debouncedSearch,
+      })
+    );
+  }, [dispatch, currentPage, listPerPages, debouncedSearch]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return dateString || "N/A";
+    }
+  };
+
+  const totalPages =
+    ownersMeta?.totalPages ||
+    Math.ceil((ownersMeta?.totalItems || 0) / listPerPages) ||
+    1;
+
+  const totalItems = ownersMeta?.totalItems ?? ownersList.length;
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * listPerPages + 1;
+  const endItem = Math.min(currentPage * listPerPages, totalItems);
+
+  return (
+    <Layout>
+      <div className="ct_right_panel">
+        <Header />
+        <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-between gap-3 ct_flex_col_575">
+          <div>
+            <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Owners</h4>
+            <p className="mb-0 ct_para_clr">
+              Manage all registered van owners across the platform.
+            </p>
+          </div>
+        </div>
+
+        <div className="ct_px_30 mt-4 pb-4">
+          <div className="container-fluid">
+            {/* Search */}
+            <div className="mb-4 position-relative">
+              <svg
+                className="ct_search_icon"
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15 15L11.25 11.25M0.5 6.75C0.5 3.29822 3.29822 0.5 6.75 0.5C10.2018 0.5 13 3.29822 13 6.75C13 10.2018 10.2018 13 6.75 13C3.29822 13 0.5 10.2018 0.5 6.75Z"
+                  stroke="#475569"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+
+              <input
+                type="text"
+                className="form-control ct_input ct_input_ps_40 ct_fs_14"
+                placeholder="Search by owner name, email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="btn p-0 border-0 position-absolute end-0 top-50 translate-middle-y me-3 text-muted"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setCurrentPage(1);
+                  }}
+                  aria-label="Clear search"
+                  style={{ background: "none", cursor: "pointer", zIndex: 5 }}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+            </div>
+
+            {/* Table */}
+            <div className="table-responsive ct_custom_table">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Owner Name</th>
+                    <th>Email</th>
+                    <th>Assigned Van</th>
+                    <th>Dealer</th>
+                    <th>Date Registered</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {isOwnersLoading ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-5">
+                        <div className="d-flex align-items-center justify-content-center gap-2">
+                          <div
+                            className="spinner-border spinner-border-sm text-success"
+                            role="status"
+                          ></div>
+                          <span className="text-muted ct_fs_14">Loading owners...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : ownersList?.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
+                        No owners found.
+                      </td>
+                    </tr>
+                  ) : (
+                    ownersList.map((owner, index) => {
+                      const ownerId = owner.ownerId || owner.id || owner.owner_id;
+                      const serialNumber = (currentPage - 1) * listPerPages + index + 1;
+                      const ownerName = owner.ownerName || owner.name || owner.owner_name || "N/A";
+                      const email = owner.email || "N/A";
+
+                      const assignedVansList = Array.isArray(owner.assignedVans)
+                        ? owner.assignedVans
+                        : [];
+
+                      const vanNames =
+                        assignedVansList.length > 0
+                          ? assignedVansList
+                              .map((v) => v.vanName || v.name)
+                              .filter(Boolean)
+                              .join(", ") || "-"
+                          : "-";
+
+                      const dealers =
+                        assignedVansList.length > 0
+                          ? [
+                              ...new Set(
+                                assignedVansList
+                                  .map((v) => v.dealer || v.dealerName)
+                                  .filter(Boolean)
+                              ),
+                            ].join(", ") || "-"
+                          : "-";
+
+                      const dateRegistered = formatDate(
+                        owner.dateRegistered || owner.date_registered || owner.createdAt
+                      );
+
+                      return (
+                        <tr key={ownerId || index}>
+                          <td>{serialNumber}</td>
+                          <td className="ct_fw_600">{ownerName}</td>
+                          <td>{email}</td>
+                          <td>{vanNames}</td>
+                          <td>{dealers}</td>
+                          <td>{dateRegistered}</td>
+                          <td>
+                            <Link
+                              to={`${pageRoutes.owner_detail}?id=${ownerId}`}
+                              className="ct_action_link"
+                            >
+                              View Details
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination footer */}
+            {!isOwnersLoading && ownersList?.length > 0 && (
+              <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
+                <div className="d-flex align-items-center gap-3">
+                  <PaginationDropdown
+                    listPerPages={listPerPages}
+                    onChange={(num) => {
+                      setListPerPages(num);
+                      setCurrentPage(1);
+                    }}
+                  />
+                  <span className="ct_fs_13 ct_para_clr">
+                    Showing {startItem} to {endItem} of {totalItems} owners
+                  </span>
+                </div>
+
+                <Pagination
+                  totalPages={totalPages}
+                  currentPage={currentPage}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default Owners;

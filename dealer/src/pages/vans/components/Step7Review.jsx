@@ -45,16 +45,59 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
         }
     }, [dispatch, activeVanId]);
 
-    const reviewData = vanReviewData || {};
-    const van = reviewData?.van || {};
-    const images = Array.isArray(reviewData?.images) ? reviewData.images : [];
-    const owner = reviewData?.owner || {};
-    const components = Array.isArray(reviewData?.components) ? reviewData.components : [];
-    const warranty = reviewData?.warranty || {};
-    const documents = Array.isArray(reviewData?.documents) ? reviewData.documents : [];
-    const maintenance = reviewData?.maintenance || {};
+    const reviewData = vanReviewData?.data || vanReviewData || {};
+    const vd = reviewData?.van || reviewData?.vehicle_details || reviewData?.vehicle || reviewData || {};
+    const van = (reviewData?.van || reviewData?.vehicle_details || reviewData?.vehicle) ? vd : reviewData;
+    const images = Array.isArray(reviewData?.images)
+        ? reviewData.images
+        : Array.isArray(reviewData?.vehicle_images)
+        ? reviewData.vehicle_images
+        : Array.isArray(van?.images)
+        ? van.images
+        : Array.isArray(van?.vehicle_images)
+        ? van.vehicle_images
+        : [];
+    const owner = reviewData?.owner || reviewData?.owner_details || van?.owner || {};
+    const components = Array.isArray(reviewData?.components)
+        ? reviewData.components
+        : Array.isArray(reviewData?.van_components)
+        ? reviewData.van_components
+        : [];
+    const warranty = reviewData?.warranty || reviewData?.warranty_details || reviewData?.van_warranty || {};
+    const maintenance = reviewData?.maintenance || reviewData?.van_maintenance || reviewData?.step_6 || reviewData?.maintenance_setup || {};
 
-    const mainImageUrl = images.length > 0 && images[0]?.image_url ? images[0].image_url : null;
+    const rawDocs = reviewData?.documents || reviewData?.van_documents || reviewData?.vehicle_documents || reviewData?.step_5;
+    const documents = React.useMemo(() => {
+        if (!rawDocs) return [];
+        if (Array.isArray(rawDocs)) {
+            return rawDocs.filter((d) => d && (d.file_url || d.url));
+        }
+        if (typeof rawDocs === 'object') {
+            return Object.entries(rawDocs)
+                .filter(([_, val]) => Boolean(val))
+                .map(([key, val], idx) => {
+                    if (typeof val === 'object' && val !== null) {
+                        return {
+                            id: val.id || idx,
+                            document_type: val.document_type || key,
+                            file_url: val.file_url || val.url,
+                            file_name: val.file_name || val.name || `${key}.pdf`,
+                            file_size_kb: val.file_size_kb || val.size,
+                        };
+                    }
+                    return {
+                        id: idx,
+                        document_type: key,
+                        file_url: typeof val === 'string' ? val : null,
+                        file_name: typeof val === 'string' ? val.split('/').pop() : `${key}.pdf`,
+                    };
+                })
+                .filter((d) => Boolean(d.file_url));
+        }
+        return [];
+    }, [rawDocs]);
+
+    const mainImageUrl = images.length > 0 && (images[0]?.image_url || images[0]?.url) ? (images[0].image_url || images[0].url) : null;
 
     const handleCreateProfile = () => {
         if (!activeVanId) {
@@ -151,7 +194,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">VIN</h5>
-                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.vin || 'N/A'}</h6>
+                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.vin || van?.vin_number || 'N/A'}</h6>
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">Registration</h5>
@@ -159,11 +202,11 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">Engine</h5>
-                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.engine || 'N/A'}</h6>
+                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.engine || van?.engine_details || 'N/A'}</h6>
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">Year</h5>
-                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.manufacture_year || 'N/A'}</h6>
+                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.manufacture_year || van?.year || 'N/A'}</h6>
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">Chassis Number</h5>
@@ -171,7 +214,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                         </div>
                                         <div className="col-lg-3 col-sm-6">
                                             <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">Colour</h5>
-                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.color || 'N/A'}</h6>
+                                            <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{van?.color || van?.vehicle_colour || 'N/A'}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -182,17 +225,20 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                 <div className="mt-4 pt-3 border-top">
                                     <h6 className="ct_fs_13 ct_fw_600 ct_para_clr mb-2">ALL VEHICLE PHOTOS ({images.length})</h6>
                                     <div className="upload-imgs ct_custom_scroll d-flex flex-wrap gap-2">
-                                        {images.map((img, idx) => (
-                                            <div className="img-item position-relative" key={img.id || idx}>
-                                                <img
-                                                    src={img.image_url}
-                                                    alt={`Van Photo ${idx + 1}`}
-                                                    style={{ cursor: 'pointer' }}
-                                                    onClick={() => window.open(img.image_url, '_blank')}
-                                                    title="Click to view full image in new tab"
-                                                />
-                                            </div>
-                                        ))}
+                                        {images.map((img, idx) => {
+                                            const imgUrl = img.image_url || img.url || (typeof img === 'string' ? img : '');
+                                            return (
+                                                <div className="img-item position-relative" key={img.id || idx}>
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={`Van Photo ${idx + 1}`}
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => imgUrl && window.open(imgUrl, '_blank')}
+                                                        title="Click to view full image in new tab"
+                                                    />
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -214,7 +260,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                             <div className="row gy-3">
                                 <div className="col-md-4 col-sm-6">
                                     <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">Full Name</h6>
-                                    <h5 className="ct_fs_16 ct_fw_500 mb-0 ct_head_clr">{owner?.full_name || 'N/A'}</h5>
+                                    <h5 className="ct_fs_16 ct_fw_500 mb-0 ct_head_clr">{owner?.full_name || owner?.owner_name || owner?.name || 'N/A'}</h5>
                                 </div>
                                 <div className="col-md-4 col-sm-6">
                                     <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">Email Address</h6>
@@ -224,8 +270,8 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                     <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">Phone Number</h6>
                                     <h5 className="ct_fs_16 ct_fw_500 mb-0 ct_head_clr">
                                         {owner?.mobile_number
-                                            ? `${owner?.mobile_country_code || ''} ${owner.mobile_number}`
-                                            : 'N/A'}
+                                            ? `${owner?.mobile_country_code || ''} ${owner.mobile_number}`.trim()
+                                            : (owner?.phone_number || 'N/A')}
                                     </h5>
                                 </div>
                             </div>
@@ -248,7 +294,8 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                 <div className="row g-3">
                                     {components.map((comp, idx) => {
                                         const compFile = (comp.files && comp.files.length > 0) ? comp.files[0] : null;
-                                        const fileUrl = compFile?.file_url;
+                                        const fileUrl = compFile?.file_url || comp?.file_url || comp?.image_url;
+                                        const fileName = compFile?.file_name || comp?.file_name || (fileUrl ? fileUrl.split('/').pop() : 'Component File');
                                         const isImg = fileUrl && (/\.(png|jpe?g|webp)$/i.test(fileUrl) || (compFile?.mime_type && compFile.mime_type.startsWith('image/')));
 
                                         return (
@@ -257,7 +304,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                                     <div>
                                                         <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
                                                             <div className="ct_fs_16 ct_fw_600 ct_head_clr">
-                                                                {comp.component_name || comp.component_type_name}
+                                                                {comp.component_name || comp.component_type_name || comp.name}
                                                             </div>
                                                             <span className="badge bg-success-subtle text-success px-2 py-1 rounded-pill ct_fs_12 ct_fw_500">
                                                                 {comp.warranty_period_months ? `${comp.warranty_period_months} Mo. Warranty` : 'Active'}
@@ -302,7 +349,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                                                     <i className="fa-solid fa-file-pdf text-danger fs-4"></i>
                                                                 )}
                                                                 <span className="ct_fs_12 text-truncate" style={{ maxWidth: '180px' }}>
-                                                                    {compFile?.file_name || 'Component File'}
+                                                                    {fileName}
                                                                 </span>
                                                             </div>
                                                             <button
@@ -338,7 +385,7 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                     <div className="row gy-3">
                                         <div className="col-md-3 col-sm-6">
                                             <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">Provider</h6>
-                                            <h5 className="ct_fs_16 ct_fw_500 mb-0 ct_head_clr">{warranty?.provider || 'N/A'}</h5>
+                                            <h5 className="ct_fs_16 ct_fw_500 mb-0 ct_head_clr">{warranty?.provider || warranty?.warranty_provider || 'N/A'}</h5>
                                         </div>
                                         <div className="col-md-3 col-sm-6">
                                             <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">Coverage Type</h6>
@@ -370,30 +417,33 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                         </div>
                                     </div>
 
-                                    {warranty?.claim_instructions && (
+                                    {(warranty?.claim_instructions || warranty?.notes) && (
                                         <div className="mt-3">
-                                            <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr">Claim Instructions</h6>
-                                            <p className="ct_fs_14 ct_head_clr mb-0">{warranty.claim_instructions}</p>
+                                            <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr">Claim Instructions / Notes</h6>
+                                            <p className="ct_fs_14 ct_head_clr mb-0">{warranty.claim_instructions || warranty.notes}</p>
                                         </div>
                                     )}
                                 </div>
 
-                                {warranty?.document_url && (
-                                    <div className="col-xl-3">
-                                        <div
-                                            className="ct_doc_custom_box cursor-pointer"
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => window.open(warranty.document_url, '_blank')}
-                                            title="Click to view warranty document"
-                                        >
-                                            <svg className="me-2" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M14.4375 11.918C14.4375 11.7356 14.3651 11.5608 14.2361 11.4318C14.1072 11.3029 13.9323 11.2305 13.75 11.2305H8.25C8.06766 11.2305 7.8928 11.3029 7.76386 11.4318C7.63493 11.5608 7.5625 11.7356 7.5625 11.918C7.5625 12.1003 7.63493 12.2752 7.76386 12.4041C7.8928 12.533 8.06766 12.6055 8.25 12.6055H13.75C13.9323 12.6055 14.1072 12.533 14.2361 12.4041C14.3651 12.2752 14.4375 12.1003 14.4375 11.918ZM14.4375 15.5846C14.4375 15.4023 14.3651 15.2274 14.2361 15.0985C14.1072 14.9696 13.9323 14.8971 13.75 14.8971H8.25C8.06766 14.8971 7.8928 14.9696 7.76386 15.0985C7.63493 15.2274 7.5625 15.4023 7.5625 15.5846C7.5625 15.767 7.63493 15.9418 7.76386 16.0708C7.8928 16.1997 8.06766 16.2721 8.25 16.2721H13.75C13.9323 16.2721 14.1072 16.1997 14.2361 16.0708C14.3651 15.9418 14.4375 15.767 14.4375 15.5846Z" fill="#2563EB" />
-                                                <path fillRule="evenodd" clipRule="evenodd" d="M6.41634 2.0625C5.74777 2.0625 5.10659 2.32809 4.63384 2.80084C4.16109 3.27358 3.89551 3.91477 3.89551 4.58333V17.4167C3.89551 18.0852 4.16109 18.7264 4.63384 19.1992C5.10659 19.6719 5.74777 19.9375 6.41634 19.9375H15.583C16.2516 19.9375 16.8928 19.6719 17.3655 19.1992C17.8383 18.7264 18.1038 18.0852 18.1038 17.4167V7.304C18.1038 6.95475 17.9902 6.61558 17.7793 6.33692L15.0312 2.69958C14.8816 2.50169 14.6883 2.34117 14.4662 2.23062C14.2442 2.12008 13.9995 2.06253 13.7515 2.0625H6.41634ZM5.27051 4.58333C5.27051 3.95083 5.78384 3.4375 6.41634 3.4375H13.0622V7.46808C13.0622 7.84758 13.3702 8.15558 13.7497 8.15558H16.7288V17.4167C16.7288 18.0492 16.2155 18.5625 15.583 18.5625H6.41634C5.78384 18.5625 5.27051 18.0492 5.27051 17.4167V4.58333Z" fill="#2563EB" />
-                                            </svg>
-                                            <span>Warranty Document <i className="fa-solid fa-arrow-up-right-from-square ms-1 ct_fs_11"></i></span>
+                                {(() => {
+                                    const warrantyDocUrl = warranty?.document_url || warranty?.warranty_document || warranty?.warranty_document_url;
+                                    return warrantyDocUrl ? (
+                                        <div className="col-xl-3">
+                                            <div
+                                                className="ct_doc_custom_box cursor-pointer"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => window.open(warrantyDocUrl, '_blank')}
+                                                title="Click to view warranty document"
+                                            >
+                                                <svg className="me-2" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M14.4375 11.918C14.4375 11.7356 14.3651 11.5608 14.2361 11.4318C14.1072 11.3029 13.9323 11.2305 13.75 11.2305H8.25C8.06766 11.2305 7.8928 11.3029 7.76386 11.4318C7.63493 11.5608 7.5625 11.7356 7.5625 11.918C7.5625 12.1003 7.63493 12.2752 7.76386 12.4041C7.8928 12.533 8.06766 12.6055 8.25 12.6055H13.75C13.9323 12.6055 14.1072 12.533 14.2361 12.4041C14.3651 12.2752 14.4375 12.1003 14.4375 11.918ZM14.4375 15.5846C14.4375 15.4023 14.3651 15.2274 14.2361 15.0985C14.1072 14.9696 13.9323 14.8971 13.75 14.8971H8.25C8.06766 14.8971 7.8928 14.9696 7.76386 15.0985C7.63493 15.2274 7.5625 15.4023 7.5625 15.5846C7.5625 15.767 7.63493 15.9418 7.76386 16.0708C7.8928 16.1997 8.06766 16.2721 8.25 16.2721H13.75C13.9323 16.2721 14.1072 16.1997 14.2361 16.0708C14.3651 15.9418 14.4375 15.767 14.4375 15.5846Z" fill="#2563EB" />
+                                                    <path fillRule="evenodd" clipRule="evenodd" d="M6.41634 2.0625C5.74777 2.0625 5.10659 2.32809 4.63384 2.80084C4.16109 3.27358 3.89551 3.91477 3.89551 4.58333V17.4167C3.89551 18.0852 4.16109 18.7264 4.63384 19.1992C5.10659 19.6719 5.74777 19.9375 6.41634 19.9375H15.583C16.2516 19.9375 16.8928 19.6719 17.3655 19.1992C17.8383 18.7264 18.1038 18.0852 18.1038 17.4167V7.304C18.1038 6.95475 17.9902 6.61558 17.7793 6.33692L15.0312 2.69958C14.8816 2.50169 14.6883 2.34117 14.4662 2.23062C14.2442 2.12008 13.9995 2.06253 13.7515 2.0625H6.41634ZM5.27051 4.58333C5.27051 3.95083 5.78384 3.4375 6.41634 3.4375H13.0622V7.46808C13.0622 7.84758 13.3702 8.15558 13.7497 8.15558H16.7288V17.4167C16.7288 18.0492 16.2155 18.5625 15.583 18.5625H6.41634C5.78384 18.5625 5.27051 18.0492 5.27051 17.4167V4.58333Z" fill="#2563EB" />
+                                                </svg>
+                                                <span>Warranty Document <i className="fa-solid fa-arrow-up-right-from-square ms-1 ct_fs_11"></i></span>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    ) : null;
+                                })()}
                             </div>
                         </section>
 
