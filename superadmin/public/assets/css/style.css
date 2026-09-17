@@ -220,19 +220,25 @@
 
  .ct_login_card {
      background-color: #fff;
-     padding: 45px 65px;
+     padding: 20px 40px;
      border-radius: 50px;
+     box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.09);
  }
 
+ .ct_login_card input {
+     height: 48px !important;
+ }
+
+
  img.ct_login_logo {
-     max-width: 205px;
+     max-width: 160px;
      margin-inline: auto;
      display: block;
-     margin-bottom: 30px;
+     margin-bottom: 20px;
  }
 
  .ct_login_card h4 {
-     font-size: 38px;
+     font-size: 28px;
      color: var(--heading_clr);
      font-weight: 600;
      margin-bottom: 6px;
@@ -247,7 +253,7 @@
  }
 
  .ct_login_card form {
-     margin-top: 32px;
+     margin-top: 20px;
  }
 
  .ct_login_card .form-group label {
@@ -264,7 +270,7 @@
      font-size: 18px;
      font-weight: 600;
      outline: none;
-     border: 1px solid transparent;
+     border: 1px solid #3D8B37 !important;
      display: flex;
      align-items: center;
      justify-content: center;
@@ -513,7 +519,7 @@
 
  .ct_view_all {
      font-size: 16px;
-     font-weight: 400;
+     font-weight: 600;
      color: var(--green);
      text-decoration: none;
      transition: .3s;
@@ -645,9 +651,9 @@
  }
 
  .ct_action_link {
-     color: #2563EB;
+     color: #333;
      font-size: 14px;
-     font-weight: 500;
+     font-weight: 600;
      text-decoration: none;
      transition: .3s;
  }
@@ -655,6 +661,39 @@
  .ct_action_link:hover {
      color: var(--green);
      text-decoration: underline;
+ }
+
+ .ct_action_icon_btn {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     width: 32px;
+     height: 32px;
+     border-radius: 8px;
+     color: #64748B;
+     background-color: #F8FAFC;
+     border: 1px solid #E2E8F0;
+     text-decoration: none;
+     font-size: 14px;
+     transition: all 0.2s ease;
+ }
+
+ .ct_action_icon_btn.ct_view_btn:hover {
+     color: #2563EB;
+     background-color: rgba(37, 99, 235, 0.08);
+     border-color: rgba(37, 99, 235, 0.3);
+ }
+
+ .ct_action_icon_btn.ct_edit_btn:hover {
+     color: var(--green, #3D8B37);
+     background-color: rgba(61, 139, 55, 0.08);
+     border-color: rgba(61, 139, 55, 0.3);
+ }
+
+ .ct_action_icon_btn.ct_delete_btn:hover {
+     color: #EF4444;
+     background-color: rgba(239, 68, 68, 0.08);
+     border-color: rgba(239, 68, 68, 0.3);
  }
 
  .ct_fs_12 {
@@ -1667,4 +1706,50 @@
      100% {
          transform: rotate(calc(var(--_s, 1)*-180deg))
      }
+ }
+
+ /* Toggle Switch Design */
+ .toggle-switch {
+     position: relative;
+     display: inline-block;
+     width: 45px;
+     height: 25px;
+     cursor: pointer;
+     margin-bottom: 0;
+     vertical-align: middle;
+ }
+
+ .toggle-switch input[type="checkbox"] {
+     display: none;
+ }
+
+ .toggle-switch-background {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-color: #ddd;
+     border-radius: 20px;
+     transition: background-color 0.3s ease-in-out;
+ }
+
+ .toggle-switch-handle {
+     position: absolute;
+     top: 3px;
+     left: 3px;
+     width: 19px;
+     height: 19px;
+     background-color: #fff;
+     border-radius: 50%;
+     transition: transform 0.3s ease-in-out;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+ }
+
+ .toggle-switch input[type="checkbox"]:checked+.toggle-switch-background {
+     background-color: #05c46b;
+ }
+
+ .toggle-switch input[type="checkbox"]:checked+.toggle-switch-background .toggle-switch-handle {
+     transform: translateX(20px);
  }

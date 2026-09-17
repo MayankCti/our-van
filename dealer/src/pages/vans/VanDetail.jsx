@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import { pageRoutes } from '../../routes/PageRoutes';
 import SubHeader from '../../components/SubHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { getVanDetails } from '../../redux/slices/vanSlice';
 
 const formatDate = (dateStr) => {
@@ -110,15 +111,10 @@ const VanDetail = () => {
         backUrl={pageRoutes.vans}
       >
         {van?.status && (
-          <span
-            className={`badge px-3 py-2 rounded-pill ct_fs_14 ct_fw_600 ${
-              van.status === 'ACTIVE' || van.status === 'PUBLISHED'
-                ? 'bg-success text-white'
-                : 'bg-warning text-dark'
-            }`}
-          >
-            {van.status}
-          </span>
+          <StatusBadge
+            status={van.status}
+            style={{ fontSize: '13px', padding: '6px 14px', borderRadius: '20px' }}
+          />
         )}
       </SubHeader>
 

@@ -1,17 +1,20 @@
 import React from 'react';
 
-const StepProgressBar = ({ steps, currentStep, onSelectStep }) => {
+const StepProgressBar = ({ steps, currentStep, maxStep, onSelectStep }) => {
+    const highestStep = maxStep || currentStep;
+
     return (
         <ul className="ct_stepper" id="ct_form_progressbar">
             {steps.map((s) => {
-                const isCompleted = s.id < currentStep;
+                const isPastStep = s.id < highestStep;
                 const isActive = s.id === currentStep;
+                const isClickable = s.id <= highestStep;
 
-                const liClass = isCompleted ? 'completed' : isActive ? 'active' : '';
-                const circleClass = isCompleted
-                    ? 'ct_step_circle completed'
-                    : isActive
+                const liClass = isActive ? 'active' : isPastStep ? 'completed' : '';
+                const circleClass = isActive
                     ? 'ct_step_circle active'
+                    : isPastStep
+                    ? 'ct_step_circle completed'
                     : 'ct_step_circle';
 
                 return (
@@ -19,15 +22,15 @@ const StepProgressBar = ({ steps, currentStep, onSelectStep }) => {
                         key={s.id}
                         className={liClass}
                         onClick={() => {
-                            // Allow clicking back to completed steps or current step
-                            if (onSelectStep && (isCompleted || isActive)) {
+                            // Allow clicking any step up to the highest reached step
+                            if (onSelectStep && isClickable) {
                                 onSelectStep(s.id);
                             }
                         }}
-                        style={{ cursor: isCompleted || isActive ? 'pointer' : 'default' }}
+                        style={{ cursor: isClickable ? 'pointer' : 'default' }}
                     >
                         <span className={circleClass}>
-                            {isCompleted ? <i className="fa-solid fa-check"></i> : s.id}
+                            {isPastStep && !isActive ? <i className="fa-solid fa-check"></i> : s.id}
                         </span>
                         <div>
                             <span className="label">{s.name}</span>

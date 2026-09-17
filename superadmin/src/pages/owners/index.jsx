@@ -7,7 +7,7 @@ import { pageRoutes } from "../../routes/PageRoutes";
 import PaginationDropdown from "../../components/table/PaginationDropdown";
 import Pagination from "../../components/table/Pagination";
 import useDebounce from "../../hooks/useDebounce";
-import { getOwnersList } from "../../redux/slices/ownerSlice";
+import { getOwnersList, toggleBlockOwner } from "../../redux/slices/ownerSlice";
 
 const Owners = () => {
   const dispatch = useDispatch();
@@ -18,11 +18,60 @@ const Owners = () => {
     isOwnersLoading = false,
   } = useSelector((state) => state.ownerReducer || {});
 
+  const [togglingId, setTogglingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
 
   const [listPerPages, setListPerPages] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const isOwnerActive = (item) => {
+    if (!item) return false;
+    if (typeof item.status === "string") {
+      const s = item.status.trim().toUpperCase();
+      if (s === "BLOCKED" || s === "INACTIVE" || s === "BLOCK" || s === "0" || s === "FALSE") {
+        return false;
+      }
+      if (s === "ACTIVE" || s === "COMPLETED" || s === "1" || s === "TRUE") {
+        return true;
+      }
+    }
+    if (item.status === 0 || item.status === false) return false;
+    if (item.is_active === false || item.is_active === 0 || item.is_active === "0") return false;
+    if (item.isActive === false || item.isActive === 0 || item.isActive === "0") return false;
+    if (item.is_blocked === true || item.is_blocked === 1 || item.is_blocked === "1") return false;
+    if (item.isBlocked === true || item.isBlocked === 1 || item.isBlocked === "1") return false;
+    return true;
+  };
+
+  const handleToggleBlockOwner = (owner) => {
+    const ownerId = owner?.ownerId || owner?.id || owner?.owner_id;
+    if (!ownerId) return;
+
+    setTogglingId(ownerId);
+    dispatch(
+      toggleBlockOwner({
+        ownerId,
+        callback: (res) => {
+          setTogglingId(null);
+          if (
+            res?.success ||
+            res?.status ||
+            res?.statusCode === 200 ||
+            res?.statusCode === 201
+          ) {
+            dispatch(
+              getOwnersList({
+                page: currentPage,
+                limit: listPerPages,
+                search: debouncedSearch,
+              })
+            );
+          }
+        },
+      })
+    );
+  };
 
   // Reset to first page when debounced search term changes
   useEffect(() => {
@@ -132,6 +181,7 @@ const Owners = () => {
                     <th>Assigned Van</th>
                     <th>Dealer</th>
                     <th>Date Registered</th>
+                    <th>Status</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -139,7 +189,7 @@ const Owners = () => {
                 <tbody>
                   {isOwnersLoading ? (
                     <tr>
-                      <td colSpan="7" className="text-center py-5">
+                      <td colSpan="8" className="text-center py-5">
                         <div className="d-flex align-items-center justify-content-center gap-2">
                           <div
                             className="spinner-border spinner-border-sm text-success"
@@ -151,7 +201,7 @@ const Owners = () => {
                     </tr>
                   ) : ownersList?.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
+                      <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
                         No owners found.
                       </td>
                     </tr>
@@ -164,22 +214,25 @@ const Owners = () => {
 
                       const assignedVansList = Array.isArray(owner.assignedVans)
                         ? owner.assignedVans
+                        : Array.isArray(owner.assigned_vans)
+                        ? owner.assigned_vans
+                        : Array.isArray(owner.vans)
+                        ? owner.vans
                         : [];
 
-                      const vanNames =
-                        assignedVansList.length > 0
-                          ? assignedVansList
-                              .map((v) => v.vanName || v.name)
-                              .filter(Boolean)
-                              .join(", ") || "-"
-                          : "-";
+                      const vansCount =
+                        owner.assignedVansCount ??
+                        owner.vansCount ??
+                        owner.assigned_vans_count ??
+                        owner.vans_count ??
+                        assignedVansList.length;
 
                       const dealers =
                         assignedVansList.length > 0
                           ? [
                               ...new Set(
                                 assignedVansList
-                                  .map((v) => v.dealer || v.dealerName)
+                                  .map((v) => v.dealer || v.dealerName || v.dealer_name)
                                   .filter(Boolean)
                               ),
                             ].join(", ") || "-"
@@ -188,21 +241,44 @@ const Owners = () => {
                       const dateRegistered = formatDate(
                         owner.dateRegistered || owner.date_registered || owner.createdAt
                       );
+                      const isActive = isOwnerActive(owner);
+                      const isCurrentlyToggling = togglingId === ownerId;
 
                       return (
                         <tr key={ownerId || index}>
                           <td>{serialNumber}</td>
                           <td className="ct_fw_600">{ownerName}</td>
                           <td>{email}</td>
-                          <td>{vanNames}</td>
+                          <td>{vansCount}</td>
                           <td>{dealers}</td>
                           <td>{dateRegistered}</td>
                           <td>
+                            <label
+                              className="toggle-switch"
+                              style={{
+                                opacity: isCurrentlyToggling ? 0.6 : 1,
+                                cursor: isCurrentlyToggling ? "not-allowed" : "pointer",
+                              }}
+                              title={isActive ? "Active (Click to Block)" : "Inactive / Blocked (Click to Activate)"}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isActive}
+                                disabled={isCurrentlyToggling}
+                                onChange={() => handleToggleBlockOwner(owner)}
+                              />
+                              <div className="toggle-switch-background">
+                                <div className="toggle-switch-handle"></div>
+                              </div>
+                            </label>
+                          </td>
+                          <td>
                             <Link
                               to={`${pageRoutes.owner_detail}?id=${ownerId}`}
-                              className="ct_action_link"
+                              className="ct_action_icon_btn ct_view_btn"
+                              title="View Details"
                             >
-                              View Details
+                              <i className="fa-regular fa-eye"></i>
                             </Link>
                           </td>
                         </tr>

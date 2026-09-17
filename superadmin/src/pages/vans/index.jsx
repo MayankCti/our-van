@@ -181,9 +181,10 @@ const Vans = () => {
                                        <td>
                                           <Link
                                              to={`${pageRoutes.van_detail}?id=${vanId}`}
-                                             className="ct_action_link"
+                                             className="ct_action_icon_btn ct_view_btn"
+                                             title="View Details"
                                           >
-                                             View Details
+                                             <i className="fa-regular fa-eye"></i>
                                           </Link>
                                        </td>
                                     </tr>

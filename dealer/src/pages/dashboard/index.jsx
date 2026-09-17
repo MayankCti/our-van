@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import { pageRoutes } from '../../routes/PageRoutes';
 import SubHeader from '../../components/SubHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { getDealerDashboard } from '../../redux/slices/vanSlice';
 
 const Dashboard = () => {
@@ -35,6 +36,12 @@ const Dashboard = () => {
     } catch {
       return dateString || "N/A";
     }
+  };
+
+  const getProgressNum = (van) => {
+    const val = van?.progress || 0;
+    const num = typeof val === "number" ? val : parseFloat(String(val).replace("%", ""));
+    return !isNaN(num) ? Math.min(Math.max(Math.round(num), 0), 100) : 0;
   };
 
   return (
@@ -103,7 +110,7 @@ const Dashboard = () => {
           <div className="ct_table_wrapper mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="ct_section_title mb-0">Recent Vans</h5>
-              <Link to={pageRoutes.vans} className="ct_view_all">View All</Link>
+              <Link to={pageRoutes.vans} className="ct_view_all">View All <i class="fa-solid fa-arrow-right ms-1"></i></Link>
             </div>
             <div className="table-responsive ct_custom_table">
               <table className="table align-middle mb-0">
@@ -113,13 +120,16 @@ const Dashboard = () => {
                     <th>Owner Name</th>
                     <th>Van Name</th>
                     <th>Registration Number</th>
-                    <th>Date Purchased</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Created On</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isDashboardLoading && dashboardData == null ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-4">
+                      <td colSpan="8" className="text-center py-4">
                         <div className="d-flex align-items-center justify-content-center gap-2">
                           <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                           <span className="text-muted ct_fs_14">Loading dashboard data...</span>
@@ -128,20 +138,65 @@ const Dashboard = () => {
                     </tr>
                   ) : recentVans.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-4 text-muted ct_fs_14">
+                      <td colSpan="8" className="text-center py-4 text-muted ct_fs_14">
                         No recent vans found.
                       </td>
                     </tr>
                   ) : (
-                    recentVans.map((van, index) => (
-                      <tr key={van.vanId || index}>
-                        <td>{index + 1}</td>
-                        <td>{van.ownerName || "N/A"}</td>
-                        <td>{van.vanName || "N/A"}</td>
-                        <td>{van.registrationNumber || "N/A"}</td>
-                        <td>{formatDate(van.datePurchased)}</td>
-                      </tr>
-                    ))
+                    recentVans.map((van, index) => {
+                      const progressNum = getProgressNum(van);
+                      const vanId = van.vanId || van.id || van.van_id;
+
+                      return (
+                        <tr key={vanId || index}>
+                          <td>{index + 1}</td>
+                          <td>{van.ownerName || "N/A"}</td>
+                          <td className="ct_fw_600">{van.vanName || "N/A"}</td>
+                          <td>{van.registrationNumber || "N/A"}</td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2" style={{ minWidth: "110px", maxWidth: "150px" }}>
+                              <div
+                                className="progress flex-grow-1"
+                                style={{
+                                  height: "6px",
+                                  backgroundColor: "#E2E8F0",
+                                  borderRadius: "10px",
+                                }}
+                              >
+                                <div
+                                  className="progress-bar"
+                                  role="progressbar"
+                                  style={{
+                                    width: `${progressNum}%`,
+                                    backgroundColor: progressNum >= 100 ? "#05c46b" : "#3D8B37",
+                                    borderRadius: "10px",
+                                  }}
+                                  aria-valuenow={progressNum}
+                                  aria-valuemin="0"
+                                  aria-valuemax="100"
+                                ></div>
+                              </div>
+                              <span className="ct_fs_12 ct_fw_600 text-nowrap">{progressNum}%</span>
+                            </div>
+                          </td>
+                          <td><StatusBadge status={van.status} /></td>
+                          <td>{formatDate(van.datePurchased || van.created_at || van.createdAt)}</td>
+                          <td>
+                            {vanId ? (
+                              <Link
+                                to={`${pageRoutes.van_detail}?van_id=${vanId}`}
+                                className="ct_action_icon_btn ct_view_btn"
+                                title="View Details"
+                              >
+                                <i className="fa-regular fa-eye"></i>
+                              </Link>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

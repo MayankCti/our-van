@@ -8,6 +8,7 @@ import {
   getDealersList,
   getDealerDetails,
   toggleBlockDealer,
+  createDealer,
 } from "../actions/dealerAction";
 
 export {
@@ -18,6 +19,7 @@ export {
   resetDealerDetails,
   resetDealerState,
   toggleBlockDealer,
+  createDealer,
 };
 export default dealerReducer;
 

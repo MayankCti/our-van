@@ -3,6 +3,7 @@ import {
   getDealersList,
   getDealerDetails,
   toggleBlockDealer,
+  createDealer,
 } from "../actions/dealerAction";
 
 const initialState = {
@@ -18,6 +19,10 @@ const initialState = {
   },
   isDealersLoading: false,
   dealersError: null,
+
+  // Create Dealer
+  isCreateDealerLoading: false,
+  createDealerError: null,
 
   // Dealer Details
   dealerDetails: null,
@@ -123,6 +128,20 @@ const dealerSlice = createSlice({
     builder.addCase(toggleBlockDealer.rejected, (state, action) => {
       state.isToggleBlockLoading = false;
       state.toggleBlockError = action.payload || action.error?.message;
+    });
+
+    // createDealer
+    builder.addCase(createDealer.pending, (state) => {
+      state.isCreateDealerLoading = true;
+      state.createDealerError = null;
+    });
+    builder.addCase(createDealer.fulfilled, (state) => {
+      state.isCreateDealerLoading = false;
+      state.createDealerError = null;
+    });
+    builder.addCase(createDealer.rejected, (state, action) => {
+      state.isCreateDealerLoading = false;
+      state.createDealerError = action.payload || action.error?.message;
     });
   },
 });

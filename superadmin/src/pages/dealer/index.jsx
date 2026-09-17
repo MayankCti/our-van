@@ -1,28 +1,125 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
 import Header from "../../layout/Header";
 import Layout from "../../layout/Layout";
 import { pageRoutes } from "../../routes/PageRoutes";
 import PaginationDropdown from "../../components/table/PaginationDropdown";
 import Pagination from "../../components/table/Pagination";
+import ErrorMessage from "../../components/form/ErrorMessage";
 import useDebounce from "../../hooks/useDebounce";
-import { getDealersList } from "../../redux/slices/dealerSlice";
+import {
+  getDealersList,
+  createDealer,
+  toggleBlockDealer,
+} from "../../redux/slices/dealerSlice";
+import { dealerSchema } from "../../utils/Schema";
 
 const Dealer = () => {
   const dispatch = useDispatch();
+  const addModalCloseRef = useRef(null);
 
   const {
     dealersList = [],
     dealersMeta = {},
     isDealersLoading = false,
+    isCreateDealerLoading = false,
   } = useSelector((state) => state.dealerReducer || {});
 
+  const [togglingId, setTogglingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
 
   const [listPerPages, setListPerPages] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const isDealerActive = (item) => {
+    if (!item) return false;
+    if (typeof item.status === "string") {
+      const s = item.status.trim().toUpperCase();
+      if (s === "BLOCKED" || s === "INACTIVE" || s === "BLOCK" || s === "0" || s === "FALSE") {
+        return false;
+      }
+      if (s === "ACTIVE" || s === "COMPLETED" || s === "1" || s === "TRUE") {
+        return true;
+      }
+    }
+    if (item.status === 0 || item.status === false) return false;
+    if (item.is_active === false || item.is_active === 0 || item.is_active === "0") return false;
+    if (item.isActive === false || item.isActive === 0 || item.isActive === "0") return false;
+    if (item.is_blocked === true || item.is_blocked === 1 || item.is_blocked === "1") return false;
+    if (item.isBlocked === true || item.isBlocked === 1 || item.isBlocked === "1") return false;
+    return true;
+  };
+
+  const handleToggleBlockDealer = (dealer) => {
+    const dealerId = dealer?.dealerId || dealer?.id || dealer?.dealer_id;
+    if (!dealerId) return;
+
+    setTogglingId(dealerId);
+    dispatch(
+      toggleBlockDealer({
+        dealerId,
+        callback: (res) => {
+          setTogglingId(null);
+          if (
+            res?.success ||
+            res?.status ||
+            res?.statusCode === 200 ||
+            res?.statusCode === 201
+          ) {
+            dispatch(
+              getDealersList({
+                page: currentPage,
+                limit: listPerPages,
+                search: debouncedSearch,
+              })
+            );
+          }
+        },
+      })
+    );
+  };
+
+  // Formik for Add Dealer Modal
+  const formik = useFormik({
+    initialValues: {
+      dealer_name: "",
+      email: "",
+      phone_number: "",
+    },
+    validationSchema: dealerSchema,
+    onSubmit: (values, { resetForm }) => {
+      dispatch(
+        createDealer({
+          payload: {
+            dealer_name: values.dealer_name.trim(),
+            email: values.email.trim().toLowerCase(),
+            phone_number: values.phone_number.trim(),
+          },
+          callback: (res) => {
+            if (
+              res?.success ||
+              res?.status ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201
+            ) {
+              addModalCloseRef.current?.click();
+              resetForm();
+              dispatch(
+                getDealersList({
+                  page: currentPage,
+                  limit: listPerPages,
+                  search: debouncedSearch,
+                })
+              );
+            }
+          },
+        })
+      );
+    },
+  });
 
   // Reset to first page when debounced search term changes
   useEffect(() => {
@@ -78,6 +175,7 @@ const Dealer = () => {
             data-bs-target="#addDealerModal"
             data-bs-toggle="modal"
             style={{ cursor: "pointer" }}
+            onClick={() => formik.resetForm()}
           >
             Add Dealer
           </a>
@@ -136,6 +234,7 @@ const Dealer = () => {
                     <th>Email</th>
                     <th>Owners</th>
                     <th>Date Registered</th>
+                    <th>Status</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -143,7 +242,7 @@ const Dealer = () => {
                 <tbody>
                   {isDealersLoading ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-5">
+                      <td colSpan="7" className="text-center py-5">
                         <div className="d-flex align-items-center justify-content-center gap-2">
                           <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                           <span className="text-muted ct_fs_14">Loading dealers...</span>
@@ -152,7 +251,7 @@ const Dealer = () => {
                     </tr>
                   ) : dealersList?.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-5 text-muted ct_fs_14">
+                      <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
                         No dealers found.
                       </td>
                     </tr>
@@ -171,6 +270,8 @@ const Dealer = () => {
                       const dateRegistered = formatDate(
                         dealer.dateRegistered || dealer.date_registered || dealer.createdAt || dealer.created_at
                       );
+                      const isActive = isDealerActive(dealer);
+                      const isCurrentlyToggling = togglingId === dealerId;
 
                       return (
                         <tr key={dealerId || index}>
@@ -180,11 +281,32 @@ const Dealer = () => {
                           <td>{ownersCount}</td>
                           <td>{dateRegistered}</td>
                           <td>
+                            <label
+                              className="toggle-switch"
+                              style={{
+                                opacity: isCurrentlyToggling ? 0.6 : 1,
+                                cursor: isCurrentlyToggling ? "not-allowed" : "pointer",
+                              }}
+                              title={isActive ? "Active (Click to Block)" : "Inactive / Blocked (Click to Activate)"}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isActive}
+                                disabled={isCurrentlyToggling}
+                                onChange={() => handleToggleBlockDealer(dealer)}
+                              />
+                              <div className="toggle-switch-background">
+                                <div className="toggle-switch-handle"></div>
+                              </div>
+                            </label>
+                          </td>
+                          <td>
                             <Link
                               to={`${pageRoutes.dealerDetail}?id=${dealerId}`}
-                              className="ct_action_link"
+                              className="ct_action_icon_btn ct_view_btn"
+                              title="View Details"
                             >
-                              View Details
+                              <i className="fa-regular fa-eye"></i>
                             </Link>
                           </td>
                         </tr>
@@ -232,37 +354,122 @@ const Dealer = () => {
                 <p className="ct_fs_14 ct_para_clr mb-0">Register a new dealer to the platform.</p>
               </div>
 
-              <button type="button" className="btn-close shadow-none" data-bs-dismiss="modal"></button>
+              <button
+                type="button"
+                ref={addModalCloseRef}
+                className="btn-close shadow-none"
+                data-bs-dismiss="modal"
+                onClick={() => formik.resetForm()}
+              ></button>
             </div>
 
-            <div className="modal-body pt-4">
-              <div className="mb-3">
-                <label className="ct_label">Dealer Name</label>
-                <input type="text" className="form-control ct_input" placeholder="Enter dealer name" />
-              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="ct_label">Email</label>
-                  <input type="email" className="form-control ct_input" placeholder="Enter email" />
+            <form onSubmit={formik.handleSubmit}>
+              <div className="modal-body pt-4">
+                <div className="mb-3">
+                  <label className="ct_label">
+                    Dealer Name <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="dealer_name"
+                    className={`form-control ct_input ${
+                      formik.errors.dealer_name && formik.touched.dealer_name
+                        ? "is-invalid"
+                        : ""
+                    }`}
+                    placeholder="Enter dealer name"
+                    value={formik.values.dealer_name}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                  <ErrorMessage
+                    errors={formik.errors}
+                    touched={formik.touched}
+                    fieldName="dealer_name"
+                  />
                 </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="ct_label">Phone No.</label>
-                  <input type="text" className="form-control ct_input" placeholder="Enter phone no." />
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="ct_label">
+                      Email <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      className={`form-control ct_input ${
+                        formik.errors.email && formik.touched.email
+                          ? "is-invalid"
+                          : ""
+                      }`}
+                      placeholder="Enter email"
+                      value={formik.values.email}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                    <ErrorMessage
+                      errors={formik.errors}
+                      touched={formik.touched}
+                      fieldName="email"
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="ct_label">
+                      Phone No. <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="phone_number"
+                      className={`form-control ct_input ${
+                        formik.errors.phone_number && formik.touched.phone_number
+                          ? "is-invalid"
+                          : ""
+                      }`}
+                      placeholder="Enter phone no."
+                      value={formik.values.phone_number}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                    <ErrorMessage
+                      errors={formik.errors}
+                      touched={formik.touched}
+                      fieldName="phone_number"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="modal-footer border-0 pt-4 ct_flex_col_575">
-              <button className="btn ct_btn_gray ct_btn_h_50 ct_w_100_575" data-bs-dismiss="modal">
-                Cancel
-              </button>
+              <div className="modal-footer border-0 pt-4 ct_flex_col_575">
+                <button
+                  type="button"
+                  className="btn ct_btn_gray ct_btn_h_50 ct_w_100_575"
+                  data-bs-dismiss="modal"
+                  onClick={() => formik.resetForm()}
+                  disabled={isCreateDealerLoading}
+                >
+                  Cancel
+                </button>
 
-              <button className="btn ct_green_btn ct_btn_h_50 ct_w_100_575" data-bs-dismiss="modal">
-                Add Dealer
-              </button>
-            </div>
+                <button
+                  type="submit"
+                  className="btn ct_green_btn ct_btn_h_50 ct_w_100_575"
+                  disabled={isCreateDealerLoading}
+                >
+                  {isCreateDealerLoading ? (
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <div
+                        className="spinner-border spinner-border-sm text-white"
+                        role="status"
+                      ></div>
+                      <span>Adding Dealer...</span>
+                    </div>
+                  ) : (
+                    "Add Dealer"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

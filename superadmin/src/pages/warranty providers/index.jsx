@@ -61,8 +61,8 @@ const WarrantyProviders = () => {
                               <td>support@safeguard.com</td>
                               <td>13 Jul 2026</td>
                               <td>
-                                 <Link to={pageRoutes.warranty_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes.warranty_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -73,8 +73,8 @@ const WarrantyProviders = () => {
                               <td>contact@autosecure.com</td>
                               <td>17 Sep 2026</td>
                               <td>
-                                 <Link to={pageRoutes.warranty_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes.warranty_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -85,8 +85,8 @@ const WarrantyProviders = () => {
                               <td>info@premiumcover.com</td>
                               <td>26 Jan 2026</td>
                               <td>
-                                 <Link to={pageRoutes.warranty_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes.warranty_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -97,8 +97,8 @@ const WarrantyProviders = () => {
                               <td>support@allianz.com</td>
                               <td>5 Oct 2026</td>
                               <td>
-                                 <Link to={pageRoutes.warranty_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes.warranty_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -109,8 +109,8 @@ const WarrantyProviders = () => {
                               <td>hello@vanprotect.com</td>
                               <td>11 Apr 2026</td>
                               <td>
-                                 <Link to={pageRoutes.warranty_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes.warranty_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>

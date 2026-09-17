@@ -6,14 +6,11 @@ import { step2OwnerDetailsSchema } from '../../../utils/Schema';
 import ErrorMessage from '../../../components/form/ErrorMessage';
 import { createVanStep2 } from '../../../redux/slices/vanSlice';
 
-const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId }) => {
+const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, isStep2Completed = false }) => {
     const dispatch = useDispatch();
     const { isLoading, vanId: reduxVanId, ownerId: reduxOwnerId, vanStep2Data } = useSelector((state) => state?.vanReducer || {});
     const activeVanId = vanId || reduxVanId;
     const activeOwnerId = ownerId || reduxOwnerId || initialData?.owner_id || vanStep2Data?.owner_id;
-
-    // Check if Step 2 was already completed (owner has been created/saved)
-    const isStep2Completed = Boolean(activeOwnerId || initialData?.email || vanStep2Data?.email);
 
     const initialValues = useMemo(() => ({
         owner_name:
@@ -150,6 +147,8 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId })
                                         value={values.phone_number}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
+                                        disabled={isStep2Completed}
+                                        style={isStep2Completed ? { cursor: 'not-allowed', backgroundColor: '#e2e8f0', opacity: 0.85 } : undefined}
                                     />
                                     <ErrorMessage errors={errors} touched={touched} fieldName="phone_number" />
                                 </div>

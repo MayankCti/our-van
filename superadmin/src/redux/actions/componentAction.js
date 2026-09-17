@@ -1,14 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_REQUEST } from "../../services/api";
 
-// Get Dealers List (paginated with search)
-export const getDealersList = createAsyncThunk(
-  "dealer/getDealersList",
+// Get Components List (paginated with search)
+export const getComponentsList = createAsyncThunk(
+  "component/getComponentsList",
   async (props = {}, { rejectWithValue }) => {
     const { page = 1, limit = 10, search = "", callback } = props;
     try {
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_GET_DEALERS_API || "/admin/dealers/get",
+        url: import.meta.env.VITE_GET_COMPONENTS_API || "/admin/vans/component/get",
         method: "GET",
         params: {
           page,
@@ -32,73 +32,14 @@ export const getDealersList = createAsyncThunk(
   }
 );
 
-// Get Dealer Details by ID (with assigned vans & pagination)
-export const getDealerDetails = createAsyncThunk(
-  "dealer/getDealerDetails",
-  async (props = {}, { rejectWithValue }) => {
-    const { dealerId, page = 1, limit = 10, search = "", callback } = props;
-    try {
-      const baseUrl = import.meta.env.VITE_GET_DEALER_DETAILS_API || "/admin/dealers";
-      const response = await API_REQUEST({
-        url: `${baseUrl}/${dealerId}`,
-        method: "GET",
-        params: {
-          page,
-          limit,
-          search: search || undefined,
-        },
-        isErrorToast: true,
-        isSuccessToast: false,
-      });
-
-      if (typeof callback === "function") {
-        callback(response);
-      }
-      return response;
-    } catch (error) {
-      if (typeof callback === "function") {
-        callback(null, error);
-      }
-      return rejectWithValue(error?.data || error);
-    }
-  }
-);
-
-// Toggle Block / Unblock Dealer
-export const toggleBlockDealer = createAsyncThunk(
-  "dealer/toggleBlockDealer",
-  async (props = {}, { rejectWithValue }) => {
-    const { dealerId, callback } = props;
-    try {
-      const baseUrl = import.meta.env.VITE_BLOCK_DEALER_API || "/admin/dealers/block";
-      const response = await API_REQUEST({
-        url: `${baseUrl}/${dealerId}`,
-        method: "PATCH",
-        isErrorToast: true,
-        isSuccessToast: true,
-      });
-
-      if (typeof callback === "function") {
-        callback(response);
-      }
-      return response;
-    } catch (error) {
-      if (typeof callback === "function") {
-        callback(null, error);
-      }
-      return rejectWithValue(error?.data || error);
-    }
-  }
-);
-
-// Create / Add Dealer
-export const createDealer = createAsyncThunk(
-  "dealer/createDealer",
+// Create Component
+export const createComponent = createAsyncThunk(
+  "component/createComponent",
   async (props = {}, { rejectWithValue }) => {
     const { payload, callback } = props;
     try {
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_CREATE_DEALER_API || "/dealers/create",
+        url: import.meta.env.VITE_CREATE_COMPONENT_API || "/admin/vans/component/create",
         method: "POST",
         data: payload,
         isErrorToast: true,
@@ -118,4 +59,57 @@ export const createDealer = createAsyncThunk(
   }
 );
 
+// Edit Component
+export const editComponent = createAsyncThunk(
+  "component/editComponent",
+  async (props = {}, { rejectWithValue }) => {
+    const { payload, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_EDIT_COMPONENT_API || "/admin/vans/component/edit",
+        method: "PATCH",
+        data: payload,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
 
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Delete Component
+export const deleteComponent = createAsyncThunk(
+  "component/deleteComponent",
+  async (props = {}, { rejectWithValue }) => {
+    const { id, payload, callback } = props;
+    try {
+      const baseUrl = import.meta.env.VITE_DELETE_COMPONENT_API || "/admin/vans/component/delete";
+      const response = await API_REQUEST({
+        url: `${baseUrl}/${id}`,
+        method: "DELETE",
+        data: payload,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);

@@ -143,13 +143,6 @@ const Owners = () => {
                   </tr>
                 ) : (
                   ownersList.map((owner, index) => {
-                    const assignedVansText =
-                      owner.assignedVans && owner.assignedVans.length > 0
-                        ? owner.assignedVans
-                            .map((v) => v.vanName)
-                            .filter(Boolean)
-                            .join(", ")
-                        : "N/A";
 
                     return (
                       <tr key={owner.ownerId || index}>
@@ -157,7 +150,7 @@ const Owners = () => {
                         <td>{owner.ownerName || "N/A"}</td>
                         <td>{owner.email || "N/A"}</td>
                         <td>{owner.mobileNumber || "N/A"}</td>
-                        <td>{assignedVansText}</td>
+                        <td>{owner?.assignedVans?.length || 0}</td>
                         <td>{formatDate(owner.joinedOn)}</td>
                       </tr>
                     );

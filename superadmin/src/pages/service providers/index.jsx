@@ -63,8 +63,8 @@ const ServiceProviders = () => {
                               <td>+61 412 345 678</td>
                               <td>13 Jul 2026</td>
                               <td>
-                                 <Link to={pageRoutes?.service_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes?.service_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -76,8 +76,8 @@ const ServiceProviders = () => {
                               <td>+61 423 567 891</td>
                               <td>17 Sep 2026</td>
                               <td>
-                                 <Link to={pageRoutes?.service_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes?.service_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -89,8 +89,8 @@ const ServiceProviders = () => {
                               <td>+61 434 678 912</td>
                               <td>26 Jan 2026</td>
                               <td>
-                                 <Link to={pageRoutes?.service_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes?.service_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -102,8 +102,8 @@ const ServiceProviders = () => {
                               <td>+61 445 789 123</td>
                               <td>5 Oct 2026</td>
                               <td>
-                                 <Link to={pageRoutes?.service_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes?.service_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>
@@ -115,8 +115,8 @@ const ServiceProviders = () => {
                               <td>+61 456 891 234</td>
                               <td>11 Apr 2026</td>
                               <td>
-                                 <Link to={pageRoutes?.service_provider_detail} class="ct_action_link">
-                                    View Details
+                                 <Link to={pageRoutes?.service_provider_detail} className="ct_action_icon_btn ct_view_btn" title="View Details">
+                                    <i className="fa-regular fa-eye"></i>
                                  </Link>
                               </td>
                            </tr>

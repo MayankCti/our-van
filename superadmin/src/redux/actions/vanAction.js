@@ -31,3 +31,31 @@ export const getVansList = createAsyncThunk(
     }
   }
 );
+
+// Get Van Details by ID
+export const getVanDetails = createAsyncThunk(
+  "van/getVanDetails",
+  async (props = {}, { rejectWithValue }) => {
+    const { vanId, callback } = props;
+    try {
+      const baseUrl = import.meta.env.VITE_GET_VAN_DETAILS_API || "/admin/vans/get";
+      const response = await API_REQUEST({
+        url: `${baseUrl}/${vanId}`,
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+

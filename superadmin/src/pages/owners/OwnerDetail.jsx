@@ -165,11 +165,10 @@ const OwnerDetail = () => {
                         </h4>
                         {ownerDetails?.status && (
                           <span
-                            className={`badge text-uppercase ${
-                              ownerDetails.status.toUpperCase() === "ACTIVE"
+                            className={`badge text-uppercase ${ownerDetails.status.toUpperCase() === "ACTIVE"
                                 ? "bg-success-subtle text-success border border-success-subtle"
                                 : "bg-danger-subtle text-danger border border-danger-subtle"
-                            }`}
+                              }`}
                             style={{
                               fontSize: "11px",
                               fontWeight: "600",
@@ -363,9 +362,10 @@ const OwnerDetail = () => {
                             <td>
                               <Link
                                 to={`${pageRoutes.van_detail}?id=${vanId}`}
-                                className="ct_action_link"
+                                className="ct_action_icon_btn ct_view_btn"
+                                title="View Details"
                               >
-                                View Details
+                                <i className="fa-regular fa-eye"></i>
                               </Link>
                             </td>
                           </tr>
@@ -445,22 +445,21 @@ const OwnerDetail = () => {
 
                 <button
                   type="button"
-                  className={`btn ct_btn_h_50 w-100 ${
-                    isBlocked ? "ct_green_btn" : ""
-                  }`}
+                  className={`btn ct_btn_h_50 w-100 ${isBlocked ? "ct_green_btn" : ""
+                    }`}
                   style={
                     !isBlocked
                       ? {
-                          backgroundColor: "#EF4444",
-                          borderColor: "#EF4444",
-                          color: "#fff",
-                          borderRadius: "10px",
-                          fontWeight: "600",
-                        }
+                        backgroundColor: "#EF4444",
+                        borderColor: "#EF4444",
+                        color: "#fff",
+                        borderRadius: "10px",
+                        fontWeight: "600",
+                      }
                       : {
-                          borderRadius: "10px",
-                          fontWeight: "600",
-                        }
+                        borderRadius: "10px",
+                        fontWeight: "600",
+                      }
                   }
                   onClick={handleToggleBlock}
                   disabled={isToggleBlockOwnerLoading}

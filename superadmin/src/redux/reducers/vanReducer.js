@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getVansList } from "../actions/vanAction";
+import { getVansList, getVanDetails } from "../actions/vanAction";
 
 const initialState = {
   // Vans List
@@ -14,6 +14,11 @@ const initialState = {
   },
   isVansLoading: false,
   vansError: null,
+
+  // Van Details
+  vanDetails: null,
+  isVanDetailsLoading: false,
+  vanDetailsError: null,
 };
 
 const vanSlice = createSlice({
@@ -22,6 +27,14 @@ const vanSlice = createSlice({
   reducers: {
     setVansList: (state, action) => {
       state.vansList = action.payload;
+    },
+    setVanDetails: (state, action) => {
+      state.vanDetails = action.payload;
+    },
+    resetVanDetails: (state) => {
+      state.vanDetails = null;
+      state.isVanDetailsLoading = false;
+      state.vanDetailsError = null;
     },
     resetVanState: () => initialState,
   },
@@ -49,8 +62,24 @@ const vanSlice = createSlice({
       state.isVansLoading = false;
       state.vansError = action.payload || action.error?.message;
     });
+
+    // getVanDetails
+    builder.addCase(getVanDetails.pending, (state) => {
+      state.isVanDetailsLoading = true;
+      state.vanDetailsError = null;
+    });
+    builder.addCase(getVanDetails.fulfilled, (state, action) => {
+      state.isVanDetailsLoading = false;
+      state.vanDetails = action?.payload?.data || action?.payload || null;
+      state.vanDetailsError = null;
+    });
+    builder.addCase(getVanDetails.rejected, (state, action) => {
+      state.isVanDetailsLoading = false;
+      state.vanDetailsError = action.payload || action.error?.message;
+    });
   },
 });
 
-export const { setVansList, resetVanState } = vanSlice.actions;
+export const { setVansList, setVanDetails, resetVanDetails, resetVanState } = vanSlice.actions;
 export default vanSlice.reducer;
+

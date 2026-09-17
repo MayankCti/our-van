@@ -33,16 +33,18 @@ const VehicleInformation = () => {
     const queryVanId = searchParams.get('van_id') || searchParams.get('id');
 
     const savedDraft = pipGetVanDraft() || {};
+    const isSameVanDraft = queryVanId ? String(savedDraft?.vanId) === String(queryVanId) : !queryVanId;
 
-    const [step, setStep] = useState(savedDraft?.step || 1);
-    const [vanId, setVanId] = useState(queryVanId || savedDraft?.vanId || null);
-    const [ownerId, setOwnerId] = useState(savedDraft?.ownerId || null);
-    const [step1Data, setStep1Data] = useState(savedDraft?.step1Data || {});
-    const [step2Data, setStep2Data] = useState(savedDraft?.step2Data || {});
-    const [step3Data, setStep3Data] = useState(savedDraft?.step3Data || {});
-    const [step4Data, setStep4Data] = useState(savedDraft?.step4Data || {});
-    const [step5Data, setStep5Data] = useState(savedDraft?.step5Data || {});
-    const [step6Data, setStep6Data] = useState(savedDraft?.step6Data || {});
+    const [step, setStep] = useState(isSameVanDraft && savedDraft?.step ? savedDraft.step : 1);
+    const [maxStep, setMaxStep] = useState(isSameVanDraft && (savedDraft?.maxStep || savedDraft?.step) ? (savedDraft.maxStep || savedDraft.step) : 1);
+    const [vanId, setVanId] = useState(queryVanId || (isSameVanDraft ? savedDraft?.vanId : null) || null);
+    const [ownerId, setOwnerId] = useState((isSameVanDraft ? savedDraft?.ownerId : null) || null);
+    const [step1Data, setStep1Data] = useState((isSameVanDraft ? savedDraft?.step1Data : {}) || {});
+    const [step2Data, setStep2Data] = useState((isSameVanDraft ? savedDraft?.step2Data : {}) || {});
+    const [step3Data, setStep3Data] = useState((isSameVanDraft ? savedDraft?.step3Data : {}) || {});
+    const [step4Data, setStep4Data] = useState((isSameVanDraft ? savedDraft?.step4Data : {}) || {});
+    const [step5Data, setStep5Data] = useState((isSameVanDraft ? savedDraft?.step5Data : {}) || {});
+    const [step6Data, setStep6Data] = useState((isSameVanDraft ? savedDraft?.step6Data : {}) || {});
 
     // Fetch progress if vanId exists (either from URL query or session draft)
     useEffect(() => {
@@ -53,7 +55,7 @@ const VehicleInformation = () => {
                     vanId: targetId,
                     callback: (response) => {
                         const data = response?.data || response;
-                        if (data && (data?.van_id || data?.vehicle_details)) {
+                        if (data && (data?.van_id || data?.vehicle_details || data?.current_step)) {
                             const vd = data?.vehicle_details;
                             const owner = data?.owner;
                             const images = data?.vehicle_images;
@@ -157,9 +159,11 @@ const VehicleInformation = () => {
                                 }));
                             }
 
-                            // If this was opened fresh with a query param and no draft step, set step to API's current_step
-                            if (!savedDraft?.step && data?.current_step) {
-                                setStep(data.current_step);
+                            // Set step to API's current_step if returned
+                            const targetStep = Number(data?.current_step || data?.currentStep || data?.step);
+                            if (targetStep && !isNaN(targetStep) && targetStep >= 1 && targetStep <= 7) {
+                                setStep(targetStep);
+                                setMaxStep((prev) => Math.max(prev, targetStep));
                             }
                         }
                     },
@@ -172,6 +176,7 @@ const VehicleInformation = () => {
     useEffect(() => {
         pipSaveVanDraft({
             step,
+            maxStep,
             vanId,
             ownerId,
             step1Data,
@@ -181,10 +186,16 @@ const VehicleInformation = () => {
             step5Data,
             step6Data,
         });
-    }, [step, vanId, ownerId, step1Data, step2Data, step3Data, step4Data, step5Data, step6Data]);
+    }, [step, maxStep, vanId, ownerId, step1Data, step2Data, step3Data, step4Data, step5Data, step6Data]);
 
-    const nextStep = () => setStep(prev => Math.min(prev + 1, 7));
-    const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+    const nextStep = () => {
+        setStep((prev) => {
+            const next = Math.min(prev + 1, 7);
+            setMaxStep((m) => Math.max(m, next));
+            return next;
+        });
+    };
+    const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
     const handleStep1Success = (createdData, formValues) => {
         const id = createdData?.van_id || createdData?.id || createdData?.van?.id || createdData?.data?.van_id || createdData?.data?.id;
@@ -303,6 +314,7 @@ const VehicleInformation = () => {
         pipClearVanDraft();
         dispatch(resetVanState());
         setStep(1);
+        setMaxStep(1);
         setVanId(null);
         setOwnerId(null);
         setStep1Data({});
@@ -314,11 +326,17 @@ const VehicleInformation = () => {
         navigate(pageRoutes.vehicle_information, { replace: true });
     };
 
+    const isEditMode = Boolean(queryVanId);
+
     return (
         <Layout>
             <SubHeader
-                title="Add New Van"
-                subtitle="Create a digital ownership profile for a new customer."
+                title={isEditMode ? "Edit Vehicle Information" : "Add New Van"}
+                subtitle={
+                    isEditMode
+                        ? "Update vehicle details, owner information, warranty, documents, and maintenance records."
+                        : "Create a digital ownership profile for a new customer."
+                }
                 backUrl={pageRoutes.vans}
             />
             <div className="ct_px_30 mt-4 pb-4">
@@ -327,6 +345,7 @@ const VehicleInformation = () => {
                     <StepProgressBar
                         steps={steps}
                         currentStep={step}
+                        maxStep={maxStep}
                         onSelectStep={handleStepSelect}
                     />
 
@@ -345,6 +364,7 @@ const VehicleInformation = () => {
                             initialData={step2Data}
                             vanId={vanId}
                             ownerId={ownerId}
+                            isStep2Completed={maxStep > 2}
                         />
                     )}
                     {step === 3 && (

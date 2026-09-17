@@ -115,14 +115,16 @@ export default function Header() {
                         <div className="modal-body" style={{ paddingInline: "40px" }}>
                             <div className="ct_delete_post_modal">
                                 <figure>
-                                    <figcaption className="mt-0">
-                                        <h4 className="ct_fs_28 ct_fw_500 mb-2">You are about to LogOut</h4>
-                                        <p className="mb-0 ct_fs_18 ct_fw_400 ct_para_clr mb-1">Are you sure you want to logout?</p>
+                                    <i class="fa-solid fa-arrow-right-from-bracket d-block text-danger text-center mx-auto mb-4 fs-3"></i>
+                                    <figcaption className="mt-0 text-center">
+                                        <h4 className="ct_fs_28 ct_fw_600 mb-2">You are about to LogOut</h4>
+                                        <p className="mb-0 ct_fs_18 ct_fw_400 ct_para_clr mb-1">Are you sure you want to logout?
+                                        </p>
                                     </figcaption>
                                 </figure>
                                 <div className="d-flex justify-content-center border-0 gap-3 ct_modal_footer ct_flex_col_575 mb-5 mt-4">
                                     <button type="button" className="action-button-previous w-100 text-center" data-bs-dismiss="modal">
-                                        No, This was a Mistake
+                                        No
                                     </button>
                                     <button
                                         type="button"
@@ -130,7 +132,7 @@ export default function Header() {
                                         className="ct_form_next action-button w-100 text-center border-0"
                                         data-bs-dismiss="modal"
                                     >
-                                        Yes, Log Me Out
+                                        Yes, Log Out
                                     </button>
                                 </div>
                             </div>

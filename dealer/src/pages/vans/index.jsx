@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import { pageRoutes } from '../../routes/PageRoutes';
 import SubHeader from '../../components/SubHeader';
+import StatusBadge from '../../components/StatusBadge';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
 import useDebounce from '../../hooks/useDebounce';
@@ -55,6 +56,12 @@ const Vans = () => {
     } catch {
       return dateString || "N/A";
     }
+  };
+
+  const getProgressNum = (van) => {
+    const val = van?.progress || 0;
+    const num = typeof val === "number" ? val : parseFloat(String(val).replace("%", ""));
+    return !isNaN(num) ? Math.min(Math.max(Math.round(num), 0), 100) : 0;
   };
 
   const totalPages =
@@ -126,7 +133,9 @@ const Vans = () => {
                   <th>Owner Name</th>
                   <th>Van Name</th>
                   <th>Registration Number</th>
-                  <th>Date Purchased</th>
+                  <th>Progress</th>
+                  <th>Status</th>
+                  <th>Created On</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -134,7 +143,7 @@ const Vans = () => {
               <tbody>
                 {isVansLoading ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-5">
+                    <td colSpan="8" className="text-center py-5">
                       <div className="d-flex align-items-center justify-content-center gap-2">
                         <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                         <span className="text-muted ct_fs_14">Loading vans...</span>
@@ -143,28 +152,70 @@ const Vans = () => {
                   </tr>
                 ) : vansList?.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-5 text-muted ct_fs_14">
+                    <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
                       No vans found.
                     </td>
                   </tr>
                 ) : (
-                  vansList.map((van, index) => (
-                    <tr key={van.vanId || index}>
-                      <td>{currentPage * listPerPages + index + 1}</td>
-                      <td>{van.ownerName || "N/A"}</td>
-                      <td>{van.vanName || "N/A"}</td>
-                      <td>{van.registrationNumber || "N/A"}</td>
-                      <td>{formatDate(van.datePurchased)}</td>
-                      <td>
-                        <Link
-                          to={`${pageRoutes.van_detail}?van_id=${van.vanId}`}
-                          className="ct_action_link"
-                        >
-                          View Details
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                  vansList.map((van, index) => {
+                    const progressNum = getProgressNum(van);
+                    const vanId = van.vanId || van.id || van.van_id;
+
+                    return (
+                      <tr key={vanId || index}>
+                        <td>{currentPage * listPerPages + index + 1}</td>
+                        <td>{van.ownerName || "N/A"}</td>
+                        <td className="ct_fw_600">{van.vanName || "N/A"}</td>
+                        <td>{van.registrationNumber || "N/A"}</td>
+                        <td>
+                          <div className="d-flex align-items-center gap-2" style={{ minWidth: "110px", maxWidth: "150px" }}>
+                            <div
+                              className="progress flex-grow-1"
+                              style={{
+                                height: "6px",
+                                backgroundColor: "#E2E8F0",
+                                borderRadius: "10px",
+                              }}
+                            >
+                              <div
+                                className="progress-bar"
+                                role="progressbar"
+                                style={{
+                                  width: `${progressNum}%`,
+                                  backgroundColor: progressNum >= 100 ? "#05c46b" : "#3D8B37",
+                                  borderRadius: "10px",
+                                }}
+                                aria-valuenow={progressNum}
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                              ></div>
+                            </div>
+                            <span className="ct_fs_12 ct_fw_600 text-nowrap">{progressNum}%</span>
+                          </div>
+                        </td>
+                        <td><StatusBadge status={van.status} /></td>
+                        <td>{formatDate(van.datePurchased || van.created_at || van.createdAt)}</td>
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            <Link
+                              to={`${pageRoutes.van_detail}?van_id=${vanId}`}
+                              className="ct_action_icon_btn ct_view_btn"
+                              title="View Details"
+                            >
+                              <i className="fa-regular fa-eye"></i>
+                            </Link>
+                            <Link
+                              to={`${pageRoutes.vehicle_information}?van_id=${vanId}`}
+                              className="ct_action_icon_btn ct_edit_btn"
+                              title="Edit Van"
+                            >
+                              <i className="fa-regular fa-pen-to-square"></i>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

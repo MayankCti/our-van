@@ -75,3 +75,25 @@ export const editProfileSchema = Yup.object().shape({
     full_name: Yup.string().trim().required("Please enter full name"),
 });
 
+// Component Schema
+export const componentSchema = Yup.object().shape({
+    name: Yup.string().trim().required("Please enter component name"),
+});
+
+// Dealer Schema
+export const dealerSchema = Yup.object().shape({
+    dealer_name: Yup.string()
+        .trim()
+        .required("Please enter dealer name")
+        .min(2, "Dealer name must be at least 2 characters")
+        .max(100, "Dealer name cannot exceed 100 characters"),
+    email: emailValidation,
+    phone_number: Yup.string()
+        .trim()
+        .required("Please enter phone number")
+        .min(7, "Phone number must be at least 7 digits")
+        .max(20, "Phone number cannot exceed 20 characters")
+        .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid phone number"),
+});
+
+
