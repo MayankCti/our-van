@@ -164,6 +164,10 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                             className="img-fluid ct_vehicle_img rounded-3"
                                             alt={van?.van_name || 'Vehicle'}
                                             style={{ cursor: 'pointer', objectFit: 'cover', width: '100%', height: '140px' }}
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = '/assets/img/vehicle_1.jpg';
+                                            }}
                                             onClick={() => window.open(mainImageUrl, '_blank')}
                                             title="Click to view full image in new tab"
                                         />
@@ -233,6 +237,10 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                                         src={imgUrl}
                                                         alt={`Van Photo ${idx + 1}`}
                                                         style={{ cursor: 'pointer' }}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = '/assets/img/vehicle_mini_1.jpg';
+                                                        }}
                                                         onClick={() => imgUrl && window.open(imgUrl, '_blank')}
                                                         title="Click to view full image in new tab"
                                                     />
@@ -342,6 +350,10 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
                                                                         src={fileUrl}
                                                                         alt="comp file"
                                                                         style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer' }}
+                                                                        onError={(e) => {
+                                                                            e.target.onerror = null;
+                                                                            e.target.src = '/assets/img/vehicle_mini_1.jpg';
+                                                                        }}
                                                                         onClick={() => window.open(fileUrl, '_blank')}
                                                                         title="Click to view file"
                                                                     />

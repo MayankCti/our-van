@@ -54,10 +54,10 @@ const Dashboard = () => {
         <div className="container-fluid">
           <div className="row">
             {/* Card 1 - Total Vans */}
-            <div className="col-xl-3 col-lg-6 mb-4 mb-xl-0 col-md-6 col-sm-6">
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
-                  <img src="assets/img/dash_icon_1.png" alt="" />
+                  <img src="/assets/img/dash_icon_1.png" alt="" />
                 </div>
                 <div className="ct_card_content">
                   <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalVans ?? 0}</h3>
@@ -67,10 +67,10 @@ const Dashboard = () => {
             </div>
 
             {/* Card 2 - Total Owners */}
-            <div className="col-xl-3 col-lg-6 mb-4 mb-xl-0 col-md-6 col-sm-6">
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
-                  <img src="assets/img/dash_icon_2.png" alt="" />
+                  <img src="/assets/img/dash_icon_2.png" alt="" />
                 </div>
                 <div className="ct_card_content">
                   <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalOwners ?? 0}</h3>
@@ -80,10 +80,10 @@ const Dashboard = () => {
             </div>
 
             {/* Card 3 - Warranty Alerts */}
-            <div className="col-xl-3 col-lg-6 mb-4 mb-xl-0 col-md-6 col-sm-6">
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
-                  <img src="assets/img/dash_icon_3.png" alt="" />
+                  <img src="/assets/img/dash_icon_3.png" alt="" />
                 </div>
                 <div className="ct_card_content">
                   <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.warrantyAlerts ?? 0}</h3>
@@ -93,14 +93,48 @@ const Dashboard = () => {
             </div>
 
             {/* Card 4 - Upcoming Services */}
-            <div className="col-xl-3 col-lg-6 mb-4 mb-xl-0 col-md-6 col-sm-6">
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
-                  <img src="assets/img/dash_icon_4.png" alt="" />
+                  <img src="/assets/img/dash_icon_4.png" alt="" />
                 </div>
                 <div className="ct_card_content">
                   <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.upcomingServices ?? 0}</h3>
                   <p>Upcoming Services</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 5 - Total Suppliers */}
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 3H16V16H1V3Z" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16 8H20L23 11V16H16V8Z" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M8 18.5C8 19.8807 6.88071 21 5.5 21C4.11929 21 3 19.8807 3 18.5C3 17.1193 4.11929 16 5.5 16C6.88071 16 8 17.1193 8 18.5Z" stroke="#3D8B37" strokeWidth="1.5" />
+                    <path d="M21 18.5C21 19.8807 19.8807 21 18.5 21C17.1193 21 16 19.8807 16 18.5C16 17.1193 17.1193 16 18.5 16C19.8807 16 21 17.1193 21 18.5Z" stroke="#3D8B37" strokeWidth="1.5" />
+                  </svg>
+                </div>
+                <div className="ct_card_content">
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalSuppliers ?? 0}</h3>
+                  <p>Total Suppliers</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 6 - Total Technicians */}
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M18 18L19.5 19.5" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="ct_card_content">
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalTechnicians ?? 0}</h3>
+                  <p>Total Technicians</p>
                 </div>
               </div>
             </div>
@@ -110,7 +144,7 @@ const Dashboard = () => {
           <div className="ct_table_wrapper mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="ct_section_title mb-0">Recent Vans</h5>
-              <Link to={pageRoutes.vans} className="ct_view_all">View All <i class="fa-solid fa-arrow-right ms-1"></i></Link>
+              <Link to={pageRoutes.vans} className="ct_view_all">View All <i className="fa-solid fa-arrow-right ms-1"></i></Link>
             </div>
             <div className="table-responsive ct_custom_table">
               <table className="table align-middle mb-0">
@@ -183,13 +217,24 @@ const Dashboard = () => {
                           <td>{formatDate(van.datePurchased || van.created_at || van.createdAt)}</td>
                           <td>
                             {vanId ? (
-                              <Link
-                                to={`${pageRoutes.van_detail}?van_id=${vanId}`}
-                                className="ct_action_icon_btn ct_view_btn"
-                                title="View Details"
-                              >
-                                <i className="fa-regular fa-eye"></i>
-                              </Link>
+                              <div className="d-flex align-items-center gap-2">
+                                <Link
+                                  to={`${pageRoutes.van_detail}?van_id=${vanId}`}
+                                  className="ct_action_icon_btn ct_view_btn"
+                                  title="View Details"
+                                >
+                                  <i className="fa-regular fa-eye"></i>
+                                </Link>
+
+                                <Link
+                                  to={`${pageRoutes.vehicle_information}?van_id=${vanId}`}
+                                  className="ct_action_icon_btn ct_edit_btn"
+                                  title="Edit Van"
+                                >
+                                  <i className="fa-regular fa-pen-to-square"></i>
+                                </Link>
+                              </div>
+
                             ) : (
                               "-"
                             )}

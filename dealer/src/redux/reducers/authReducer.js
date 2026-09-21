@@ -16,6 +16,7 @@ import {
 
 const initialState = {
   isLoading: false,
+  isLoadingProfile: false,
   token: pipGetAccessToken() || null,
   user: pipGetProfile() || null,
   isAuth: !!pipGetAccessToken(),
@@ -32,6 +33,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuth = false;
       state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = null;
     },
     setUser: (state, action) => {
@@ -94,7 +96,7 @@ const authSlice = createSlice({
 
     // auth-get-profile
     builder.addCase(authGetProfile.pending, (state) => {
-      state.isLoading = true;
+      state.isLoadingProfile = true;
       state.error = null;
     });
     builder.addCase(authGetProfile.fulfilled, (state, action) => {
@@ -103,11 +105,11 @@ const authSlice = createSlice({
         state.user = user;
         pipSaveProfile(user);
       }
-      state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = null;
     });
     builder.addCase(authGetProfile.rejected, (state, action) => {
-      state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = action.payload || action.error?.message;
     });
 

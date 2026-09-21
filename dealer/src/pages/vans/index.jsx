@@ -8,7 +8,8 @@ import StatusBadge from '../../components/StatusBadge';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
 import useDebounce from '../../hooks/useDebounce';
-import { getVansList } from '../../redux/slices/vanSlice';
+import { getVansList, resetVanState } from '../../redux/slices/vanSlice';
+import { pipClearVanDraft } from '../../utils/pip';
 
 const Vans = () => {
   const dispatch = useDispatch();
@@ -75,7 +76,14 @@ const Vans = () => {
         title="Vans"
         subtitle="Manage all customer vans, vehicle information, warranties, and maintenance records."
       >
-        <Link to={pageRoutes.vehicle_information} className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575">
+        <Link
+          to={pageRoutes.vehicle_information}
+          onClick={() => {
+            pipClearVanDraft();
+            dispatch(resetVanState());
+          }}
+          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575"
+        >
           Add New Van
         </Link>
       </SubHeader>
@@ -103,7 +111,7 @@ const Vans = () => {
             <input
               type="text"
               className="form-control ct_input ct_input_ps_40 ct_fs_14"
-              placeholder="Search by VIN, Registration, Owner or Van Name"
+              placeholder="Search by Van Name, Owner Name, or Registration Number"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

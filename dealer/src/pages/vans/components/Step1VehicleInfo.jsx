@@ -9,84 +9,109 @@ import { createVanStep1 } from '../../../redux/slices/vanSlice';
 
 const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
     const dispatch = useDispatch();
-    const { isLoading, vanStep1Data, vanId: reduxVanId } = useSelector((state) => state?.vanReducer || {});
+    const { isLoading, vanStep1Data, vanProgressData, vanId: reduxVanId } = useSelector((state) => state?.vanReducer || {});
 
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
     const [deleteImageIds, setDeleteImageIds] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
 
-    const mergedData = { ...vanStep1Data, ...initialData };
+    const mergedData = { ...vanProgressData?.data, ...vanProgressData, ...vanStep1Data?.data, ...vanStep1Data, ...initialData };
     const activeVanId = vanId || reduxVanId || initialData?.van_id || mergedData?.van_id;
 
-    // Stable initial values mapped from API response and props
+    // Resolve existing images from all possible sources (initialData, vanProgressData, vanStep1Data)
+    const existingImages = useMemo(() => {
+        const pData = vanProgressData?.data || vanProgressData;
+        const sData = vanStep1Data?.data || vanStep1Data;
+        const iData = initialData?.data || initialData;
+
+        const candidates = [
+            iData?.vehicle_images,
+            iData?.images,
+            iData?.vehicle_details?.vehicle_images,
+            iData?.vehicle_details?.images,
+            pData?.vehicle_images,
+            pData?.images,
+            pData?.vehicle_details?.vehicle_images,
+            pData?.vehicle_details?.images,
+            sData?.vehicle_images,
+            sData?.images,
+            sData?.vehicle_details?.vehicle_images,
+            sData?.vehicle_details?.images,
+        ];
+
+        for (const c of candidates) {
+            if (Array.isArray(c) && c.length > 0) {
+                return c;
+            }
+        }
+        return [];
+    }, [initialData, vanProgressData, vanStep1Data]);
+
+    // Load and sync existing vehicle images into photoPreviews
+    React.useEffect(() => {
+        if (existingImages && Array.isArray(existingImages) && existingImages.length > 0) {
+            const mappedPreviews = existingImages
+                .filter((img) => {
+                    const imgId = typeof img === 'object' && img ? img.id : null;
+                    return !imgId || !deleteImageIds.includes(imgId);
+                })
+                .map((img, idx) => {
+                    if (typeof img === 'string') {
+                        return {
+                            id: `existing_${idx}`,
+                            url: img,
+                            name: `Vehicle image ${idx + 1}`,
+                            isExisting: true,
+                        };
+                    }
+                    return {
+                        id: img?.id || `existing_${idx}`,
+                        url: img?.image_url || img?.url || img?.file_url || img?.file || '',
+                        name: img?.file_name || img?.name || `Vehicle image ${img?.id || idx + 1}`,
+                        isExisting: true,
+                    };
+                })
+                .filter((p) => Boolean(p.url));
+
+            if (mappedPreviews.length > 0) {
+                setPhotoPreviews((prev) => {
+                    const newlySelected = prev.filter((p) => !p.isExisting);
+                    const newlySelectedUrls = new Set(newlySelected.map((p) => p.url));
+                    const serverPreviews = mappedPreviews.filter((p) => !newlySelectedUrls.has(p.url));
+                    return [...serverPreviews, ...newlySelected];
+                });
+            }
+        }
+    }, [existingImages, deleteImageIds]);
+
+    // Stable initial values mapped from API response, progress data, and props
     const initialValues = useMemo(() => {
-        const hasExistingImages = (initialData?.vehicle_images?.length > 0) || (vanStep1Data?.vehicle_images?.length > 0);
+        const vd = vanProgressData?.vehicle_details || vanProgressData?.data?.vehicle_details || {};
+        const pvd = vanProgressData?.van || vanProgressData?.data?.van || {};
+        const svd = vanStep1Data?.vehicle_details || vanStep1Data?.data?.vehicle_details || {};
+        const hasExistingImages = (existingImages && existingImages.length > 0) || (photoPreviews && photoPreviews.length > 0);
         return {
             van_id: activeVanId || '',
-            van_name: initialData?.van_name || vanStep1Data?.van_name || '',
-            vin: initialData?.vin || initialData?.vin_number || vanStep1Data?.vin || vanStep1Data?.vin_number || '',
-            make: initialData?.make || vanStep1Data?.make || '',
-            model: initialData?.model || vanStep1Data?.model || '',
-            manufacture_year: initialData?.manufacture_year || initialData?.year || vanStep1Data?.manufacture_year || vanStep1Data?.year || '',
-            registration_number: initialData?.registration_number || vanStep1Data?.registration_number || '',
-            engine: initialData?.engine || initialData?.engine_details || vanStep1Data?.engine || vanStep1Data?.engine_details || '',
-            chassis_number: initialData?.chassis_number || vanStep1Data?.chassis_number || '',
-            color: initialData?.color || initialData?.vehicle_colour || vanStep1Data?.color || vanStep1Data?.vehicle_colour || '',
+            van_name: initialData?.van_name || vanStep1Data?.van_name || vd?.van_name || pvd?.van_name || svd?.van_name || '',
+            vin: initialData?.vin || initialData?.vin_number || vanStep1Data?.vin || vanStep1Data?.vin_number || vd?.vin_number || vd?.vin || pvd?.vin_number || pvd?.vin || svd?.vin_number || svd?.vin || '',
+            make: initialData?.make || vanStep1Data?.make || vd?.make || pvd?.make || svd?.make || '',
+            model: initialData?.model || vanStep1Data?.model || vd?.model || pvd?.model || svd?.model || '',
+            manufacture_year: initialData?.manufacture_year || initialData?.year || vanStep1Data?.manufacture_year || vanStep1Data?.year || vd?.year || vd?.manufacture_year || pvd?.year || pvd?.manufacture_year || svd?.year || svd?.manufacture_year || '',
+            registration_number: initialData?.registration_number || vanStep1Data?.registration_number || vd?.registration_number || pvd?.registration_number || svd?.registration_number || '',
+            engine: initialData?.engine || initialData?.engine_details || vanStep1Data?.engine || vanStep1Data?.engine_details || vd?.engine_details || vd?.engine || pvd?.engine_details || pvd?.engine || svd?.engine_details || svd?.engine || '',
+            chassis_number: initialData?.chassis_number || vanStep1Data?.chassis_number || vd?.chassis_number || pvd?.chassis_number || svd?.chassis_number || '',
+            color: initialData?.color || initialData?.vehicle_colour || vanStep1Data?.color || vanStep1Data?.vehicle_colour || vd?.vehicle_colour || vd?.color || pvd?.vehicle_colour || pvd?.color || svd?.vehicle_colour || svd?.color || '',
             vehicle_photos: hasExistingImages ? ['existing_photo'] : [],
         };
     }, [
         activeVanId,
-        initialData?.van_id,
-        initialData?.van_name,
-        initialData?.vin,
-        initialData?.vin_number,
-        initialData?.make,
-        initialData?.model,
-        initialData?.manufacture_year,
-        initialData?.year,
-        initialData?.registration_number,
-        initialData?.engine,
-        initialData?.engine_details,
-        initialData?.chassis_number,
-        initialData?.color,
-        initialData?.vehicle_colour,
-        initialData?.vehicle_images,
-        vanStep1Data?.van_name,
-        vanStep1Data?.vin,
-        vanStep1Data?.vin_number,
-        vanStep1Data?.make,
-        vanStep1Data?.model,
-        vanStep1Data?.manufacture_year,
-        vanStep1Data?.year,
-        vanStep1Data?.registration_number,
-        vanStep1Data?.engine,
-        vanStep1Data?.engine_details,
-        vanStep1Data?.chassis_number,
-        vanStep1Data?.color,
-        vanStep1Data?.vehicle_colour,
-        vanStep1Data?.vehicle_images,
+        initialData,
+        vanStep1Data,
+        vanProgressData,
+        existingImages,
+        photoPreviews.length,
     ]);
-
-    // Load existing vehicle images from progress API
-    React.useEffect(() => {
-        const existingImages = initialData?.vehicle_images || vanStep1Data?.vehicle_images;
-        if (existingImages && Array.isArray(existingImages) && existingImages.length > 0) {
-            const mappedPreviews = existingImages
-                .filter((img) => !deleteImageIds.includes(img.id))
-                .map((img) => ({
-                    id: img.id,
-                    url: img.image_url,
-                    name: `Vehicle image ${img.id}`,
-                    isExisting: true,
-                }));
-            setPhotoPreviews((prev) => {
-                const existingUrls = new Set(prev.map((p) => p.url));
-                const newItems = mappedPreviews.filter((p) => !existingUrls.has(p.url));
-                return newItems.length > 0 ? [...prev, ...newItems] : prev;
-            });
-        }
-    }, [initialData?.vehicle_images, vanStep1Data?.vehicle_images]);
 
     const handleFiles = (files, setFieldValue, setFieldTouched, setFieldError) => {
         const fileList = Array.from(files);

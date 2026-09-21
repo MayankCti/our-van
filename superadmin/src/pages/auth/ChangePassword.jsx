@@ -33,8 +33,9 @@ const ChangePassword = () => {
       dispatch(
          authChangePassword({
             payload: {
-               oldPassword: values.current_password,
+               currentPassword: values.current_password,
                newPassword: values.new_password,
+               confirmPassword: values.confirm_password,
             },
             callback,
          })

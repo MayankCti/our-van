@@ -102,6 +102,15 @@ export const authGetProfile = createAsyncThunk(
       }
       return rejectWithValue(error?.data || error);
     }
+  },
+  {
+    condition: (props, { getState }) => {
+      const { authReducer } = getState();
+      if (authReducer?.isLoadingProfile) {
+        return false;
+      }
+      return true;
+    },
   }
 );
 

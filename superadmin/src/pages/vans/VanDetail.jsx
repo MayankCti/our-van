@@ -157,12 +157,14 @@ const VanDetail = () => {
               <p className="ct_para_clr ct_fs_14 mb-4">
                 Please select a van from the list to view details.
               </p>
-              <Link
-                to={pageRoutes.vans}
-                className="ct_green_btn ct_btn_h_42 text-decoration-none d-inline-flex align-items-center justify-content-center px-4"
-              >
-                Back to Vans
-              </Link>
+              <div className="d-flex justify-content-center">
+                <Link
+                  to={pageRoutes.vans}
+                  className="ct_green_btn ct_btn_h_42 text-decoration-none d-inline-flex align-items-center justify-content-center px-4"
+                >
+                  Back to Vans
+                </Link>
+              </div>
             </div>
           ) : vanDetailsError && !vanDetails ? (
             <div className="ct_profile_card text-center py-5">
@@ -173,13 +175,15 @@ const VanDetail = () => {
                   ? vanDetailsError
                   : "An error occurred while fetching van details."}
               </p>
-              <button
-                type="button"
-                className="ct_green_btn ct_btn_h_42 border-0 px-4"
-                onClick={() => dispatch(getVanDetails({ vanId }))}
-              >
-                Retry
-              </button>
+              <div className="d-flex justify-content-center">
+                <button
+                  type="button"
+                  className="ct_green_btn ct_btn_h_42 border-0 px-4 d-inline-flex align-items-center justify-content-center"
+                  onClick={() => dispatch(getVanDetails({ vanId }))}
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           ) : (
             <>

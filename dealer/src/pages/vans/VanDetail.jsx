@@ -131,22 +131,26 @@ const VanDetail = () => {
             <i className="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
             <h5 className="ct_head_clr ct_fs_18 ct_fw_600">No Van Selected</h5>
             <p className="ct_para_clr ct_fs_14 mb-4">Please select a van from the vans list to view its details.</p>
-            <Link to={pageRoutes.vans} className="ct_green_btn ct_btn_h_42 text-decoration-none d-inline-flex align-items-center justify-content-center px-4">
-              Back to Vans List
-            </Link>
+            <div className="d-flex justify-content-center">
+              <Link to={pageRoutes.vans} className="ct_green_btn ct_btn_h_42 text-decoration-none d-inline-flex align-items-center justify-content-center px-4">
+                Back to Vans List
+              </Link>
+            </div>
           </div>
         ) : vanDetailsError && !vanDetailsData ? (
           <div className="ct_profile_card text-center py-5">
             <i className="fa-solid fa-circle-xmark text-danger fs-1 mb-3"></i>
             <h5 className="ct_head_clr ct_fs_18 ct_fw_600">Failed to Load Van Details</h5>
             <p className="ct_para_clr ct_fs_14 mb-4">{typeof vanDetailsError === 'string' ? vanDetailsError : 'An error occurred while fetching van details.'}</p>
-            <button
-              type="button"
-              className="ct_green_btn ct_btn_h_42 border-0 px-4"
-              onClick={() => dispatch(getVanDetails({ vanId }))}
-            >
-              Retry
-            </button>
+            <div className="d-flex justify-content-center">
+              <button
+                type="button"
+                className="ct_green_btn ct_btn_h_42 border-0 px-4 d-inline-flex align-items-center justify-content-center"
+                onClick={() => dispatch(getVanDetails({ vanId }))}
+              >
+                Retry
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -173,6 +177,10 @@ const VanDetail = () => {
                       className="img-fluid ct_vehicle_img rounded-3"
                       alt={van?.van_name || 'Vehicle'}
                       style={{ cursor: 'pointer', objectFit: 'cover', width: '100%', height: '140px' }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/assets/img/vehicle_1.jpg';
+                      }}
                       onClick={() => window.open(mainImageUrl, '_blank')}
                       title="Click to view full image in new tab"
                     />
@@ -242,6 +250,10 @@ const VanDetail = () => {
                             src={imgUrl}
                             alt={`Van Photo ${idx + 1}`}
                             style={{ cursor: 'pointer' }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = '/assets/img/vehicle_mini_1.jpg';
+                            }}
                             onClick={() => imgUrl && window.open(imgUrl, '_blank')}
                             title="Click to view full image in new tab"
                           />
@@ -380,6 +392,10 @@ const VanDetail = () => {
                                         objectFit: 'cover',
                                         borderRadius: '4px',
                                         cursor: 'pointer',
+                                      }}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/assets/img/vehicle_mini_1.jpg';
                                       }}
                                       onClick={() => window.open(fileUrl, '_blank')}
                                       title="Click to view file"

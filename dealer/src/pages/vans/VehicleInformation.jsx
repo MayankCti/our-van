@@ -13,7 +13,7 @@ import Step5Documents from './components/Step5Documents';
 import Step6Maintenance from './components/Step6Maintenance';
 import Step7Review from './components/Step7Review';
 import SuccessModal from './components/SuccessModal';
-import { pipGetVanDraft, pipSaveVanDraft, pipClearVanDraft } from '../../utils/pip';
+import { pipClearVanDraft } from '../../utils/pip';
 import { getVanProgress, resetVanState } from '../../redux/slices/vanSlice';
 
 const steps = [
@@ -32,27 +32,39 @@ const VehicleInformation = () => {
     const [searchParams] = useSearchParams();
     const queryVanId = searchParams.get('van_id') || searchParams.get('id');
 
-    const savedDraft = pipGetVanDraft() || {};
-    const isSameVanDraft = queryVanId ? String(savedDraft?.vanId) === String(queryVanId) : !queryVanId;
+    const { vanProgressData, vanId: reduxVanId } = useSelector((state) => state.vanReducer || {});
 
-    const [step, setStep] = useState(isSameVanDraft && savedDraft?.step ? savedDraft.step : 1);
-    const [maxStep, setMaxStep] = useState(isSameVanDraft && (savedDraft?.maxStep || savedDraft?.step) ? (savedDraft.maxStep || savedDraft.step) : 1);
-    const [vanId, setVanId] = useState(queryVanId || (isSameVanDraft ? savedDraft?.vanId : null) || null);
-    const [ownerId, setOwnerId] = useState((isSameVanDraft ? savedDraft?.ownerId : null) || null);
-    const [step1Data, setStep1Data] = useState((isSameVanDraft ? savedDraft?.step1Data : {}) || {});
-    const [step2Data, setStep2Data] = useState((isSameVanDraft ? savedDraft?.step2Data : {}) || {});
-    const [step3Data, setStep3Data] = useState((isSameVanDraft ? savedDraft?.step3Data : {}) || {});
-    const [step4Data, setStep4Data] = useState((isSameVanDraft ? savedDraft?.step4Data : {}) || {});
-    const [step5Data, setStep5Data] = useState((isSameVanDraft ? savedDraft?.step5Data : {}) || {});
-    const [step6Data, setStep6Data] = useState((isSameVanDraft ? savedDraft?.step6Data : {}) || {});
+    const [step, setStep] = useState(1);
+    const [maxStep, setMaxStep] = useState(1);
+    const [vanId, setVanId] = useState(queryVanId || null);
+    const [ownerId, setOwnerId] = useState(null);
+    const [step1Data, setStep1Data] = useState({});
+    const [step2Data, setStep2Data] = useState({});
+    const [step3Data, setStep3Data] = useState({});
+    const [step4Data, setStep4Data] = useState({});
+    const [step5Data, setStep5Data] = useState({});
+    const [step6Data, setStep6Data] = useState({});
 
-    // Fetch progress if vanId exists (either from URL query or session draft)
+    // Reset when entering "Add New Van" mode (no queryVanId), or fetch progress when queryVanId exists (Edit mode)
     useEffect(() => {
-        const targetId = queryVanId || vanId;
-        if (targetId) {
+        if (!queryVanId) {
+            pipClearVanDraft();
+            dispatch(resetVanState());
+            setStep(1);
+            setMaxStep(1);
+            setVanId(null);
+            setOwnerId(null);
+            setStep1Data({});
+            setStep2Data({});
+            setStep3Data({});
+            setStep4Data({});
+            setStep5Data({});
+            setStep6Data({});
+        } else {
+            setVanId(queryVanId);
             dispatch(
                 getVanProgress({
-                    vanId: targetId,
+                    vanId: queryVanId,
                     callback: (response) => {
                         const data = response?.data || response;
                         if (data && (data?.van_id || data?.vehicle_details || data?.current_step)) {
@@ -67,32 +79,30 @@ const VehicleInformation = () => {
                             }
 
                             if (vd) {
-                                setStep1Data((prev) => ({
-                                    ...prev,
+                                setStep1Data({
                                     van_id: data?.van_id || vd?.van_id,
-                                    van_name: vd?.van_name || prev.van_name || '',
-                                    vin: vd?.vin_number || vd?.vin || prev.vin || '',
-                                    make: vd?.make || prev.make || '',
-                                    model: vd?.model || prev.model || '',
-                                    manufacture_year: vd?.year || vd?.manufacture_year || prev.manufacture_year || '',
-                                    registration_number: vd?.registration_number || prev.registration_number || '',
-                                    engine: vd?.engine_details || vd?.engine || prev.engine || '',
-                                    chassis_number: vd?.chassis_number || prev.chassis_number || '',
-                                    color: vd?.vehicle_colour || vd?.color || prev.color || '',
-                                    vehicle_images: images || prev.vehicle_images || [],
-                                }));
+                                    van_name: vd?.van_name || '',
+                                    vin: vd?.vin_number || vd?.vin || '',
+                                    make: vd?.make || '',
+                                    model: vd?.model || '',
+                                    manufacture_year: vd?.year || vd?.manufacture_year || '',
+                                    registration_number: vd?.registration_number || '',
+                                    engine: vd?.engine_details || vd?.engine || '',
+                                    chassis_number: vd?.chassis_number || '',
+                                    color: vd?.vehicle_colour || vd?.color || '',
+                                    vehicle_images: images || [],
+                                });
                             }
 
                             if (owner) {
                                 const oId = owner?.id || vd?.owner_id;
                                 setOwnerId(oId);
-                                setStep2Data((prev) => ({
-                                    ...prev,
+                                setStep2Data({
                                     owner_id: oId,
-                                    owner_name: owner?.full_name || prev.owner_name || '',
-                                    email: owner?.email || prev.email || '',
-                                    phone_number: owner?.mobile_number || prev.phone_number || '',
-                                }));
+                                    owner_name: owner?.full_name || '',
+                                    email: owner?.email || '',
+                                    phone_number: owner?.mobile_number || '',
+                                });
                             }
 
                             if (comps && Array.isArray(comps) && comps.length > 0) {
@@ -100,18 +110,17 @@ const VehicleInformation = () => {
                             }
 
                             if (warranty) {
-                                setStep4Data((prev) => ({
-                                    ...prev,
-                                    provider: warranty?.provider || warranty?.warranty_provider || prev.provider || '',
-                                    coverage_type: warranty?.coverage_type || prev.coverage_type || 'Mechanical',
-                                    start_date: warranty?.start_date || prev.start_date || '',
-                                    expiry_date: warranty?.expiry_date || prev.expiry_date || '',
-                                    claim_instructions: warranty?.claim_instructions || prev.claim_instructions || '',
-                                    claim_email: warranty?.claim_email || prev.claim_email || '',
-                                    claim_phone: warranty?.claim_phone || prev.claim_phone || '',
-                                    warranty_document_url: warranty?.warranty_document || warranty?.document_url || prev.warranty_document_url || null,
-                                    file_name: warranty?.file_name || prev.file_name || '',
-                                }));
+                                setStep4Data({
+                                    provider: warranty?.provider || warranty?.warranty_provider || '',
+                                    coverage_type: warranty?.coverage_type || 'Mechanical',
+                                    start_date: warranty?.start_date || '',
+                                    expiry_date: warranty?.expiry_date || '',
+                                    claim_instructions: warranty?.claim_instructions || '',
+                                    claim_email: warranty?.claim_email || '',
+                                    claim_phone: warranty?.claim_phone || '',
+                                    warranty_document_url: warranty?.warranty_document || warranty?.document_url || null,
+                                    file_name: warranty?.file_name || '',
+                                });
                             }
 
                             const docs = data?.documents || data?.van_documents || data?.vehicle_documents || data?.step_5;
@@ -124,39 +133,36 @@ const VehicleInformation = () => {
                                             docMap[type] = doc.file_url;
                                         }
                                     });
-                                    setStep5Data((prev) => ({
-                                        ...prev,
-                                        service_book: docMap.service_book || prev.service_book || null,
-                                        user_manual: docMap.user_manual || prev.user_manual || null,
-                                        registration_certificate: docMap.registration_certificate || prev.registration_certificate || null,
-                                        insurance_certificate: docMap.insurance_certificate || prev.insurance_certificate || null,
-                                        purchase_invoice: docMap.purchase_invoice || prev.purchase_invoice || null,
-                                        compliance_certificate: docMap.compliance_certificate || prev.compliance_certificate || null,
-                                    }));
+                                    setStep5Data({
+                                        service_book: docMap.service_book || null,
+                                        user_manual: docMap.user_manual || null,
+                                        registration_certificate: docMap.registration_certificate || null,
+                                        insurance_certificate: docMap.insurance_certificate || null,
+                                        purchase_invoice: docMap.purchase_invoice || null,
+                                        compliance_certificate: docMap.compliance_certificate || null,
+                                    });
                                 } else {
-                                    setStep5Data((prev) => ({
-                                        ...prev,
-                                        service_book: docs?.service_book || docs?.service_book_url || prev.service_book || null,
-                                        user_manual: docs?.user_manual || docs?.user_manual_url || prev.user_manual || null,
-                                        registration_certificate: docs?.registration_certificate || docs?.registration_certificate_url || prev.registration_certificate || null,
-                                        insurance_certificate: docs?.insurance_certificate || docs?.insurance_certificate_url || prev.insurance_certificate || null,
-                                        purchase_invoice: docs?.purchase_invoice || docs?.purchase_invoice_url || prev.purchase_invoice || null,
-                                        compliance_certificate: docs?.compliance_certificate || docs?.compliance_certificate_url || prev.compliance_certificate || null,
-                                    }));
+                                    setStep5Data({
+                                        service_book: docs?.service_book || docs?.service_book_url || null,
+                                        user_manual: docs?.user_manual || docs?.user_manual_url || null,
+                                        registration_certificate: docs?.registration_certificate || docs?.registration_certificate_url || null,
+                                        insurance_certificate: docs?.insurance_certificate || docs?.insurance_certificate_url || null,
+                                        purchase_invoice: docs?.purchase_invoice || docs?.purchase_invoice_url || null,
+                                        compliance_certificate: docs?.compliance_certificate || docs?.compliance_certificate_url || null,
+                                    });
                                 }
                             }
 
                             const maintenance = data?.maintenance || data?.van_maintenance || data?.step_6 || data?.maintenance_setup;
                             if (maintenance) {
-                                setStep6Data((prev) => ({
-                                    ...prev,
-                                    first_service_date: maintenance?.first_service_date ? maintenance.first_service_date.split('T')[0] : prev.first_service_date || '',
-                                    assigned_service_centre: maintenance?.assigned_service_centre || prev.assigned_service_centre || '',
-                                    notes: maintenance?.notes || prev.notes || '',
-                                    reminder_before_days: maintenance?.reminder_before_days ?? prev.reminder_before_days ?? 7,
-                                    notify_push: maintenance?.notify_push ?? prev.notify_push ?? 1,
-                                    notify_email: maintenance?.notify_email ?? prev.notify_email ?? 1,
-                                }));
+                                setStep6Data({
+                                    first_service_date: maintenance?.first_service_date ? maintenance.first_service_date.split('T')[0] : '',
+                                    assigned_service_centre: maintenance?.assigned_service_centre || '',
+                                    notes: maintenance?.notes || '',
+                                    reminder_before_days: maintenance?.reminder_before_days ?? 7,
+                                    notify_push: maintenance?.notify_push ?? 1,
+                                    notify_email: maintenance?.notify_email ?? 1,
+                                });
                             }
 
                             // Set step to API's current_step if returned
@@ -170,23 +176,71 @@ const VehicleInformation = () => {
                 })
             );
         }
-    }, [dispatch, queryVanId, vanId]);
+    }, [dispatch, queryVanId]);
 
-    // Persist draft on every step and data change so page refresh maintains form state
+    // Sync state whenever vanProgressData updates in Redux (e.g. after step submissions or progress fetches)
     useEffect(() => {
-        pipSaveVanDraft({
-            step,
-            maxStep,
-            vanId,
-            ownerId,
-            step1Data,
-            step2Data,
-            step3Data,
-            step4Data,
-            step5Data,
-            step6Data,
-        });
-    }, [step, maxStep, vanId, ownerId, step1Data, step2Data, step3Data, step4Data, step5Data, step6Data]);
+        if (vanProgressData) {
+            const data = vanProgressData?.data || vanProgressData;
+            const vd = data?.vehicle_details || data?.van;
+            const owner = data?.owner;
+            const images = data?.vehicle_images || data?.images || vd?.vehicle_images || vd?.images;
+            const comps = data?.components || data?.van_components;
+            const warranty = data?.warranty || data?.warranty_details || data?.van_warranty;
+
+            if (data?.van_id) {
+                setVanId((prev) => prev || data.van_id);
+            }
+
+            if (vd || (images && images.length > 0)) {
+                setStep1Data((prev) => ({
+                    ...prev,
+                    van_id: data?.van_id || vd?.van_id || prev?.van_id,
+                    van_name: vd?.van_name || prev?.van_name || '',
+                    vin: vd?.vin_number || vd?.vin || prev?.vin || '',
+                    make: vd?.make || prev?.make || '',
+                    model: vd?.model || prev?.model || '',
+                    manufacture_year: vd?.year || vd?.manufacture_year || prev?.manufacture_year || '',
+                    registration_number: vd?.registration_number || prev?.registration_number || '',
+                    engine: vd?.engine_details || vd?.engine || prev?.engine || '',
+                    chassis_number: vd?.chassis_number || prev?.chassis_number || '',
+                    color: vd?.vehicle_colour || vd?.color || prev?.color || '',
+                    vehicle_images: (images && images.length > 0) ? images : (prev?.vehicle_images || []),
+                }));
+            }
+
+            if (owner) {
+                const oId = owner?.id || vd?.owner_id;
+                if (oId) setOwnerId((prev) => prev || oId);
+                setStep2Data((prev) => ({
+                    ...prev,
+                    owner_id: oId || prev?.owner_id,
+                    owner_name: owner?.full_name || prev?.owner_name || '',
+                    email: owner?.email || prev?.email || '',
+                    phone_number: owner?.mobile_number || prev?.phone_number || '',
+                }));
+            }
+
+            if (comps && Array.isArray(comps) && comps.length > 0) {
+                setStep3Data(comps);
+            }
+
+            if (warranty) {
+                setStep4Data((prev) => ({
+                    ...prev,
+                    provider: warranty?.provider || warranty?.warranty_provider || prev?.provider || '',
+                    coverage_type: warranty?.coverage_type || prev?.coverage_type || 'Mechanical',
+                    start_date: warranty?.start_date || prev?.start_date || '',
+                    expiry_date: warranty?.expiry_date || prev?.expiry_date || '',
+                    claim_instructions: warranty?.claim_instructions || prev?.claim_instructions || '',
+                    claim_email: warranty?.claim_email || prev?.claim_email || '',
+                    claim_phone: warranty?.claim_phone || prev?.claim_phone || '',
+                    warranty_document_url: warranty?.warranty_document || warranty?.document_url || prev?.warranty_document_url || null,
+                    file_name: warranty?.file_name || prev?.file_name || '',
+                }));
+            }
+        }
+    }, [vanProgressData]);
 
     const nextStep = () => {
         setStep((prev) => {
@@ -211,8 +265,9 @@ const VehicleInformation = () => {
         if (formValues) {
             setStep2Data((prev) => ({ ...prev, ...formValues }));
         }
-        if (vanId) {
-            dispatch(getVanProgress({ vanId }));
+        const targetVanId = vanId || reduxVanId;
+        if (targetVanId) {
+            dispatch(getVanProgress({ vanId: targetVanId }));
         }
         prevStep();
     };
@@ -306,10 +361,6 @@ const VehicleInformation = () => {
         nextStep();
     };
 
-    const handleStepSelect = (stepId) => {
-        setStep(stepId);
-    };
-
     const handleReset = () => {
         pipClearVanDraft();
         dispatch(resetVanState());
@@ -345,8 +396,6 @@ const VehicleInformation = () => {
                     <StepProgressBar
                         steps={steps}
                         currentStep={step}
-                        maxStep={maxStep}
-                        onSelectStep={handleStepSelect}
                     />
 
                     {/* Step Components */}

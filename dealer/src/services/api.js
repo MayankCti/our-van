@@ -41,13 +41,19 @@ export const API_REQUEST = async (props) => {
   } catch (error) {
     if (isErrorToast) {
       if (error.response) {
-        if (error?.response?.data?.status === 401 || error?.response?.status === 401) {
+        const isAuthEndpoint = url?.includes("/login") || url?.includes("/forgot-password");
+        const isUnauthorized =
+          error?.response?.status === 403 ||
+          error?.response?.data?.status === 403 ||
+          error?.response?.data?.statusCode === 403;
+
+        if (isUnauthorized && !isAuthEndpoint) {
           toast.error(error?.response?.data?.message || "Session expired. Please login again.");
           logout();
           window.location.href = pageRoutes?.login;
-          return;
+        } else {
+          toast.error(error?.response?.data?.message || "Something went wrong");
         }
-        toast.error(error?.response?.data?.message || "Something went wrong");
       } else if (error.request) {
         toast.error("No response received from server");
       } else {

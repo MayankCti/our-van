@@ -64,7 +64,7 @@ const EditProfile = () => {
     );
   };
 
-  const profileImageSrc = imagePreview || user?.profile_image || 'image.png';
+  const profileImageSrc = imagePreview || user?.profile_image || '/image.png';
 
   return (
     <Layout>
@@ -92,7 +92,14 @@ const EditProfile = () => {
                 {/* Profile Image Section */}
                 <div className="d-flex align-items-center gap-3 flex-wrap mb-5">
                   <div className="ct_profile_img position-relative">
-                    <img src={profileImageSrc} alt="Profile" />
+                    <img
+                      src={profileImageSrc}
+                      alt="Profile"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/image.png';
+                      }}
+                    />
 
                     <label className="ct_upload_icon" style={{ cursor: 'pointer' }}>
                       <input
