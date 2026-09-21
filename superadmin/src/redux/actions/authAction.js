@@ -102,13 +102,22 @@ export const authGetProfile = createAsyncThunk(
       }
       return rejectWithValue(error?.data || error);
     }
+  },
+  {
+    condition: (props, { getState }) => {
+      const { authReducer } = getState();
+      if (authReducer?.isLoadingProfile) {
+        return false;
+      }
+      return true;
+    },
   }
 );
 
 // auth-update-profile
 export const authUpdateProfile = createAsyncThunk(
   "auth-update-profile",
-  async (props, { rejectWithValue }) => {
+  async (props, { rejectWithValue, dispatch }) => {
     const { payload, callback } = props;
     try {
       const response = await API_REQUEST({
@@ -121,6 +130,9 @@ export const authUpdateProfile = createAsyncThunk(
         isErrorToast: true,
         isSuccessToast: true,
       });
+
+      // Dispatch authGetProfile right away so store has latest data immediately
+      dispatch(authGetProfile());
 
       if (typeof callback === "function") {
         callback(response);

@@ -91,12 +91,13 @@ const supplierSlice = createSlice({
       .addCase(toggleBlockSupplier.fulfilled, (state, action) => {
         state.isActionLoading = false;
         const updatedData = action.payload?.data;
-        const suppId = updatedData?.id || action.meta?.arg?.id;
+        const suppId = updatedData?.id || updatedData?.supplier_id || action.meta?.arg?.id;
         const newIsBlock = updatedData?.is_block !== undefined ? updatedData.is_block : null;
 
-        if (suppId) {
+        if (suppId && Array.isArray(state.suppliersList)) {
           state.suppliersList = state.suppliersList.map((sup) => {
-            if (sup.id === suppId) {
+            const currentId = sup.id || sup.supplier_id;
+            if (String(currentId) === String(suppId)) {
               const currentBlock = sup.is_block !== undefined ? sup.is_block : (sup.status === 0 ? 1 : 0);
               const toggledBlock = newIsBlock !== null ? newIsBlock : (currentBlock === 1 ? 0 : 1);
               return {
@@ -107,15 +108,34 @@ const supplierSlice = createSlice({
             }
             return sup;
           });
+        }
 
-          if (state.supplierDetails && state.supplierDetails.id === suppId) {
-            const currentBlock = state.supplierDetails.is_block !== undefined ? state.supplierDetails.is_block : (state.supplierDetails.status === 0 ? 1 : 0);
+        if (state.supplierDetails && suppId) {
+          const detailsId =
+            state.supplierDetails?.id ||
+            state.supplierDetails?.supplier_id ||
+            state.supplierDetails?.data?.id ||
+            state.supplierDetails?.data?.supplier_id;
+          if (String(detailsId) === String(suppId)) {
+            const currentBlock =
+              state.supplierDetails.is_block !== undefined
+                ? state.supplierDetails.is_block
+                : (state.supplierDetails.data?.is_block !== undefined
+                    ? state.supplierDetails.data.is_block
+                    : (state.supplierDetails.status === 0 ? 1 : 0));
             const toggledBlock = newIsBlock !== null ? newIsBlock : (currentBlock === 1 ? 0 : 1);
             state.supplierDetails = {
               ...state.supplierDetails,
               is_block: toggledBlock,
               status: toggledBlock === 1 ? 0 : 1,
             };
+            if (state.supplierDetails.data) {
+              state.supplierDetails.data = {
+                ...state.supplierDetails.data,
+                is_block: toggledBlock,
+                status: toggledBlock === 1 ? 0 : 1,
+              };
+            }
           }
         }
       })

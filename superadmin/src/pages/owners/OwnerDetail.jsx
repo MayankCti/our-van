@@ -69,17 +69,15 @@ const OwnerDetail = () => {
     dispatch(
       toggleBlockOwner({
         ownerId,
-        callback: (res) => {
-          if (res?.success) {
-            modalCloseRef.current?.click();
-            dispatch(
-              getOwnerDetails({
-                ownerId,
-                page: currentPage,
-                limit: listPerPages,
-              })
-            );
-          }
+        callback: () => {
+          modalCloseRef.current?.click();
+          dispatch(
+            getOwnerDetails({
+              ownerId,
+              page: currentPage,
+              limit: listPerPages,
+            })
+          );
         },
       })
     );
@@ -141,7 +139,7 @@ const OwnerDetail = () => {
                   <span className="text-muted ct_fs_14">Loading owner details...</span>
                 </div>
               ) : (
-                <div className="d-flex justify-content-between align-items-center mb-0 flex-wrap gap-4">
+                <div className="d-flex justify-content-between align-items-center mb-0 ct_flex_col_575 gap-4">
                   <div className="d-flex align-items-center gap-4 ct_flex_col_575">
                     <img
                       src={
@@ -166,8 +164,8 @@ const OwnerDetail = () => {
                         {ownerDetails?.status && (
                           <span
                             className={`badge text-uppercase ${ownerDetails.status.toUpperCase() === "ACTIVE"
-                                ? "bg-success-subtle text-success border border-success-subtle"
-                                : "bg-danger-subtle text-danger border border-danger-subtle"
+                              ? "bg-success-subtle text-success border border-success-subtle"
+                              : "bg-danger-subtle text-danger border border-danger-subtle"
                               }`}
                             style={{
                               fontSize: "11px",

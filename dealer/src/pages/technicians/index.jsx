@@ -95,12 +95,19 @@ const Technicians = () => {
 
   // Toggle Block / Unblock
   const handleToggleBlock = (tech) => {
-    setLoadingToggleId(tech.id);
+    const techId = tech?.id || tech?.technician_id;
+    if (!techId) return;
+    setLoadingToggleId(techId);
     dispatch(
       toggleBlockTechnician({
-        id: tech.id,
+        id: techId,
         callback: () => {
           setLoadingToggleId(null);
+          dispatch(
+            getTechniciansByDealer({
+              search: debouncedSearch,
+            })
+          );
         },
       })
     );

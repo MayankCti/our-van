@@ -61,22 +61,15 @@ const Dealer = () => {
     dispatch(
       toggleBlockDealer({
         dealerId,
-        callback: (res) => {
+        callback: () => {
           setTogglingId(null);
-          if (
-            res?.success ||
-            res?.status ||
-            res?.statusCode === 200 ||
-            res?.statusCode === 201
-          ) {
-            dispatch(
-              getDealersList({
-                page: currentPage,
-                limit: listPerPages,
-                search: debouncedSearch,
-              })
-            );
-          }
+          dispatch(
+            getDealersList({
+              page: currentPage,
+              limit: listPerPages,
+              search: debouncedSearch,
+            })
+          );
         },
       })
     );
@@ -100,20 +93,27 @@ const Dealer = () => {
           },
           callback: (res) => {
             if (
-              res?.success ||
-              res?.status ||
+              res?.success === true ||
+              res?.status === true ||
+              res?.status === 200 ||
               res?.statusCode === 200 ||
-              res?.statusCode === 201
+              res?.statusCode === 201 ||
+              res?.data ||
+              !res?.error
             ) {
               addModalCloseRef.current?.click();
               resetForm();
-              dispatch(
-                getDealersList({
-                  page: currentPage,
-                  limit: listPerPages,
-                  search: debouncedSearch,
-                })
-              );
+              if (currentPage !== 1) {
+                setCurrentPage(1);
+              } else {
+                dispatch(
+                  getDealersList({
+                    page: 1,
+                    limit: listPerPages,
+                    search: debouncedSearch,
+                  })
+                );
+              }
             }
           },
         })

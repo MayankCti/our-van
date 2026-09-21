@@ -101,12 +101,19 @@ const Suppliers = () => {
 
   // Toggle Block / Unblock
   const handleToggleBlock = (sup) => {
-    setLoadingToggleId(sup.id);
+    const suppId = sup?.id || sup?.supplier_id;
+    if (!suppId) return;
+    setLoadingToggleId(suppId);
     dispatch(
       toggleBlockSupplier({
-        id: sup.id,
+        id: suppId,
         callback: () => {
           setLoadingToggleId(null);
+          dispatch(
+            getSuppliersByDealer({
+              search: debouncedSearch,
+            })
+          );
         },
       })
     );

@@ -114,9 +114,60 @@ const ownerSlice = createSlice({
     });
     builder.addCase(toggleBlockOwner.fulfilled, (state, action) => {
       state.isToggleBlockOwnerLoading = false;
+      const ownerId = action.meta?.arg?.ownerId;
       const newStatus = action?.payload?.status || action?.payload?.data?.status;
-      if (newStatus && state.ownerDetails) {
-        state.ownerDetails.status = newStatus;
+
+      // Update directly in ownersList
+      if (ownerId && Array.isArray(state.ownersList)) {
+        state.ownersList = state.ownersList.map((o) => {
+          const currentId = o?.ownerId || o?.id || o?.owner_id;
+          if (String(currentId) === String(ownerId)) {
+            const currentIsActive =
+              o.status === "ACTIVE" ||
+              o.status === 1 ||
+              o.is_active === 1 ||
+              o.is_active === true ||
+              o.is_blocked === 0 ||
+              o.is_blocked === false;
+            const updatedStatus = newStatus || (currentIsActive ? "BLOCKED" : "ACTIVE");
+            const updatedBlock = updatedStatus === "BLOCKED" ? 1 : 0;
+            return {
+              ...o,
+              status: updatedStatus,
+              is_blocked: updatedBlock,
+              is_active: updatedBlock === 0 ? 1 : 0,
+            };
+          }
+          return o;
+        });
+      }
+
+      // Update directly in ownerDetails
+      if (state.ownerDetails) {
+        const currentIsActive =
+          state.ownerDetails.status === "ACTIVE" ||
+          state.ownerDetails.status === 1 ||
+          state.ownerDetails.is_active === 1 ||
+          state.ownerDetails.is_active === true ||
+          state.ownerDetails.is_blocked === 0 ||
+          state.ownerDetails.is_blocked === false;
+        const updatedStatus = newStatus || (currentIsActive ? "BLOCKED" : "ACTIVE");
+        const updatedBlock = updatedStatus === "BLOCKED" ? 1 : 0;
+        state.ownerDetails = {
+          ...state.ownerDetails,
+          status: updatedStatus,
+          is_blocked: updatedBlock,
+          is_active: updatedBlock === 0 ? 1 : 0,
+        };
+        if (state.ownerDetails.data) {
+          state.ownerDetails.data = {
+            ...state.ownerDetails.data,
+            status: updatedStatus,
+            is_block: updatedBlock,
+            is_blocked: updatedBlock,
+            is_active: updatedBlock === 0 ? 1 : 0,
+          };
+        }
       }
       state.toggleBlockOwnerError = null;
     });

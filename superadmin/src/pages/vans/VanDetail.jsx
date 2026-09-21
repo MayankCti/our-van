@@ -73,8 +73,8 @@ const VanDetail = () => {
   const installedComponents = Array.isArray(data?.installed_components)
     ? data.installed_components
     : Array.isArray(data?.components)
-    ? data.components
-    : [];
+      ? data.components
+      : [];
   const warranty = data?.warranty_details || data?.warranty || {};
   const documents = Array.isArray(data?.documents) ? data.documents : [];
   const maintenance = data?.maintenance_setup || data?.maintenance || {};
@@ -82,8 +82,8 @@ const VanDetail = () => {
   const images = Array.isArray(vehicle?.images)
     ? vehicle.images
     : Array.isArray(data?.images)
-    ? data.images
-    : [];
+      ? data.images
+      : [];
 
   const mainImageUrl = images.length > 0 ? images[activeImageIndex] || images[0] : null;
 
@@ -130,11 +130,10 @@ const VanDetail = () => {
 
           {vehicle?.status && (
             <span
-              className={`badge px-3 py-2 rounded-pill ct_fs_13 ct_fw_600 ${
-                vehicle.status === "COMPLETED" || vehicle.status === "ACTIVE"
-                  ? "bg-success text-white"
-                  : "bg-warning text-dark"
-              }`}
+              className={`badge px-3 py-2 rounded-pill ct_fs_13 ct_fw_600 ${vehicle.status === "COMPLETED" || vehicle.status === "ACTIVE"
+                ? "bg-success text-white"
+                : "bg-warning text-dark"
+                }`}
             >
               {vehicle.status}
             </span>
@@ -263,9 +262,8 @@ const VanDetail = () => {
                           <img
                             key={idx}
                             src={formatFileUrl(img)}
-                            className={`ct_vehicle_thumb rounded ${
-                              activeImageIndex === idx ? "border border-2 border-success" : ""
-                            }`}
+                            className={`ct_vehicle_thumb rounded ${activeImageIndex === idx ? "border border-2 border-success" : ""
+                              }`}
                             alt={`Thumbnail ${idx + 1}`}
                             style={{
                               width: "48px",
@@ -764,8 +762,8 @@ const VanDetail = () => {
                 </div>
 
                 <div className="row gy-3">
-                  <div className="col-sm-6 col-lg-3">
-                    <div className="ct_claim_info_box">
+                  <div className="col-xl-3 col-lg-6 col-md-6">
+                    <div className="ct_claim_info_box h-100">
                       <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">
                         First Service Date
                       </h6>
@@ -774,8 +772,8 @@ const VanDetail = () => {
                       </h5>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-lg-4">
-                    <div className="ct_claim_info_box">
+                  <div className="col-xl-3 col-lg-6 col-md-6">
+                    <div className="ct_claim_info_box h-100">
                       <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">
                         Service Centre
                       </h6>
@@ -784,8 +782,8 @@ const VanDetail = () => {
                       </h5>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-lg-2">
-                    <div className="ct_claim_info_box">
+                  <div className="col-xl-3 col-lg-6 col-md-6">
+                    <div className="ct_claim_info_box h-100">
                       <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">
                         Reminder
                       </h6>
@@ -796,23 +794,21 @@ const VanDetail = () => {
                       </h5>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-lg-3">
-                    <div className="ct_claim_info_box">
+                  <div className="col-xl-3 col-lg-6 col-md-6">
+                    <div className="ct_claim_info_box h-100">
                       <h6 className="mb-1 ct_fs_12 ct_fw_600 ct_para_clr text-uppercase">
                         Notifications
                       </h6>
                       <h5 className="ct_fs_14 ct_fw_600 mb-0 ct_head_clr d-flex gap-2">
                         <span
-                          className={`badge ${
-                            maintenance?.notify_push ? "bg-success" : "bg-secondary"
-                          }`}
+                          className={`badge ${maintenance?.notify_push ? "bg-success" : "bg-secondary"
+                            }`}
                         >
                           Push {maintenance?.notify_push ? "On" : "Off"}
                         </span>
                         <span
-                          className={`badge ${
-                            maintenance?.notify_email ? "bg-success" : "bg-secondary"
-                          }`}
+                          className={`badge ${maintenance?.notify_email ? "bg-success" : "bg-secondary"
+                            }`}
                         >
                           Email {maintenance?.notify_email ? "On" : "Off"}
                         </span>
@@ -838,4 +834,4 @@ const VanDetail = () => {
   );
 };
 
-export default VanDetail;
+export default VanDetail;

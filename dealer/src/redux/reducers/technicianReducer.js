@@ -91,12 +91,13 @@ const technicianSlice = createSlice({
       .addCase(toggleBlockTechnician.fulfilled, (state, action) => {
         state.isActionLoading = false;
         const updatedData = action.payload?.data;
-        const techId = updatedData?.id || action.meta?.arg?.id;
+        const techId = updatedData?.id || updatedData?.technician_id || action.meta?.arg?.id;
         const newIsBlock = updatedData?.is_block !== undefined ? updatedData.is_block : null;
 
-        if (techId) {
+        if (techId && Array.isArray(state.techniciansList)) {
           state.techniciansList = state.techniciansList.map((tech) => {
-            if (tech.id === techId) {
+            const currentId = tech.id || tech.technician_id;
+            if (String(currentId) === String(techId)) {
               const currentBlock = tech.is_block !== undefined ? tech.is_block : (tech.status === 0 ? 1 : 0);
               const toggledBlock = newIsBlock !== null ? newIsBlock : (currentBlock === 1 ? 0 : 1);
               return {
@@ -107,15 +108,34 @@ const technicianSlice = createSlice({
             }
             return tech;
           });
+        }
 
-          if (state.technicianDetails && state.technicianDetails.id === techId) {
-            const currentBlock = state.technicianDetails.is_block !== undefined ? state.technicianDetails.is_block : (state.technicianDetails.status === 0 ? 1 : 0);
+        if (state.technicianDetails && techId) {
+          const detailsId =
+            state.technicianDetails?.id ||
+            state.technicianDetails?.technician_id ||
+            state.technicianDetails?.data?.id ||
+            state.technicianDetails?.data?.technician_id;
+          if (String(detailsId) === String(techId)) {
+            const currentBlock =
+              state.technicianDetails.is_block !== undefined
+                ? state.technicianDetails.is_block
+                : (state.technicianDetails.data?.is_block !== undefined
+                    ? state.technicianDetails.data.is_block
+                    : (state.technicianDetails.status === 0 ? 1 : 0));
             const toggledBlock = newIsBlock !== null ? newIsBlock : (currentBlock === 1 ? 0 : 1);
             state.technicianDetails = {
               ...state.technicianDetails,
               is_block: toggledBlock,
               status: toggledBlock === 1 ? 0 : 1,
             };
+            if (state.technicianDetails.data) {
+              state.technicianDetails.data = {
+                ...state.technicianDetails.data,
+                is_block: toggledBlock,
+                status: toggledBlock === 1 ? 0 : 1,
+              };
+            }
           }
         }
       })

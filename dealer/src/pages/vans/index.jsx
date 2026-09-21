@@ -212,13 +212,13 @@ const Vans = () => {
                             >
                               <i className="fa-regular fa-eye"></i>
                             </Link>
-                            <Link
+                            {progressNum < 100 && <Link
                               to={`${pageRoutes.vehicle_information}?van_id=${vanId}`}
                               className="ct_action_icon_btn ct_edit_btn"
                               title="Edit Van"
                             >
                               <i className="fa-regular fa-pen-to-square"></i>
-                            </Link>
+                            </Link>}
                           </div>
                         </td>
                       </tr>

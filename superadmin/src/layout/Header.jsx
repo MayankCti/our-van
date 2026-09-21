@@ -20,7 +20,7 @@ export default function Header() {
         }
     }, [dispatch]);
 
-    const displayName = user?.full_name || user?.name || 'Super Admin';
+    const displayName = user?.full_name || user?.name || user?.admin_name || 'Super Admin';
     const displayEmail = user?.email || '';
 
     const handleLogout = () => {
@@ -58,7 +58,15 @@ export default function Header() {
                     <button id="dropdownMenuButton" data-bs-toggle="dropdown"
                         aria-expanded="false">
                         <div className="d-flex align-items-center gap-2">
-                            <img src={user?.profile_image || "image.png"} alt="" className="ct_img_25" />
+                            <img
+                                src={user?.profile_image || user?.profile_image_url || "/image.png"}
+                                alt=""
+                                className="ct_img_25 rounded-circle object-fit-cover"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/image.png";
+                                }}
+                            />
                             <div className="text-start">
                                 <small className="ct_text_939393">{displayName}</small>
                             </div>

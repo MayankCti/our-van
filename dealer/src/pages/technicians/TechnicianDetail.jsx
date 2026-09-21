@@ -64,7 +64,14 @@ const TechnicianDetail = () => {
 
   const handleToggleStatus = () => {
     if (!techId) return;
-    dispatch(toggleBlockTechnician({ id: techId }));
+    dispatch(
+      toggleBlockTechnician({
+        id: techId,
+        callback: () => {
+          dispatch(getTechnicianById({ id: techId }));
+        },
+      })
+    );
   };
 
   const active = isTechnicianActive();

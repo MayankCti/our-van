@@ -16,6 +16,7 @@ import {
 
 const initialState = {
   isLoading: false,
+  isLoadingProfile: false,
   token: pipGetAccessToken() || null,
   user: pipGetProfile() || null,
   isAuth: !!pipGetAccessToken(),
@@ -32,6 +33,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuth = false;
       state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = null;
     },
     setUser: (state, action) => {
@@ -94,20 +96,26 @@ const authSlice = createSlice({
 
     // auth-get-profile
     builder.addCase(authGetProfile.pending, (state) => {
-      state.isLoading = true;
+      state.isLoadingProfile = true;
       state.error = null;
     });
     builder.addCase(authGetProfile.fulfilled, (state, action) => {
-      const user = action?.payload?.data || action?.payload?.admin || action?.payload?.user;
+      const data = action?.payload?.data || action?.payload;
+      const user =
+        data?.admin ||
+        data?.user ||
+        (typeof data === "object" && !data?.token && (data?.email || data?.full_name || data?.name) ? data : null) ||
+        action?.payload?.admin ||
+        action?.payload?.user;
       if (user) {
-        state.user = user;
-        pipSaveProfile(user);
+        state.user = { ...state.user, ...user };
+        pipSaveProfile(state.user);
       }
-      state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = null;
     });
     builder.addCase(authGetProfile.rejected, (state, action) => {
-      state.isLoading = false;
+      state.isLoadingProfile = false;
       state.error = action.payload || action.error?.message;
     });
 
@@ -117,10 +125,16 @@ const authSlice = createSlice({
       state.error = null;
     });
     builder.addCase(authUpdateProfile.fulfilled, (state, action) => {
-      const user = action?.payload?.data || action?.payload?.admin || action?.payload?.user;
+      const data = action?.payload?.data || action?.payload;
+      const user =
+        data?.admin ||
+        data?.user ||
+        (typeof data === "object" && !data?.token && (data?.email || data?.full_name || data?.name) ? data : null) ||
+        action?.payload?.admin ||
+        action?.payload?.user;
       if (user) {
-        state.user = user;
-        pipSaveProfile(user);
+        state.user = { ...state.user, ...user };
+        pipSaveProfile(state.user);
       }
       state.isLoading = false;
       state.error = null;

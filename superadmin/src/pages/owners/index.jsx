@@ -52,22 +52,15 @@ const Owners = () => {
     dispatch(
       toggleBlockOwner({
         ownerId,
-        callback: (res) => {
+        callback: () => {
           setTogglingId(null);
-          if (
-            res?.success ||
-            res?.status ||
-            res?.statusCode === 200 ||
-            res?.statusCode === 201
-          ) {
-            dispatch(
-              getOwnersList({
-                page: currentPage,
-                limit: listPerPages,
-                search: debouncedSearch,
-              })
-            );
-          }
+          dispatch(
+            getOwnersList({
+              page: currentPage,
+              limit: listPerPages,
+              search: debouncedSearch,
+            })
+          );
         },
       })
     );

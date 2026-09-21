@@ -22,10 +22,6 @@ const EditProfile = () => {
    const [selectedFile, setSelectedFile] = useState(null);
    const [imagePreview, setImagePreview] = useState(null);
 
-   useEffect(() => {
-      dispatch(authGetProfile());
-   }, [dispatch]);
-
    const handleImageChange = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -35,7 +31,7 @@ const EditProfile = () => {
    };
 
    const initialValues = {
-      full_name: user?.full_name || user?.name || '',
+      full_name: user?.full_name || user?.name || user?.admin_name || '',
       email: user?.email || '',
       designation: user?.designation || '',
    };
@@ -49,7 +45,15 @@ const EditProfile = () => {
       }
 
       const callback = (response) => {
-         if (response?.success) {
+         if (
+            response?.success === true ||
+            response?.status === true ||
+            response?.status === 200 ||
+            response?.statusCode === 200 ||
+            response?.data ||
+            !response?.error
+         ) {
+            dispatch(authGetProfile());
             navigate(pageRoutes.myProfile);
          }
       };
@@ -62,7 +66,7 @@ const EditProfile = () => {
       );
    };
 
-   const profileImageSrc = imagePreview || user?.profile_image || 'image.png';
+   const profileImageSrc = imagePreview || user?.profile_image || user?.profile_image_url || '/image.png';
 
    return (
       <Layout>
@@ -96,7 +100,14 @@ const EditProfile = () => {
                            {/* Profile Image Section */}
                            <div className="d-flex align-items-center gap-3 flex-wrap mb-5">
                               <div className="ct_profile_img position-relative">
-                                 <img src={profileImageSrc} alt="Profile" />
+                                 <img
+                                    src={profileImageSrc}
+                                    alt="Profile"
+                                    onError={(e) => {
+                                       e.target.onerror = null;
+                                       e.target.src = '/image.png';
+                                    }}
+                                 />
 
                                  <label className="ct_upload_icon" style={{ cursor: 'pointer' }}>
                                     <input
@@ -112,7 +123,7 @@ const EditProfile = () => {
                               </div>
 
                               <div>
-                                 <h4 className="mb-1 ct_head_clr fs-5 ct_fw_600">{user?.full_name || user?.name || 'Super Admin'}</h4>
+                                 <h4 className="mb-1 ct_head_clr fs-5 ct_fw_600">{user?.full_name || user?.name || user?.admin_name || 'Super Admin'}</h4>
                                  <p className="mb-0 ct_para_clr">{user?.email || ''}</p>
                               </div>
                            </div>

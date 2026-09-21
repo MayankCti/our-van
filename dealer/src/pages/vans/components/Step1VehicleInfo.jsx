@@ -90,7 +90,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         const vd = vanProgressData?.vehicle_details || vanProgressData?.data?.vehicle_details || {};
         const pvd = vanProgressData?.van || vanProgressData?.data?.van || {};
         const svd = vanStep1Data?.vehicle_details || vanStep1Data?.data?.vehicle_details || {};
-        const hasExistingImages = (existingImages && existingImages.length > 0) || (photoPreviews && photoPreviews.length > 0);
+        const hasExistingImages = existingImages && Array.isArray(existingImages) && existingImages.length > 0;
         return {
             van_id: activeVanId || '',
             van_name: initialData?.van_name || vanStep1Data?.van_name || vd?.van_name || pvd?.van_name || svd?.van_name || '',
@@ -110,7 +110,6 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
         vanStep1Data,
         vanProgressData,
         existingImages,
-        photoPreviews.length,
     ]);
 
     const handleFiles = (files, setFieldValue, setFieldTouched, setFieldError) => {

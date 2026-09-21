@@ -1248,7 +1248,8 @@
      color: #1E293B;
      font-weight: 400;
      font-size: 14px;
-     width: fit-content;
+     width: 100%;
+     max-width: 219px;
  }
 
  .ct_claim_info_box {
@@ -1321,4 +1322,8 @@
 
  .toggle-switch input[type="checkbox"]:checked+.toggle-switch-background .toggle-switch-handle {
      transform: translateX(20px);
+ }
+
+ .ct_fs_15 {
+     font-size: 15px;
  }

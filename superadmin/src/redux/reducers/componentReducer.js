@@ -85,8 +85,29 @@ const componentSlice = createSlice({
       state.isCreateComponentLoading = true;
       state.createComponentError = null;
     });
-    builder.addCase(createComponent.fulfilled, (state) => {
+    builder.addCase(createComponent.fulfilled, (state, action) => {
       state.isCreateComponentLoading = false;
+      const created =
+        action.payload?.data?.component ||
+        action.payload?.component ||
+        action.payload?.data;
+      if (created && typeof created === "object" && (created.name || created.id)) {
+        const normalized = {
+          id: created.id || created.component_id || Date.now(),
+          name: created.name || action.meta?.arg?.payload?.name || "",
+          ...created,
+        };
+        const exists = state.componentsList.some(
+          (c) => String(c.id || c.component_id) === String(normalized.id)
+        );
+        if (!exists) {
+          state.componentsList = [normalized, ...state.componentsList];
+          state.componentsMeta = {
+            ...state.componentsMeta,
+            totalItems: (state.componentsMeta.totalItems || 0) + 1,
+          };
+        }
+      }
       state.createComponentError = null;
     });
     builder.addCase(createComponent.rejected, (state, action) => {
@@ -99,8 +120,25 @@ const componentSlice = createSlice({
       state.isEditComponentLoading = true;
       state.editComponentError = null;
     });
-    builder.addCase(editComponent.fulfilled, (state) => {
+    builder.addCase(editComponent.fulfilled, (state, action) => {
       state.isEditComponentLoading = false;
+      const payloadArg = action.meta?.arg?.payload;
+      const editId = payloadArg?.id;
+      const editName = payloadArg?.name;
+      if (editId && Array.isArray(state.componentsList)) {
+        state.componentsList = state.componentsList.map((comp) => {
+          if (String(comp.id || comp.component_id) === String(editId)) {
+            return {
+              ...comp,
+              name: editName || comp.name,
+              ...(action.payload?.data && typeof action.payload?.data === "object"
+                ? action.payload.data
+                : {}),
+            };
+          }
+          return comp;
+        });
+      }
       state.editComponentError = null;
     });
     builder.addCase(editComponent.rejected, (state, action) => {
@@ -113,13 +151,19 @@ const componentSlice = createSlice({
       state.isDeleteComponentLoading = true;
       state.deleteComponentError = null;
     });
-    builder.addCase(deleteComponent.fulfilled, (state) => {
+    builder.addCase(deleteComponent.fulfilled, (state, action) => {
       state.isDeleteComponentLoading = false;
+      const deletedId = action.meta?.arg?.id;
+      if (deletedId && Array.isArray(state.componentsList)) {
+        state.componentsList = state.componentsList.filter(
+          (comp) => String(comp.id || comp.component_id) !== String(deletedId)
+        );
+        state.componentsMeta = {
+          ...state.componentsMeta,
+          totalItems: Math.max(0, (state.componentsMeta.totalItems || 1) - 1),
+        };
+      }
       state.deleteComponentError = null;
-    });
-    builder.addCase(deleteComponent.rejected, (state, action) => {
-      state.isDeleteComponentLoading = false;
-      state.deleteComponentError = action.payload || action.error?.message;
     });
   },
 });

@@ -53,7 +53,14 @@ const SupplierDetail = () => {
 
   const handleToggleStatus = () => {
     if (!supplierId) return;
-    dispatch(toggleBlockSupplier({ id: supplierId }));
+    dispatch(
+      toggleBlockSupplier({
+        id: supplierId,
+        callback: () => {
+          dispatch(getSupplierById({ id: supplierId }));
+        },
+      })
+    );
   };
 
   const active = isSupplierActive();

@@ -61,10 +61,12 @@ const Dashboard = () => {
           },
           callback: (res) => {
             if (
-              res?.success ||
-              res?.status ||
+              res?.success === true ||
+              res?.status === true ||
               res?.statusCode === 200 ||
-              res?.statusCode === 201
+              res?.statusCode === 201 ||
+              res?.data ||
+              !res?.error
             ) {
               addDealerModalCloseRef.current?.click();
               resetForm();

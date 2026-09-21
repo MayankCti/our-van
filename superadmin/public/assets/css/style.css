@@ -983,6 +983,10 @@
      z-index: -1;
  }
 
+ .ct_fs_15 {
+     font-size: 15px;
+ }
+
  .ct_stepper li.completed:before {
      content: "";
      position: absolute;
@@ -1235,7 +1239,9 @@
      color: #1E293B;
      font-weight: 400;
      font-size: 14px;
-     width: fit-content;
+     width: auto;
+     min-width: 217px;
+     max-width: 217px;
  }
 
  .ct_claim_info_box {

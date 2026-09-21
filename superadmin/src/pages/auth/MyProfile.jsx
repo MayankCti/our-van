@@ -1,25 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import Header from '../../layout/Header';
 import { pageRoutes } from '../../routes/PageRoutes';
-import { authGetProfile } from '../../redux/actions/authAction';
 import { pipGetProfile } from '../../utils/pip';
 
 const MyProfile = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const reduxUser = useSelector((state) => state?.authReducer?.user);
   const user = reduxUser || pipGetProfile() || {};
 
-  useEffect(() => {
-    dispatch(authGetProfile());
-  }, [dispatch]);
-
-  const displayName = user?.full_name || user?.name || 'Super Admin';
+  const displayName = user?.full_name || user?.name || user?.admin_name || 'Super Admin';
   const displayEmail = user?.email || '';
-  const profileImage = user?.profile_image || 'image.png';
+  const profileImage = user?.profile_image || user?.profile_image_url || '/image.png';
 
   return (
     <Layout>
@@ -38,7 +32,14 @@ const MyProfile = () => {
             {/* Profile Header */}
             <div className="d-flex align-items-center gap-3 flex-wrap mb-5">
               <div className="ct_profile_img position-relative">
-                <img src={profileImage} alt="Profile" />
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/image.png';
+                  }}
+                />
               </div>
 
               <div>

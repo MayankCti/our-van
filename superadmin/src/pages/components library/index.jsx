@@ -66,16 +66,27 @@ const ComponentsLibrary = () => {
             name: values.name.trim(),
           },
           callback: (res) => {
-            if (res?.success || res?.status || res?.statusCode === 200 || res?.statusCode === 201) {
+            if (
+              res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201 ||
+              res?.data ||
+              !res?.error
+            ) {
               addModalCloseRef.current?.click();
               resetForm();
-              dispatch(
-                getComponentsList({
-                  page: currentPage,
-                  limit: listPerPages,
-                  search: debouncedSearch,
-                })
-              );
+              if (currentPage !== 1) {
+                setCurrentPage(1);
+              } else {
+                dispatch(
+                  getComponentsList({
+                    page: 1,
+                    limit: listPerPages,
+                    search: debouncedSearch,
+                  })
+                );
+              }
             }
           },
         })
