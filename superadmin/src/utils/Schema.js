@@ -91,9 +91,9 @@ export const dealerSchema = Yup.object().shape({
     phone_number: Yup.string()
         .trim()
         .required("Please enter phone number")
-        .min(7, "Phone number must be at least 7 digits")
+        .min(10, "Phone number must be at least 10 digits")
         .max(20, "Phone number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid phone number"),
+        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid phone number"),
 });
 
 

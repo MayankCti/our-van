@@ -29,7 +29,21 @@ export const forgotPasswordSchema = Yup.object().shape({
 // Edit Profile Schema
 export const editProfileSchema = Yup.object().shape({
     full_name: Yup.string().trim().required("Please enter full name"),
-    phone_number: Yup.string().trim().nullable(),
+    phone_number: Yup.string()
+        .trim()
+        .nullable()
+        .test("min-digits", "Phone number must be at least 10 digits", (value) => {
+            if (!value) return true;
+            return value.length >= 10;
+        })
+        .test("max-digits", "Phone number cannot exceed 20 characters", (value) => {
+            if (!value) return true;
+            return value.length <= 20;
+        })
+        .test("valid-phone", "Please enter a valid phone number", (value) => {
+            if (!value) return true;
+            return /^[+]?[0-9\s-]{10,20}$/.test(value);
+        }),
 });
 
 // Change Password Schema

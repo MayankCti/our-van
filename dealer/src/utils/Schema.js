@@ -126,9 +126,9 @@ export const step2OwnerDetailsSchema = Yup.object().shape({
     phone_number: Yup.string()
         .trim()
         .required("Please enter mobile number")
-        .min(7, "Mobile number must be at least 7 digits")
+        .min(10, "Mobile number must be at least 10 digits")
         .max(20, "Mobile number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid mobile number"),
+        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid mobile number"),
 });
 
 // Step 3: Single Component Validation Schema
@@ -199,9 +199,9 @@ export const step4WarrantySchema = Yup.object().shape({
     claim_phone: Yup.string()
         .trim()
         .required("Please enter claim phone number")
-        .min(7, "Phone number must be at least 7 digits")
+        .min(10, "Phone number must be at least 10 digits")
         .max(20, "Phone number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{7,20}$/, "Please enter a valid phone number"),
+        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid phone number"),
     warranty_document: Yup.mixed().nullable(),
 });
 

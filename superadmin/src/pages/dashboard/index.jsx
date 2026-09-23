@@ -183,11 +183,12 @@ const Dashboard = () => {
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Owner Name</th>
                         <th>Van Name</th>
+                        <th>VIN</th>
                         <th>Registration Number</th>
                         <th>Dealer</th>
-                        <th>Date</th>
+                        <th>Owner Name</th>
+                        <th>Date Registered</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -195,7 +196,7 @@ const Dashboard = () => {
                     <tbody>
                       {isDashboardLoading ? (
                         <tr>
-                          <td colSpan="7" className="text-center py-5">
+                          <td colSpan="8" className="text-center py-5">
                             <div className="d-flex align-items-center justify-content-center gap-2">
                               <div
                                 className="spinner-border spinner-border-sm text-success"
@@ -207,27 +208,31 @@ const Dashboard = () => {
                         </tr>
                       ) : recentRegistrations.length === 0 ? (
                         <tr>
-                          <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
+                          <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
                             No recent registrations found.
                           </td>
                         </tr>
                       ) : (
                         recentRegistrations.map((reg, index) => {
-                          const vanId = reg.van_id || reg.id;
-                          const ownerName = reg.owner_name || "-";
-                          const vanName = reg.van_name || "N/A";
-                          const regNumber = reg.registration_number || "-";
-                          const dealerName = reg.dealer_name || "-";
-                          const date = formatDate(reg.date || reg.created_at);
+                          const vanId = reg.van_id || reg.id || reg.vanId;
+                          const vanName = reg.van_name || reg.vanName || "N/A";
+                          const vin = reg.VIN_Number || reg.vin_number || reg.vin || reg.VIN || "-";
+                          const registrationNumber = reg.registration_number || reg.registrationNumber || "-";
+                          const dealerName = reg.dealer_name || reg.dealerName || "-";
+                          const ownerName = reg.owner_name || reg.ownerName || "-";
+                          const dateRegistered = formatDate(
+                            reg.date || reg.created_at || reg.createdAt || reg.date_registered || reg.dateRegistered
+                          );
 
                           return (
                             <tr key={vanId || index}>
                               <td>{index + 1}</td>
-                              <td>{ownerName}</td>
                               <td className="ct_fw_600">{vanName}</td>
-                              <td>{regNumber}</td>
+                              <td>{vin}</td>
+                              <td>{registrationNumber}</td>
                               <td>{dealerName}</td>
-                              <td>{date}</td>
+                              <td>{ownerName}</td>
+                              <td>{dateRegistered}</td>
                               <td>
                                 {vanId ? (
                                   <Link
