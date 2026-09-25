@@ -130,7 +130,7 @@ export const getDealerOwnersList = createAsyncThunk(
     const { page = 1, limit = 10, search = "", callback } = props;
     try {
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_GET_OWNERS_API || "/dealer/vans/get/owners",
+        url: import.meta.env.VITE_GET_OWNERS_API || "/dealer/vans/get/owners/list",
         method: "GET",
         params: {
           page,

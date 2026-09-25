@@ -293,9 +293,19 @@ const vanSlice = createSlice({
     builder.addCase(getDealerOwnersList.fulfilled, (state, action) => {
       state.isOwnersLoading = false;
       const payload = action?.payload || {};
-      state.ownersList = Array.isArray(payload?.data) ? payload.data : [];
-      if (payload?.meta) {
-        state.ownersMeta = payload.meta;
+      const resData = payload?.data;
+      if (Array.isArray(resData?.data)) {
+        state.ownersList = resData.data;
+        state.ownersMeta = resData.meta || {};
+      } else if (Array.isArray(resData)) {
+        state.ownersList = resData;
+        state.ownersMeta = payload.meta || {};
+      } else if (Array.isArray(payload)) {
+        state.ownersList = payload;
+        state.ownersMeta = {};
+      } else {
+        state.ownersList = [];
+        state.ownersMeta = {};
       }
       state.ownersError = null;
     });

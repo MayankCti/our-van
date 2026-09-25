@@ -94,7 +94,7 @@ const Step6Maintenance = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                             type="date"
                                             id="first_service_date"
                                             name="first_service_date"
-                                            className={`form-control ct_input ${errors.first_service_date && touched.first_service_date ? 'is-invalid border-danger' : ''}`}
+                                            className="form-control ct_input"
                                             value={values.first_service_date}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
@@ -113,7 +113,7 @@ const Step6Maintenance = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                             type="text"
                                             id="assigned_service_centre"
                                             name="assigned_service_centre"
-                                            className={`form-control ct_input ${errors.assigned_service_centre && touched.assigned_service_centre ? 'is-invalid border-danger' : ''}`}
+                                            className="form-control ct_input"
                                             placeholder="e.g. Jaguar Motors Service Centre"
                                             value={values.assigned_service_centre}
                                             onChange={handleChange}
@@ -132,7 +132,7 @@ const Step6Maintenance = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         <textarea
                                             id="notes"
                                             name="notes"
-                                            className={`form-control ct_custom_textarea ${errors.notes && touched.notes ? 'is-invalid border-danger' : ''}`}
+                                            className="form-control ct_custom_textarea"
                                             rows="3"
                                             placeholder="Add specific instructions or maintenance notes..."
                                             value={values.notes}

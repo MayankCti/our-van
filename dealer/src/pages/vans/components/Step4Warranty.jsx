@@ -155,7 +155,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         type="text"
                                         id="provider"
                                         name="provider"
-                                        className={`form-control ct_input ${errors.provider && touched.provider ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input"
                                         placeholder="e.g. Summer Breeze / Bajali Insurance"
                                         value={values.provider}
                                         onChange={handleChange}
@@ -174,7 +174,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                     <select
                                         id="coverage_type"
                                         name="coverage_type"
-                                        className={`form-control ct_input ct_select_custom ${errors.coverage_type && touched.coverage_type ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input ct_select_custom"
                                         value={values.coverage_type}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
@@ -200,7 +200,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         type="date"
                                         id="start_date"
                                         name="start_date"
-                                        className={`form-control ct_input ${errors.start_date && touched.start_date ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input"
                                         value={values.start_date}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
@@ -220,7 +220,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         id="expiry_date"
                                         name="expiry_date"
                                         min={values.start_date || undefined}
-                                        className={`form-control ct_input ${errors.expiry_date && touched.expiry_date ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input"
                                         value={values.expiry_date}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
@@ -234,7 +234,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                 <div className="form-group mb-0 text-start">
                                     <label className="mb-2 ct_label">Warranty Documents</label>
                                     <div
-                                        className={`upload-box text-center ${isDragging ? 'border-primary' : ''} ${fileError ? 'border-danger' : ''}`}
+                                        className={`upload-box text-center ${isDragging ? 'border-primary' : ''}`}
                                         onDragOver={(e) => {
                                             e.preventDefault();
                                             setIsDragging(true);
@@ -347,7 +347,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                     <textarea
                                         id="claim_instructions"
                                         name="claim_instructions"
-                                        className={`form-control ct_custom_textarea ${errors.claim_instructions && touched.claim_instructions ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_custom_textarea"
                                         rows="3"
                                         placeholder="Add specific instructions for submitting warranty claims..."
                                         value={values.claim_instructions}
@@ -368,7 +368,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         type="email"
                                         id="claim_email"
                                         name="claim_email"
-                                        className={`form-control ct_input ${errors.claim_email && touched.claim_email ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input"
                                         placeholder="claims@abcinsurance.com"
                                         value={values.claim_email}
                                         onChange={handleChange}
@@ -388,7 +388,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         type="text"
                                         id="claim_phone"
                                         name="claim_phone"
-                                        className={`form-control ct_input ${errors.claim_phone && touched.claim_phone ? 'is-invalid border-danger' : ''}`}
+                                        className="form-control ct_input"
                                         placeholder="+61 1300 123 456"
                                         value={values.claim_phone}
                                         onChange={handleChange}

@@ -75,6 +75,16 @@ const Sidebar = () => {
                 </svg>
             ),
         },
+        {
+            name: "Parts Management",
+            path: pageRoutes.parts,
+            icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 16V8C21 7.27 20.61 6.6 19.98 6.24L12.98 2.24C12.37 1.89 11.63 1.89 11.02 2.24L4.02 6.24C3.39 6.6 3 7.27 3 8V16C3 16.73 3.39 17.4 4.02 17.76L11.02 21.76C11.63 22.11 12.37 22.11 12.98 21.76L19.98 17.76C20.61 17.4 21 16.73 21 16Z" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3.27 6.96L12 12.01L20.73 6.96M12 22.08V12" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            ),
+        },
     ];
 
     return (

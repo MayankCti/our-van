@@ -223,6 +223,105 @@ export const step6MaintenanceSchema = Yup.object().shape({
     notify_email: Yup.mixed(),
 });
 
+// Parts Management - Add Part Schema
+export const addPartSchema = Yup.object().shape({
+    part_name: Yup.string()
+        .trim()
+        .required("Please enter part name")
+        .min(2, "Part name must be at least 2 characters")
+        .max(100, "Part name cannot exceed 100 characters"),
+    manufacturer: Yup.string()
+        .trim()
+        .required("Please enter manufacturer name")
+        .min(2, "Manufacturer name must be at least 2 characters")
+        .max(100, "Manufacturer name cannot exceed 100 characters"),
+    original_cost: Yup.number()
+        .typeError("Original cost must be a valid number")
+        .required("Please enter original cost")
+        .min(0, "Original cost cannot be negative"),
+    service_cost: Yup.number()
+        .typeError("Service cost must be a valid number")
+        .required("Please enter service cost")
+        .min(0, "Service cost cannot be negative")
+        .test(
+            "greater-than-original",
+            "Service cost must be greater than original cost",
+            function (val) {
+                const { original_cost } = this.parent;
+                if (val === undefined || val === null || isNaN(val) || original_cost === undefined || original_cost === null || isNaN(original_cost)) {
+                    return true;
+                }
+                return Number(val) > Number(original_cost);
+            }
+        ),
+    stock_quantity: Yup.number()
+        .typeError("Stock quantity must be a valid number")
+        .required("Please enter stock quantity")
+        .integer("Stock quantity must be a whole number")
+        .min(0, "Stock quantity cannot be negative"),
+    low_stock_threshold: Yup.number()
+        .typeError("Low stock threshold must be a valid number")
+        .required("Please enter low stock threshold")
+        .integer("Low stock threshold must be a whole number")
+        .min(0, "Low stock threshold cannot be negative")
+        .test(
+            "less-than-stock",
+            "Low stock alert threshold must be less than stock quantity",
+            function (val) {
+                const { stock_quantity } = this.parent;
+                if (val === undefined || val === null || isNaN(val) || stock_quantity === undefined || stock_quantity === null || isNaN(stock_quantity)) {
+                    return true;
+                }
+                return Number(val) < Number(stock_quantity);
+            }
+        ),
+});
+
+// Parts Management - Edit Part Schema (Threshold is not restricted to less than stock_quantity)
+export const editPartSchema = Yup.object().shape({
+    part_name: Yup.string()
+        .trim()
+        .required("Please enter part name")
+        .min(2, "Part name must be at least 2 characters")
+        .max(100, "Part name cannot exceed 100 characters"),
+    manufacturer: Yup.string()
+        .trim()
+        .required("Please enter manufacturer name")
+        .min(2, "Manufacturer name must be at least 2 characters")
+        .max(100, "Manufacturer name cannot exceed 100 characters"),
+    original_cost: Yup.number()
+        .typeError("Original cost must be a valid number")
+        .required("Please enter original cost")
+        .min(0, "Original cost cannot be negative"),
+    service_cost: Yup.number()
+        .typeError("Service cost must be a valid number")
+        .required("Please enter service cost")
+        .min(0, "Service cost cannot be negative")
+        .test(
+            "greater-than-original",
+            "Service cost must be greater than original cost",
+            function (val) {
+                const { original_cost } = this.parent;
+                if (val === undefined || val === null || isNaN(val) || original_cost === undefined || original_cost === null || isNaN(original_cost)) {
+                    return true;
+                }
+                return Number(val) > Number(original_cost);
+            }
+        ),
+    stock_quantity: Yup.number()
+        .typeError("Stock quantity must be a valid number")
+        .required("Please enter stock quantity")
+        .integer("Stock quantity must be a whole number")
+        .min(0, "Stock quantity cannot be negative"),
+    low_stock_threshold: Yup.number()
+        .typeError("Low stock threshold must be a valid number")
+        .required("Please enter low stock threshold")
+        .integer("Low stock threshold must be a whole number")
+        .min(0, "Low stock threshold cannot be negative"),
+});
+
+export const partSchema = addPartSchema;
+
 
 
 

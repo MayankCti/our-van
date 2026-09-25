@@ -273,7 +273,7 @@ const VehicleInformation = () => {
     };
 
     const handleStep2Success = (createdData, formValues) => {
-        const oId = createdData?.owner_id || createdData?.data?.owner_id;
+        const oId = createdData?.owner_id || createdData?.data?.owner_id || formValues?.owner_id;
         if (oId) {
             setOwnerId(oId);
         }

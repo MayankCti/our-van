@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import vanReducer from './slices/vanSlice';
 import technicianReducer from './slices/technicianSlice';
 import supplierReducer from './slices/supplierSlice';
+import partReducer from './slices/partSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     vanReducer,
     technicianReducer,
     supplierReducer,
+    partReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

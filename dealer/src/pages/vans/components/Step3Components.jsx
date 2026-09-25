@@ -708,7 +708,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                             <div className="">
                                 <input
                                     type="text"
-                                    className={`form-control ct_input ${customNameError ? 'is-invalid border-danger' : ''}`}
+                                    className="form-control ct_input"
                                     placeholder="e.g. Custom Solar Controller"
                                     value={customNameInput}
                                     onChange={(e) => {
@@ -740,7 +740,6 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                             </div>
                             {customNameError && (
                                 <span className="text-danger ct_fs_12 d-block mt-2">
-                                    <i className="fa-solid fa-circle-exclamation me-1"></i>
                                     {customNameError}
                                 </span>
                             )}
@@ -818,7 +817,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                             </label>
                                             <input
                                                 type="text"
-                                                className={`form-control ct_input ${activeErrors?.manufacturer && activeTouched?.manufacturer ? 'is-invalid border-danger' : ''}`}
+                                                className="form-control ct_input"
                                                 placeholder="e.g. Dometic / Energy Drive"
                                                 value={activeComponent.manufacturer || ''}
                                                 onChange={(e) => handleFieldChange('manufacturer', e.target.value)}
@@ -840,7 +839,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                             </label>
                                             <input
                                                 type="date"
-                                                className={`form-control ct_input ${activeErrors?.installation_date && activeTouched?.installation_date ? 'is-invalid border-danger' : ''}`}
+                                                className="form-control ct_input"
                                                 value={activeComponent.installation_date || ''}
                                                 max={new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => handleFieldChange('installation_date', e.target.value)}
@@ -861,7 +860,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                                 Warranty Period <span className="text-danger">*</span>
                                             </label>
                                             <select
-                                                className={`form-control ct_input ct_select_custom ${activeErrors?.warranty_period_months && activeTouched?.warranty_period_months ? 'is-invalid border-danger' : ''}`}
+                                                className="form-control ct_input ct_select_custom"
                                                 value={activeComponent.warranty_period_months || 12}
                                                 onChange={(e) => handleFieldChange('warranty_period_months', Number(e.target.value))}
                                                 onBlur={() => handleFieldBlur('warranty_period_months')}
@@ -887,7 +886,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                             <label className="mb-2 ct_label">Replacement Schedule</label>
                                             <input
                                                 type="date"
-                                                className={`form-control ct_input ${activeErrors?.replacement_schedule && activeTouched?.replacement_schedule ? 'is-invalid border-danger' : ''}`}
+                                                className="form-control ct_input"
                                                 value={activeComponent.replacement_schedule || ''}
                                                 min={activeComponent.installation_date || new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => handleFieldChange('replacement_schedule', e.target.value)}
@@ -906,7 +905,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                         <div className="form-group mb-4 text-start">
                                             <label className="mb-2 ct_label">Maintenance Notes</label>
                                             <textarea
-                                                className={`form-control ct_custom_textarea ${activeErrors?.maintenance_notes && activeTouched?.maintenance_notes ? 'is-invalid border-danger' : ''}`}
+                                                className="form-control ct_custom_textarea"
                                                 rows="3"
                                                 placeholder="Add specific care instructions or notes..."
                                                 value={activeComponent.maintenance_notes || ''}
@@ -928,7 +927,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                                 Component Image / Manual Upload <span className="text-danger">*</span>
                                             </label>
                                             <div
-                                                className={`upload-box text-center ${isDragging ? 'border-primary' : ''} ${(activeErrors?.file && activeTouched?.file) || fileError ? 'border-danger' : ''}`}
+                                                className={`upload-box text-center ${isDragging ? 'border-primary' : ''}`}
                                                 onDragOver={(e) => {
                                                     e.preventDefault();
                                                     setIsDragging(true);
@@ -972,13 +971,11 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                             {/* File Error Messages */}
                                             {fileError && (
                                                 <span className="text-danger ct_fs_12 d-block mt-2">
-                                                    <i className="fa-solid fa-circle-exclamation me-1"></i>
                                                     {fileError}
                                                 </span>
                                             )}
                                             {activeErrors?.file && activeTouched?.file && !activeComponent.file && !activeComponent.existing_file_url && (
                                                 <span className="text-danger ct_fs_12 d-block mt-2">
-                                                    <i className="fa-solid fa-circle-exclamation me-1"></i>
                                                     {activeErrors.file}
                                                 </span>
                                             )}

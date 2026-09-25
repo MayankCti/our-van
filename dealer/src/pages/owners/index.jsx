@@ -145,13 +145,13 @@ const Owners = () => {
                   ownersList.map((owner, index) => {
 
                     return (
-                      <tr key={owner.ownerId || index}>
+                      <tr key={owner.ownerId || owner.id || index}>
                         <td>{currentPage * listPerPages + index + 1}</td>
-                        <td>{owner.ownerName || "N/A"}</td>
+                        <td>{owner.ownerName || owner.full_name || owner.name || "N/A"}</td>
                         <td>{owner.email || "N/A"}</td>
-                        <td>{owner.mobileNumber || "N/A"}</td>
-                        <td>{owner?.assignedVans?.length || 0}</td>
-                        <td>{formatDate(owner.joinedOn)}</td>
+                        <td>{owner.phone || owner.mobileNumber || owner.phone_number || "N/A"}</td>
+                        <td>{owner?.assignedVans?.length || owner?.vansCount || 0}</td>
+                        <td>{formatDate(owner.dateRegistered || owner.joinedOn || owner.createdAt)}</td>
                       </tr>
                     );
                   })

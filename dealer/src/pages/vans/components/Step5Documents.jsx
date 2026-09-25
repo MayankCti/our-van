@@ -269,7 +269,7 @@ const Step5Documents = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         {label} <span className="text-danger">*</span>
                                     </label>
                                     <div
-                                        className={`upload-box text-center bg-transparent ${isDragging ? 'border-primary' : err ? 'border-danger' : ''}`}
+                                        className={`upload-box text-center bg-transparent ${isDragging ? 'border-primary' : ''}`}
                                         onDragOver={(e) => handleDragOver(e, key)}
                                         onDragLeave={handleDragLeave}
                                         onDrop={(e) => handleDrop(e, key)}
