@@ -108,28 +108,7 @@ const PartDetail = () => {
       >
         {part?.id && (
           <div className="d-flex align-items-center gap-2 flex-wrap">
-            {isOutOfStock ? (
-              <span
-                className="badge bg-danger-subtle text-danger border border-danger-subtle"
-                style={{ fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '20px' }}
-              >
-                Out of Stock
-              </span>
-            ) : isLowStock ? (
-              <span
-                className="badge bg-warning-subtle text-warning border border-warning-subtle"
-                style={{ fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '20px' }}
-              >
-                Low Stock ({qty})
-              </span>
-            ) : (
-              <span
-                className="badge bg-success-subtle text-success border border-success-subtle"
-                style={{ fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '20px' }}
-              >
-                In Stock ({qty})
-              </span>
-            )}
+
 
             <button
               type="button"

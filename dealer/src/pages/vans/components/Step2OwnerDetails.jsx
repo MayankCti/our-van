@@ -14,9 +14,14 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
         vanId: reduxVanId,
         ownerId: reduxOwnerId,
         vanStep2Data,
+        existingOwnersList = [],
         ownersList = [],
+        isExistingOwnersLoading = false,
         isOwnersLoading = false,
     } = useSelector((state) => state?.vanReducer || {});
+
+    const ownersData = existingOwnersList.length > 0 ? existingOwnersList : ownersList;
+    const isOwnersFetching = isExistingOwnersLoading || isOwnersLoading;
 
     const activeVanId = vanId || reduxVanId;
     const activeOwnerId = ownerId || reduxOwnerId || initialData?.owner_id || vanStep2Data?.owner_id;
@@ -85,11 +90,11 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
         );
     }, [dispatch, debouncedSearch]);
 
-    // Find currently selected owner object from ownersList
+    // Find currently selected owner object from ownersData
     const selectedOwner = useMemo(() => {
         if (!selectedOwnerId) return null;
-        return ownersList.find((o) => String(o.ownerId || o.id) === String(selectedOwnerId)) || null;
-    }, [selectedOwnerId, ownersList]);
+        return ownersData.find((o) => String(o.ownerId || o.id) === String(selectedOwnerId)) || null;
+    }, [selectedOwnerId, ownersData]);
 
     // Initial Formik values
     const initialValues = useMemo(() => {
@@ -119,15 +124,15 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
 
     // Filtered owners list for the dropdown
     const filteredOwners = useMemo(() => {
-        if (!searchTerm) return ownersList;
+        if (!searchTerm) return ownersData;
         const term = searchTerm.toLowerCase();
-        return ownersList.filter((owner) => {
+        return ownersData.filter((owner) => {
             const name = (owner.ownerName || owner.full_name || owner.name || '').toLowerCase();
             const email = (owner.email || '').toLowerCase();
             const phone = (owner.phone || owner.mobileNumber || owner.phone_number || '').toLowerCase();
             return name.includes(term) || email.includes(term) || phone.includes(term);
         });
-    }, [ownersList, searchTerm]);
+    }, [ownersData, searchTerm]);
 
     // Handle submit for Existing Owner
     const handleSaveExistingOwner = () => {
@@ -463,7 +468,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
 
                                                     {/* Options List */}
                                                     <div className="overflow-auto flex-grow-1" style={{ maxHeight: '200px' }}>
-                                                        {isOwnersLoading ? (
+                                                        {isOwnersFetching ? (
                                                             <div className="text-center py-3 text-muted ct_fs_13">
                                                                 <div className="spinner-border spinner-border-sm text-success me-2" role="status"></div>
                                                                 Loading owners...

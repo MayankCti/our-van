@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
 import SubHeader from '../../components/SubHeader';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
 import useDebounce from '../../hooks/useDebounce';
-import { getDealerOwnersList } from '../../redux/slices/vanSlice';
+import { pageRoutes } from '../../routes/PageRoutes';
+import { getDealerOwners } from '../../redux/slices/vanSlice';
 
 const Owners = () => {
   const dispatch = useDispatch();
@@ -28,7 +30,7 @@ const Owners = () => {
   // Fetch owners list when page, limit, or debounced search changes
   useEffect(() => {
     dispatch(
-      getDealerOwnersList({
+      getDealerOwners({
         page: currentPage + 1,
         limit: listPerPages,
         search: debouncedSearch,
@@ -122,13 +124,14 @@ const Owners = () => {
                   <th>Mobile Number</th>
                   <th>Assigned Van</th>
                   <th>Joined On</th>
+                  <th>Action</th>
                 </tr>
               </thead>
 
               <tbody>
                 {isOwnersLoading ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-5">
+                    <td colSpan="7" className="text-center py-5">
                       <div className="d-flex align-items-center justify-content-center gap-2">
                         <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                         <span className="text-muted ct_fs_14">Loading owners...</span>
@@ -137,21 +140,33 @@ const Owners = () => {
                   </tr>
                 ) : ownersList?.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-5 text-muted ct_fs_14">
+                    <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
                       No owners found.
                     </td>
                   </tr>
                 ) : (
                   ownersList.map((owner, index) => {
+                    const ownerId = owner.ownerId || owner.id || owner.owner_id;
 
                     return (
-                      <tr key={owner.ownerId || owner.id || index}>
+                      <tr key={ownerId || index}>
                         <td>{currentPage * listPerPages + index + 1}</td>
-                        <td>{owner.ownerName || owner.full_name || owner.name || "N/A"}</td>
+                        <td className="ct_fw_600">{owner.ownerName || owner.full_name || owner.name || "N/A"}</td>
                         <td>{owner.email || "N/A"}</td>
                         <td>{owner.phone || owner.mobileNumber || owner.phone_number || "N/A"}</td>
-                        <td>{owner?.assignedVans?.length || owner?.vansCount || 0}</td>
+                        <td>{owner?.assignedVans?.length || owner?.vansCount || owner?.totalAssignedVans || 0}</td>
                         <td>{formatDate(owner.dateRegistered || owner.joinedOn || owner.createdAt)}</td>
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            <Link
+                              to={`${pageRoutes.owner_detail}?owner_id=${ownerId}`}
+                              className="ct_action_icon_btn ct_view_btn"
+                              title="View Details"
+                            >
+                              <i className="fa-regular fa-eye"></i>
+                            </Link>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })

@@ -9,6 +9,7 @@ const Notifications = lazy(() => import("../pages/auth/Notifications"));
 
 const Vans = lazy(() => import("../pages/vans"));
 const Owners = lazy(() => import("../pages/owners"));
+const OwnerDetail = lazy(() => import("../pages/owners/OwnerDetail"));
 const Technicians = lazy(() => import("../pages/technicians"));
 const TechnicianDetail = lazy(() => import("../pages/technicians/TechnicianDetail"));
 const Suppliers = lazy(() => import("../pages/suppliers"));
@@ -32,6 +33,7 @@ export const pageRoutes = {
   van_detail: "/van-detail",
   vehicle_information: "/vehicle-information",
   owners: "/owners",
+  owner_detail: "/owner-detail",
   dealers: "/dealers",
   technicians: "/technicians",
   technician_detail: "/technician-detail",
@@ -106,6 +108,12 @@ export const AllRoutes = [
     name: "Owners",
     path: pageRoutes.owners,
     element: <Owners />,
+    isPrivate: true,
+  },
+  {
+    name: "Owner Detail",
+    path: pageRoutes.owner_detail,
+    element: <OwnerDetail />,
     isPrivate: true,
   },
   {

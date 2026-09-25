@@ -8,7 +8,9 @@ import {
   createVanStep6,
   getVanProgress,
   getVansList,
+  getDealerOwners,
   getDealerOwnersList,
+  getOwnerDetails,
   getDealerDashboard,
   getComponentsList,
   getVanReview,
@@ -48,7 +50,7 @@ const initialState = {
   },
   isVansLoading: false,
   vansError: null,
-  // Owners list & pagination
+  // Owners list & pagination (for Owners Page: /dealer/vans/get/owners)
   ownersList: [],
   ownersMeta: {
     totalItems: 0,
@@ -60,6 +62,14 @@ const initialState = {
   },
   isOwnersLoading: false,
   ownersError: null,
+  // Existing Owners list (for Step 2 dropdown: /dealer/vans/get/owners/list)
+  existingOwnersList: [],
+  isExistingOwnersLoading: false,
+  existingOwnersError: null,
+  // Owner Details & Assigned Vans
+  ownerDetailsData: null,
+  isOwnerDetailsLoading: false,
+  ownerDetailsError: null,
   // Dashboard details
   dashboardData: null,
   isDashboardLoading: false,
@@ -285,12 +295,12 @@ const vanSlice = createSlice({
       state.vansList = [];
     });
 
-    // getDealerOwnersList
-    builder.addCase(getDealerOwnersList.pending, (state) => {
+    // getDealerOwners (Owners page: /dealer/vans/get/owners)
+    builder.addCase(getDealerOwners.pending, (state) => {
       state.isOwnersLoading = true;
       state.ownersError = null;
     });
-    builder.addCase(getDealerOwnersList.fulfilled, (state, action) => {
+    builder.addCase(getDealerOwners.fulfilled, (state, action) => {
       state.isOwnersLoading = false;
       const payload = action?.payload || {};
       const resData = payload?.data;
@@ -309,10 +319,53 @@ const vanSlice = createSlice({
       }
       state.ownersError = null;
     });
-    builder.addCase(getDealerOwnersList.rejected, (state, action) => {
+    builder.addCase(getDealerOwners.rejected, (state, action) => {
       state.isOwnersLoading = false;
       state.ownersError = action.payload || action.error?.message;
       state.ownersList = [];
+    });
+
+    // getDealerOwnersList (Step 2 Existing Owner dropdown: /dealer/vans/get/owners/list)
+    builder.addCase(getDealerOwnersList.pending, (state) => {
+      state.isExistingOwnersLoading = true;
+      state.existingOwnersError = null;
+    });
+    builder.addCase(getDealerOwnersList.fulfilled, (state, action) => {
+      state.isExistingOwnersLoading = false;
+      const payload = action?.payload || {};
+      const resData = payload?.data;
+      const list = Array.isArray(resData?.data)
+        ? resData.data
+        : Array.isArray(resData)
+        ? resData
+        : Array.isArray(payload)
+        ? payload
+        : [];
+      state.existingOwnersList = list;
+      if (!state.ownersList || state.ownersList.length === 0) {
+        state.ownersList = list;
+      }
+      state.existingOwnersError = null;
+    });
+    builder.addCase(getDealerOwnersList.rejected, (state, action) => {
+      state.isExistingOwnersLoading = false;
+      state.existingOwnersError = action.payload || action.error?.message;
+      state.existingOwnersList = [];
+    });
+
+    // getOwnerDetails
+    builder.addCase(getOwnerDetails.pending, (state) => {
+      state.isOwnerDetailsLoading = true;
+      state.ownerDetailsError = null;
+    });
+    builder.addCase(getOwnerDetails.fulfilled, (state, action) => {
+      state.isOwnerDetailsLoading = false;
+      state.ownerDetailsData = action?.payload?.data || action?.payload || null;
+      state.ownerDetailsError = null;
+    });
+    builder.addCase(getOwnerDetails.rejected, (state, action) => {
+      state.isOwnerDetailsLoading = false;
+      state.ownerDetailsError = action.payload || action.error?.message;
     });
 
     // getDealerDashboard

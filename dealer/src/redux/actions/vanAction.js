@@ -123,20 +123,83 @@ export const getVansList = createAsyncThunk(
   }
 );
 
-// Get Dealer Owners List (paginated with search)
-export const getDealerOwnersList = createAsyncThunk(
-  "van/getDealerOwnersList",
+// Get Dealer Owners for Owners Page (paginated with search: /dealer/vans/get/owners)
+export const getDealerOwners = createAsyncThunk(
+  "van/getDealerOwners",
   async (props = {}, { rejectWithValue }) => {
     const { page = 1, limit = 10, search = "", callback } = props;
     try {
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_GET_OWNERS_API || "/dealer/vans/get/owners/list",
+        url: import.meta.env.VITE_GET_OWNERS_API || "/dealer/vans/get/owners",
         method: "GET",
         params: {
           page,
           limit,
           search: search || undefined,
         },
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Dealer Owners List for Step 2 Existing Owner dropdown (/dealer/vans/get/owners/list)
+export const getDealerOwnersList = createAsyncThunk(
+  "van/getDealerOwnersList",
+  async (props = {}, { rejectWithValue }) => {
+    const { page = 1, limit = 100, search = "", callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_OWNERS_LIST_API || "/dealer/vans/get/owners/list",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          search: search || undefined,
+        },
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Owner Details with Assigned Vans By Owner ID
+export const getOwnerDetails = createAsyncThunk(
+  "van/getOwnerDetails",
+  async (props = {}, { rejectWithValue }) => {
+    const { ownerId, id, callback } = props;
+    const targetId = ownerId || id;
+    try {
+      const endpoint = (
+        import.meta.env.VITE_GET_OWNER_DETAILS_API ||
+        "/dealer/vans/get/owner/:ownerId"
+      ).replace(":ownerId", targetId);
+
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "GET",
         isErrorToast: true,
         isSuccessToast: false,
       });
