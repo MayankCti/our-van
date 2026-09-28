@@ -20,6 +20,7 @@ const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 const VehicleInformation = lazy(() => import("../pages/vans/VehicleInformation"));
 const Parts = lazy(() => import("../pages/parts"));
 const PartDetail = lazy(() => import("../pages/parts/PartDetail"));
+const Services = lazy(() => import("../pages/services"));
 
 export const pageRoutes = {
   login: "/login",
@@ -41,6 +42,7 @@ export const pageRoutes = {
   supplier_detail: "/supplier-detail",
   parts: "/parts",
   part_detail: "/part-detail",
+  services: "/services",
 };
 
 export const AllRoutes = [
@@ -150,6 +152,12 @@ export const AllRoutes = [
     name: "Part Detail",
     path: pageRoutes.part_detail,
     element: <PartDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "Services",
+    path: pageRoutes.services,
+    element: <Services />,
     isPrivate: true,
   },
   {

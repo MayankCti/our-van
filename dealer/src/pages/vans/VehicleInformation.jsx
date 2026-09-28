@@ -95,13 +95,23 @@ const VehicleInformation = () => {
                             }
 
                             if (owner) {
-                                const oId = owner?.id || vd?.owner_id;
+                                const oId = owner?.id || owner?.owner_id || vd?.owner_id;
+                                const oPhone =
+                                    owner?.mobile_number ||
+                                    owner?.phone_number ||
+                                    owner?.phone ||
+                                    owner?.contact_number ||
+                                    owner?.phoneNumber ||
+                                    owner?.mobileNumber ||
+                                    vd?.owner_phone ||
+                                    vd?.owner_mobile ||
+                                    '';
                                 setOwnerId(oId);
                                 setStep2Data({
                                     owner_id: oId,
-                                    owner_name: owner?.full_name || '',
-                                    email: owner?.email || '',
-                                    phone_number: owner?.mobile_number || '',
+                                    owner_name: owner?.full_name || owner?.name || owner?.owner_name || vd?.owner_name || '',
+                                    email: owner?.email || vd?.owner_email || '',
+                                    phone_number: oPhone,
                                 });
                             }
 
@@ -210,14 +220,24 @@ const VehicleInformation = () => {
             }
 
             if (owner) {
-                const oId = owner?.id || vd?.owner_id;
+                const oId = owner?.id || owner?.owner_id || vd?.owner_id;
+                const oPhone =
+                    owner?.mobile_number ||
+                    owner?.phone_number ||
+                    owner?.phone ||
+                    owner?.contact_number ||
+                    owner?.phoneNumber ||
+                    owner?.mobileNumber ||
+                    vd?.owner_phone ||
+                    vd?.owner_mobile ||
+                    '';
                 if (oId) setOwnerId((prev) => prev || oId);
                 setStep2Data((prev) => ({
                     ...prev,
                     owner_id: oId || prev?.owner_id,
-                    owner_name: owner?.full_name || prev?.owner_name || '',
-                    email: owner?.email || prev?.email || '',
-                    phone_number: owner?.mobile_number || prev?.phone_number || '',
+                    owner_name: owner?.full_name || owner?.name || owner?.owner_name || vd?.owner_name || prev?.owner_name || '',
+                    email: owner?.email || vd?.owner_email || prev?.email || '',
+                    phone_number: oPhone || prev?.phone_number || '',
                 }));
             }
 

@@ -9,6 +9,7 @@ import { authGetProfile, authUpdateProfile } from '../../redux/actions/authActio
 import { pipGetProfile } from '../../utils/pip';
 import { editProfileSchema } from '../../utils/Schema';
 import ErrorMessage from '../../components/form/ErrorMessage';
+import PhoneInputField from '../../components/form/PhoneInputField';
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -96,6 +97,8 @@ const EditProfile = () => {
               handleChange,
               handleBlur,
               handleSubmit,
+              setFieldValue,
+              setFieldTouched,
             }) => (
               <form onSubmit={handleSubmit}>
                 {/* Profile Image Section */}
@@ -161,16 +164,15 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-6">
-                    <label className="form-label ct_label">Phone Number</label>
-                    <input
-                      type="text"
+                    <label className="form-label ct_label" htmlFor="phone_number">Phone Number</label>
+                    <PhoneInputField
                       name="phone_number"
                       id="phone_number"
-                      className="form-control ct_input"
                       placeholder="Enter phone number"
                       value={values.phone_number}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
+                      isInvalid={Boolean(errors.phone_number && touched.phone_number)}
+                      onChange={(val) => setFieldValue('phone_number', val)}
+                      onBlur={() => setFieldTouched('phone_number', true)}
                     />
                     <ErrorMessage
                       errors={errors}

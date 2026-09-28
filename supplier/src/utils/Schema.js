@@ -1,4 +1,40 @@
 import * as Yup from "yup";
+import { isValidPhoneNumber } from "libphonenumber-js";
+
+// Reusable Country-Code Aware Phone Validator
+export const validatePhoneNumberByCountry = (value, defaultCountry = 'AU') => {
+    if (!value || !String(value).trim()) return false;
+    const str = String(value).trim();
+    const digitsOnly = str.replace(/\D/g, '');
+    if (digitsOnly.length < 6) return false;
+
+    try {
+        if (str.startsWith('+')) {
+            return isValidPhoneNumber(str);
+        }
+        if (isValidPhoneNumber('+' + str)) return true;
+        return isValidPhoneNumber(str, defaultCountry);
+    } catch {
+        return digitsOnly.length >= 7 && digitsOnly.length <= 16;
+    }
+};
+
+export const phoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .required(`Please enter ${fieldLabel}`)
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            return validatePhoneNumberByCountry(value);
+        });
+
+export const optionalPhoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .nullable()
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            if (!value || !String(value).trim()) return true;
+            return validatePhoneNumberByCountry(value);
+        });
 
 // Common Email Validation Rule
 export const emailValidation = Yup.string()
@@ -30,21 +66,7 @@ export const forgotPasswordSchema = Yup.object().shape({
 export const editProfileSchema = Yup.object().shape({
     full_name: Yup.string().trim().required("Please enter full name"),
     company_name: Yup.string().trim().required("Please enter company name"),
-    phone_number: Yup.string()
-        .trim()
-        .nullable()
-        .test("min-digits", "Phone number must be at least 10 digits", (value) => {
-            if (!value) return true;
-            return value.length >= 10;
-        })
-        .test("max-digits", "Phone number cannot exceed 20 characters", (value) => {
-            if (!value) return true;
-            return value.length <= 20;
-        })
-        .test("valid-phone", "Please enter a valid phone number", (value) => {
-            if (!value) return true;
-            return /^[+]?[0-9\s-]{10,20}$/.test(value);
-        }),
+    phone_number: optionalPhoneValidationRule("phone number"),
     city: Yup.string().trim().nullable(),
     abn: Yup.string().trim().nullable(),
     accounting_software_used: Yup.string().trim().nullable(),

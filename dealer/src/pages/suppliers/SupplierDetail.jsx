@@ -90,15 +90,15 @@ const SupplierDetail = () => {
         title="Supplier Details"
         subtitle="View complete information and status of the supplier."
         backUrl={pageRoutes.suppliers}
+        className="ct_flex_col_767"
       >
         {supplier?.id && (
           <div className="d-flex align-items-center gap-3">
             <span
-              className={`badge ${
-                active
+              className={`badge ${active
                   ? 'bg-success-subtle text-success border border-success-subtle'
                   : 'bg-danger-subtle text-danger border border-danger-subtle'
-              }`}
+                }`}
               style={{
                 fontSize: '13px',
                 fontWeight: '600',
@@ -111,9 +111,8 @@ const SupplierDetail = () => {
 
             <button
               type="button"
-              className={`btn btn-sm ${
-                active ? 'btn-outline-danger' : 'btn-outline-success'
-              } ct_fw_600 px-3 py-1`}
+              className={`btn btn-sm ${active ? 'btn-outline-danger' : 'btn-outline-success'
+                } ct_fw_600 px-3 py-1`}
               onClick={handleToggleStatus}
               disabled={isActionLoading}
               style={{ borderRadius: '8px', fontSize: '13px' }}
@@ -221,7 +220,9 @@ const SupplierDetail = () => {
                   <span>
                     <i className="fa-solid fa-phone me-1 text-success"></i>
                     {supplier.phone_number
-                      ? `${supplier.country_code ? supplier.country_code + ' ' : ''}${supplier.phone_number}`
+                      ? (supplier.phone_number.startsWith('+')
+                        ? supplier.phone_number
+                        : `${supplier.country_code ? supplier.country_code + ' ' : ''}${supplier.phone_number}`)
                       : 'N/A'}
                   </span>
                   {supplier.city && (
@@ -269,7 +270,9 @@ const SupplierDetail = () => {
                 </h5>
                 <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
                   {supplier.phone_number
-                    ? `${supplier.country_code || ''} ${supplier.phone_number}`
+                    ? (supplier.phone_number.startsWith('+')
+                      ? supplier.phone_number
+                      : `${supplier.country_code ? supplier.country_code + ' ' : ''}${supplier.phone_number}`)
                     : 'N/A'}
                 </h6>
               </div>

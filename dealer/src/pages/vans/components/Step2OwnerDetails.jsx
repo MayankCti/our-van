@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import toast from 'react-hot-toast';
 import { step2OwnerDetailsSchema } from '../../../utils/Schema';
 import ErrorMessage from '../../../components/form/ErrorMessage';
+import PhoneInputField from '../../../components/form/PhoneInputField';
 import { createVanStep2, getDealerOwnersList } from '../../../redux/slices/vanSlice';
 import useDebounce from '../../../hooks/useDebounce';
 
@@ -68,6 +69,13 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
     const debouncedSearch = useDebounce(searchTerm, 350);
     const dropdownRef = useRef(null);
 
+    // Sync selectedOwnerId when activeOwnerId or initialData arrives asynchronously
+    useEffect(() => {
+        if (activeOwnerId && !selectedOwnerId) {
+            setSelectedOwnerId(String(activeOwnerId));
+        }
+    }, [activeOwnerId, selectedOwnerId]);
+
     // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -99,28 +107,45 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
     // Initial Formik values
     const initialValues = useMemo(() => {
         if (ownerMode === 'existing') {
+            const ownerPhone =
+                selectedOwner?.phone ||
+                selectedOwner?.mobileNumber ||
+                selectedOwner?.phone_number ||
+                selectedOwner?.mobile_number ||
+                selectedOwner?.contact_number ||
+                selectedOwner?.phoneNumber ||
+                initialData?.phone_number ||
+                initialData?.mobile_number ||
+                initialData?.phone ||
+                initialData?.contact_number ||
+                initialData?.phoneNumber ||
+                initialData?.mobileNumber ||
+                vanStep2Data?.phone_number ||
+                vanStep2Data?.mobile_number ||
+                '';
+
             return {
                 owner_name:
                     selectedOwner?.ownerName ||
                     selectedOwner?.full_name ||
                     selectedOwner?.name ||
-                    (activeOwnerId ? (initialData?.owner_name || vanStep2Data?.owner_name || '') : ''),
+                    initialData?.owner_name ||
+                    vanStep2Data?.owner_name ||
+                    '',
                 email:
                     selectedOwner?.email ||
-                    (activeOwnerId ? (initialData?.email || vanStep2Data?.email || '') : ''),
-                phone_number:
-                    selectedOwner?.phone ||
-                    selectedOwner?.mobileNumber ||
-                    selectedOwner?.phone_number ||
-                    (activeOwnerId ? (initialData?.phone_number || initialData?.mobile_number || vanStep2Data?.phone_number || '') : ''),
+                    initialData?.email ||
+                    vanStep2Data?.email ||
+                    '',
+                phone_number: ownerPhone,
             };
         }
         return {
-            owner_name: newOwnerValues.owner_name || '',
-            email: newOwnerValues.email || '',
-            phone_number: newOwnerValues.phone_number || '',
+            owner_name: newOwnerValues.owner_name || initialData?.owner_name || '',
+            email: newOwnerValues.email || initialData?.email || '',
+            phone_number: newOwnerValues.phone_number || initialData?.phone_number || initialData?.mobile_number || initialData?.phone || '',
         };
-    }, [ownerMode, selectedOwner, activeOwnerId, initialData, vanStep2Data, newOwnerValues]);
+    }, [ownerMode, selectedOwner, initialData, vanStep2Data, newOwnerValues]);
 
     // Filtered owners list for the dropdown
     const filteredOwners = useMemo(() => {
@@ -129,7 +154,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
         return ownersData.filter((owner) => {
             const name = (owner.ownerName || owner.full_name || owner.name || '').toLowerCase();
             const email = (owner.email || '').toLowerCase();
-            const phone = (owner.phone || owner.mobileNumber || owner.phone_number || '').toLowerCase();
+            const phone = (owner.phone || owner.mobileNumber || owner.phone_number || owner.mobile_number || owner.contact_number || '').toLowerCase();
             return name.includes(term) || email.includes(term) || phone.includes(term);
         });
     }, [ownersData, searchTerm]);
@@ -254,14 +279,23 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
                 handleBlur,
                 handleSubmit,
                 setFieldValue,
+                setFieldTouched,
                 setValues,
             }) => {
                 const handleOwnerSelect = (owner) => {
                     const id = String(owner.ownerId || owner.id);
+                    const phone =
+                        owner.phone ||
+                        owner.mobileNumber ||
+                        owner.phone_number ||
+                        owner.mobile_number ||
+                        owner.contact_number ||
+                        owner.phoneNumber ||
+                        '';
                     setSelectedOwnerId(id);
                     setFieldValue('owner_name', owner.ownerName || owner.full_name || owner.name || '');
                     setFieldValue('email', owner.email || '');
-                    setFieldValue('phone_number', owner.phone || owner.mobileNumber || owner.phone_number || '');
+                    setFieldValue('phone_number', phone);
                     setDropdownOpen(false);
                     setSearchTerm('');
                 };
@@ -315,10 +349,10 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
                 };
 
                 // Check if email and phone should be disabled:
-                // 1. In existing mode: readOnly (selected from dropdown)
-                // 2. In new mode: disabled only if this new owner was already submitted & registered
-                const isEmailDisabled = ownerMode === 'existing' || (ownerMode === 'new' && isNewOwnerAlreadySaved);
-                const isPhoneDisabled = ownerMode === 'existing' || (ownerMode === 'new' && isNewOwnerAlreadySaved);
+                // 1. In existing mode: disabled/readOnly (selected from dropdown)
+                // 2. In new mode: always enabled and editable
+                const isEmailDisabled = ownerMode === 'existing';
+                const isPhoneDisabled = ownerMode === 'existing';
 
                 return (
                     <fieldset>
@@ -536,7 +570,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
                                             name="owner_name"
                                             id="owner_name"
                                             className="form-control ct_input"
-                                            placeholder={ownerMode === 'existing' ? 'Owner Name' : 'e.g. Jessica William / Yash Patel'}
+                                            placeholder={ownerMode === 'existing' ? 'Owner Name' : 'Enter full name'}
                                             value={values.owner_name}
                                             onChange={(e) => {
                                                 handleChange(e);
@@ -569,7 +603,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
                                             name="email"
                                             id="email"
                                             className="form-control ct_input"
-                                            placeholder={ownerMode === 'existing' ? 'Email Address' : 'e.g. jessicawilliam029@gmail.com'}
+                                            placeholder={ownerMode === 'existing' ? 'Email Address' : 'Enter email address'}
                                             value={values.email}
                                             onChange={(e) => {
                                                 handleChange(e);
@@ -598,27 +632,20 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
                                         <label className="mb-2 ct_label" htmlFor="phone_number">
                                             Mobile Number <span className="text-danger">*</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            name="phone_number"
+                                        <PhoneInputField
                                             id="phone_number"
-                                            className="form-control ct_input"
-                                            placeholder={ownerMode === 'existing' ? 'Mobile Number' : 'e.g. +91 9999999999'}
+                                            name="phone_number"
                                             value={values.phone_number}
-                                            onChange={(e) => {
-                                                handleChange(e);
+                                            placeholder="Enter mobile number"
+                                            disabled={isPhoneDisabled}
+                                            readOnly={isPhoneDisabled}
+                                            onChange={(val) => {
+                                                setFieldValue('phone_number', val);
                                                 if (ownerMode === 'new') {
-                                                    setNewOwnerValues((prev) => ({ ...prev, phone_number: e.target.value }));
+                                                    setNewOwnerValues((prev) => ({ ...prev, phone_number: val }));
                                                 }
                                             }}
-                                            onBlur={handleBlur}
-                                            readOnly={isPhoneDisabled}
-                                            disabled={isPhoneDisabled}
-                                            style={
-                                                isPhoneDisabled
-                                                    ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', opacity: 0.85, color: '#475569' }
-                                                    : { backgroundColor: '#ffffff', cursor: 'text', color: '#0f172a' }
-                                            }
+                                            onBlur={() => setFieldTouched('phone_number', true)}
                                         />
                                         {ownerMode === 'new' && !isPhoneDisabled && (
                                             <ErrorMessage errors={errors} touched={touched} fieldName="phone_number" />

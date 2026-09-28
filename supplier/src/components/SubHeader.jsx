@@ -19,8 +19,14 @@ const SubHeader = ({
     }
   };
 
+  const responsiveColClass = className.includes('ct_flex_col_')
+    ? ''
+    : 'ct_flex_col_575';
+
   return (
-    <div className={`ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-between gap-3 ct_flex_col_575 ${className}`}>
+    <div
+      className={`ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-between gap-3 ${responsiveColClass} ${className}`.trim()}
+    >
       <div className="d-flex align-items-center justify-content-start gap-2">
         {backUrl ? (
           <Link to={backUrl} className="d-inline-flex align-items-center">
@@ -46,7 +52,7 @@ const SubHeader = ({
         </div>
       </div>
 
-      {children && <div>{children}</div>}
+      {children && <div className="ct_w_100_575">{children}</div>}
     </div>
   );
 };

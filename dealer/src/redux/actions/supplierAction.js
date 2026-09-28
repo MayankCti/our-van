@@ -95,6 +95,33 @@ export const toggleBlockSupplier = createAsyncThunk(
   }
 );
 
+// Create New Supplier
+export const createSupplier = createAsyncThunk(
+  "supplier/createSupplier",
+  async (props, { rejectWithValue }) => {
+    const { data, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_CREATE_SUPPLIER_API || "/supplier",
+        method: "POST",
+        data,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
 // Delete Supplier
 export const deleteSupplier = createAsyncThunk(
   "supplier/deleteSupplier",
@@ -125,3 +152,4 @@ export const deleteSupplier = createAsyncThunk(
     }
   }
 );
+

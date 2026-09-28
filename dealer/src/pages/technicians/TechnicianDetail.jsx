@@ -82,6 +82,7 @@ const TechnicianDetail = () => {
         title={tech?.full_name ? `${tech.full_name} Details` : 'Technician Details'}
         subtitle="View complete information and status of the technician."
         backUrl={pageRoutes.technicians}
+        className="ct_flex_col_767"
       >
         {tech?.id && (
           <div className="d-flex align-items-center gap-3">
@@ -102,7 +103,7 @@ const TechnicianDetail = () => {
 
             <button
               type="button"
-              className={`btn btn-sm ${active ? 'btn-outline-danger' : 'btn-outline-success'
+              className={`btn btn-sm flex-shrink-0 ${active ? 'btn-outline-danger' : 'btn-outline-success'
                 } ct_fw_600 px-3 py-1`}
               onClick={handleToggleStatus}
               disabled={isActionLoading}
@@ -203,8 +204,10 @@ const TechnicianDetail = () => {
                   </span>
                   <span>
                     <i className="fa-solid fa-phone me-1 text-success"></i>
-                    {tech.phone_number
-                      ? `${tech.country_code ? tech.country_code + ' ' : ''}${tech.phone_number}`
+                    {(tech.contact_number || tech.phone_number)
+                      ? ((tech.contact_number || tech.phone_number).startsWith('+')
+                        ? (tech.contact_number || tech.phone_number)
+                        : `${tech.country_code ? tech.country_code + ' ' : ''}${tech.contact_number || tech.phone_number}`)
                       : 'N/A'}
                   </span>
 
@@ -236,7 +239,13 @@ const TechnicianDetail = () => {
                 <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">
                   Phone Number
                 </h5>
-                <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">{tech.country_code || ''}{tech.phone_number || 'N/A'}</h6>
+                <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
+                  {(tech.contact_number || tech.phone_number)
+                    ? ((tech.contact_number || tech.phone_number).startsWith('+')
+                      ? (tech.contact_number || tech.phone_number)
+                      : `${tech.country_code ? tech.country_code + ' ' : ''}${tech.contact_number || tech.phone_number}`)
+                    : 'N/A'}
+                </h6>
               </div>
 
 

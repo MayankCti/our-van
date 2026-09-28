@@ -1,4 +1,40 @@
 import * as Yup from "yup";
+import { isValidPhoneNumber } from "libphonenumber-js";
+
+// Reusable Country-Code Aware Phone Validator
+export const validatePhoneNumberByCountry = (value, defaultCountry = 'AU') => {
+    if (!value || !String(value).trim()) return false;
+    const str = String(value).trim();
+    const digitsOnly = str.replace(/\D/g, '');
+    if (digitsOnly.length < 6) return false;
+
+    try {
+        if (str.startsWith('+')) {
+            return isValidPhoneNumber(str);
+        }
+        if (isValidPhoneNumber('+' + str)) return true;
+        return isValidPhoneNumber(str, defaultCountry);
+    } catch {
+        return digitsOnly.length >= 7 && digitsOnly.length <= 16;
+    }
+};
+
+export const phoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .required(`Please enter ${fieldLabel}`)
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            return validatePhoneNumberByCountry(value);
+        });
+
+export const optionalPhoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .nullable()
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            if (!value || !String(value).trim()) return true;
+            return validatePhoneNumberByCountry(value);
+        });
 
 // Common Email Validation Rule
 export const emailValidation = Yup.string()
@@ -123,12 +159,7 @@ export const step2OwnerDetailsSchema = Yup.object().shape({
         .min(2, "Full name must be at least 2 characters")
         .max(100, "Full name cannot exceed 100 characters"),
     email: emailValidation,
-    phone_number: Yup.string()
-        .trim()
-        .required("Please enter mobile number")
-        .min(10, "Mobile number must be at least 10 digits")
-        .max(20, "Mobile number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid mobile number"),
+    phone_number: phoneValidationRule("mobile number"),
 });
 
 // Step 3: Single Component Validation Schema
@@ -196,12 +227,7 @@ export const step4WarrantySchema = Yup.object().shape({
         .max(1000, "Claim instructions cannot exceed 1000 characters")
         .nullable(),
     claim_email: emailValidation,
-    claim_phone: Yup.string()
-        .trim()
-        .required("Please enter claim phone number")
-        .min(10, "Phone number must be at least 10 digits")
-        .max(20, "Phone number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid phone number"),
+    claim_phone: phoneValidationRule("claim phone number"),
     warranty_document: Yup.mixed().nullable(),
 });
 
@@ -322,6 +348,74 @@ export const editPartSchema = Yup.object().shape({
 
 export const partSchema = addPartSchema;
 
+// Create Supplier Validation Schema
+export const createSupplierSchema = Yup.object().shape({
+    full_name: Yup.string()
+        .trim()
+        .required("Please enter contact person / full name")
+        .min(2, "Full name must be at least 2 characters")
+        .max(100, "Full name cannot exceed 100 characters"),
+    email: emailValidation,
+    phone_number: phoneValidationRule("phone number"),
+    company_name: Yup.string()
+        .trim()
+        .required("Please enter company name")
+        .min(2, "Company name must be at least 2 characters")
+        .max(150, "Company name cannot exceed 150 characters"),
+    accounting_software_used: Yup.string()
+        .trim()
+        .max(100, "Accounting software name cannot exceed 100 characters")
+        .nullable(),
+    service_region: Yup.string()
+        .trim()
+        .max(100, "Service region cannot exceed 100 characters")
+        .nullable(),
+    services_offered: Yup.string()
+        .trim()
+        .max(300, "Services offered cannot exceed 300 characters")
+        .nullable(),
+    about_us: Yup.string()
+        .trim()
+        .max(1000, "About us cannot exceed 1000 characters")
+        .nullable(),
+});
 
+// Create Technician Validation Schema
+export const createTechnicianSchema = Yup.object().shape({
+    name: Yup.string()
+        .trim()
+        .required("Please enter technician name")
+        .min(2, "Name must be at least 2 characters")
+        .max(100, "Name cannot exceed 100 characters"),
+    email: emailValidation,
+    password: Yup.string()
+        .required("Please enter password")
+        .min(6, "Password must be at least 6 characters")
+        .max(50, "Password cannot exceed 50 characters"),
+    job_role: Yup.string()
+        .trim()
+        .max(100, "Job role cannot exceed 100 characters")
+        .nullable(),
+    contact_number: phoneValidationRule("contact number"),
+    home_address: Yup.string()
+        .trim()
+        .max(250, "Home address cannot exceed 250 characters")
+        .nullable(),
+});
 
+// Service Validation Schema
+export const serviceSchema = Yup.object().shape({
+    name: Yup.string()
+        .trim()
+        .required("Please enter service name")
+        .min(2, "Service name must be at least 2 characters")
+        .max(150, "Service name cannot exceed 150 characters"),
+    cost: Yup.number()
+        .typeError("Service cost must be a valid number")
+        .required("Please enter service cost")
+        .min(0, "Service cost cannot be negative"),
+});
+
+export const createServiceSchema = serviceSchema;
+export const updateServiceSchema = serviceSchema;
 

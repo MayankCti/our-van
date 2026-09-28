@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { Formik, Form } from 'formik';
 import Layout from '../../layout/Layout';
 import SubHeader from '../../components/SubHeader';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
+import ErrorMessage from '../../components/form/ErrorMessage';
+import PhoneInputField from '../../components/form/PhoneInputField';
+import Eye from '../../components/form/Eye';
 import useDebounce from '../../hooks/useDebounce';
 import { pageRoutes } from '../../routes/PageRoutes';
+import { createTechnicianSchema } from '../../utils/Schema';
 import {
   getTechniciansByDealer,
+  createTechnician,
   toggleBlockTechnician,
   deleteTechnician,
 } from '../../redux/slices/technicianSlice';
@@ -19,6 +25,7 @@ const Technicians = () => {
   const {
     techniciansList = [],
     isTechniciansLoading = false,
+    isActionLoading = false,
   } = useSelector((state) => state.technicianReducer || {});
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +35,8 @@ const Technicians = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
   // Modal & action states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedTech, setSelectedTech] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,10 +61,11 @@ const Technicians = () => {
     if (!debouncedSearch.trim()) return techniciansList;
     const query = debouncedSearch.toLowerCase().trim();
     return techniciansList.filter((tech) => {
-      const name = (tech.full_name || '').toLowerCase();
+      const name = (tech.full_name || tech.name || '').toLowerCase();
       const email = (tech.email || '').toLowerCase();
-      const phone = `${tech.country_code || ''} ${tech.phone_number || ''}`.toLowerCase();
-      return name.includes(query) || email.includes(query) || phone.includes(query);
+      const role = (tech.job_role || '').toLowerCase();
+      const phone = `${tech.country_code || ''} ${tech.phone_number || tech.contact_number || ''}`.toLowerCase();
+      return name.includes(query) || email.includes(query) || phone.includes(query) || role.includes(query);
     });
   }, [techniciansList, debouncedSearch]);
 
@@ -141,12 +151,60 @@ const Technicians = () => {
     );
   };
 
+  // Create Technician Form Handlers
+  const initialTechnicianValues = {
+    name: '',
+    email: '',
+    password: '',
+    job_role: '',
+    contact_number: '',
+    home_address: '',
+  };
+
+  const handleCreateTechnician = (values, { setSubmitting, resetForm }) => {
+    const payload = {
+      name: values.name?.trim(),
+      email: values.email?.trim(),
+      password: values.password,
+      job_role: values.job_role?.trim() || undefined,
+      contact_number: values.contact_number?.trim(),
+      home_address: values.home_address?.trim() || undefined,
+    };
+
+    dispatch(
+      createTechnician({
+        data: payload,
+        callback: (res) => {
+          setSubmitting(false);
+          if (res) {
+            setShowAddModal(false);
+            setShowPassword(false);
+            resetForm();
+            dispatch(getTechniciansByDealer({ search: debouncedSearch }));
+          }
+        },
+      })
+    );
+  };
+
   return (
     <Layout>
       <SubHeader
         title="Technicians"
         subtitle="View and manage all technicians assigned to your dealership."
-      />
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShowPassword(false);
+            setShowAddModal(true);
+          }}
+          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center gap-2"
+        >
+          <i className="fa-solid fa-plus"></i>
+          <span>Add New Technician</span>
+        </button>
+      </SubHeader>
 
       <div className="ct_px_30 mt-4 pb-4">
         <div className="container-fluid">
@@ -200,6 +258,7 @@ const Technicians = () => {
                 <tr>
                   <th>#</th>
                   <th>Technician Name</th>
+                  <th>Job Role</th>
                   <th>Email Address</th>
                   <th>Mobile Number</th>
                   <th>Joined On</th>
@@ -211,7 +270,7 @@ const Technicians = () => {
               <tbody>
                 {isTechniciansLoading ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5">
+                    <td colSpan="8" className="text-center py-5">
                       <div className="d-flex align-items-center justify-content-center gap-2">
                         <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                         <span className="text-muted ct_fs_14">Loading technicians...</span>
@@ -220,25 +279,35 @@ const Technicians = () => {
                   </tr>
                 ) : displayedTechnicians.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
-                      {searchTerm ? 'No technicians match your search.' : 'No technicians found.'}
+                    <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
+                      {searchTerm ? 'No technicians match your search.' : 'No technicians found. Click "Add New Technician" to create one.'}
                     </td>
                   </tr>
                 ) : (
                   displayedTechnicians.map((tech, index) => {
                     const active = isTechnicianActive(tech);
                     const isToggling = loadingToggleId === tech.id;
-                    const phoneDisplay = tech.phone_number
-                      ? `${tech.country_code ? tech.country_code + ' ' : ''}${tech.phone_number}`
+                    const phoneVal = tech.phone_number || tech.contact_number;
+                    const phoneDisplay = phoneVal
+                      ? (phoneVal.startsWith('+')
+                        ? phoneVal
+                        : `${tech.country_code ? tech.country_code + ' ' : ''}${phoneVal}`)
                       : 'N/A';
+                    const displayName = tech.full_name || tech.name || 'N/A';
+                    const roleName = tech.job_role || 'Technician';
 
                     return (
                       <tr key={tech.id || index}>
                         <td>{currentPage * listPerPages + index + 1}</td>
 
-                        {/* Technician Name Only */}
+                        {/* Technician Name */}
                         <td className="ct_fw_600">
-                          {tech.full_name || 'N/A'}
+                          {displayName}
+                        </td>
+
+                        {/* Job Role */}
+                        <td className="ct_fw_500">
+                          {roleName}
                         </td>
 
                         <td>{tech.email || 'N/A'}</td>
@@ -321,6 +390,201 @@ const Technicians = () => {
         </div>
       </div>
 
+      {/* Create Technician Modal */}
+      {showAddModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow">
+              <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                <div>
+                  <h4 className="ct_fs_20 ct_fw_700 ct_head_clr mb-1">
+                    Add New Technician
+                  </h4>
+                  <p className="text-muted ct_fs_13 mb-0">
+                    Fill in the details below to register a technician to your dealership.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setShowAddModal(false)}
+                ></button>
+              </div>
+
+              <Formik
+                initialValues={initialTechnicianValues}
+                validationSchema={createTechnicianSchema}
+                onSubmit={handleCreateTechnician}
+              >
+                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setFieldTouched, isSubmitting }) => {
+                  return (
+                    <Form>
+                      <div className="modal-body px-4 py-3">
+                        <div className="row g-3">
+                          {/* Technician Name */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="name">
+                                Full Name <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                className="form-control ct_input"
+                                placeholder="Enter full name"
+                                value={values.name}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="name" />
+                            </div>
+                          </div>
+
+                          {/* Email Address */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="email">
+                                Email Address <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                className="form-control ct_input"
+                                placeholder="Enter email address"
+                                value={values.email}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="email" />
+                            </div>
+                          </div>
+
+                          {/* Password */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="password">
+                                Password <span className="text-danger">*</span>
+                              </label>
+                              <div className="position-relative">
+                                <input
+                                  type={showPassword ? "text" : "password"}
+                                  id="password"
+                                  name="password"
+                                  className="form-control ct_input ct_input_pe_40"
+                                  placeholder="Enter password"
+                                  value={values.password}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                />
+                                <Eye isEye={showPassword} onClick={setShowPassword} />
+                              </div>
+                              <ErrorMessage errors={errors} touched={touched} fieldName="password" />
+                            </div>
+                          </div>
+
+                          {/* Contact Number */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="contact_number">
+                                Contact Number <span className="text-danger">*</span>
+                              </label>
+                              <PhoneInputField
+                                id="contact_number"
+                                name="contact_number"
+                                value={values.contact_number}
+                                placeholder="Enter contact number"
+                                onChange={(val) => setFieldValue('contact_number', val)}
+                                onBlur={() => setFieldTouched('contact_number', true)}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="contact_number" />
+                            </div>
+                          </div>
+
+                          {/* Job Role */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="job_role">
+                                Job Role / Specialization
+                              </label>
+                              <input
+                                type="text"
+                                id="job_role"
+                                name="job_role"
+                                className="form-control ct_input"
+                                placeholder="Enter job role"
+                                value={values.job_role}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="job_role" />
+                            </div>
+                          </div>
+
+                          {/* Home Address */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="home_address">
+                                Home Address
+                              </label>
+                              <input
+                                type="text"
+                                id="home_address"
+                                name="home_address"
+                                className="form-control ct_input"
+                                placeholder="Enter home address"
+                                value={values.home_address}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="home_address" />
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
+                        <button
+                          type="button"
+                          className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
+                          onClick={() => setShowAddModal(false)}
+                          disabled={isSubmitting || isActionLoading}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="ct_green_btn px-4 py-2 ct_btn_h_45 d-flex align-items-center justify-content-center gap-2"
+                          disabled={isSubmitting || isActionLoading}
+                        >
+                          {isSubmitting || isActionLoading ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm text-white" role="status"></span>
+                              <span>Creating...</span>
+                            </>
+                          ) : (
+                            'Create Technician'
+                          )}
+                        </button>
+                      </div>
+                    </Form>
+                  );
+                }}
+              </Formik>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div
@@ -351,7 +615,7 @@ const Technicians = () => {
 
                 <p className="ct_para_clr mb-4 mx-auto" style={{ maxWidth: '360px', fontSize: '14px' }}>
                   Are you sure you want to delete{' '}
-                  <strong className="text-dark">{selectedTech?.full_name || 'this technician'}</strong>?
+                  <strong className="text-dark">{selectedTech?.full_name || selectedTech?.name || 'this technician'}</strong>?
                   This action cannot be undone.
                 </p>
 

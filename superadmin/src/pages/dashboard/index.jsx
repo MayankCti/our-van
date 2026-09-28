@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import Header from "../../layout/Header";
 import Layout from "../../layout/Layout";
 import ErrorMessage from "../../components/form/ErrorMessage";
+import PhoneInputField from "../../components/form/PhoneInputField";
 import { pageRoutes } from "../../routes/PageRoutes";
 import { getDashboardData } from "../../redux/slices/dashboardSlice";
 import { createDealer } from "../../redux/slices/dealerSlice";
@@ -331,19 +332,16 @@ const Dashboard = () => {
 
                   <div className="col-md-6 mb-3">
                     <label className="ct_label">
-                      Phone No. <span className="text-danger">*</span>
+                      Phone Number <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
+                    <PhoneInputField
                       name="phone_number"
-                      className={`form-control ct_input ${dealerFormik.errors.phone_number && dealerFormik.touched.phone_number
-                        ? "is-invalid"
-                        : ""
-                        }`}
-                      placeholder="Enter phone no."
+                      id="phone_number"
+                      placeholder="Enter phone number"
                       value={dealerFormik.values.phone_number}
-                      onChange={dealerFormik.handleChange}
-                      onBlur={dealerFormik.handleBlur}
+                      isInvalid={Boolean(dealerFormik.errors.phone_number && dealerFormik.touched.phone_number)}
+                      onChange={(val) => dealerFormik.setFieldValue("phone_number", val)}
+                      onBlur={() => dealerFormik.setFieldTouched("phone_number", true)}
                     />
                     <ErrorMessage
                       errors={dealerFormik.errors}

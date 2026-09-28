@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import toast from 'react-hot-toast';
 import { step4WarrantySchema } from '../../../utils/Schema';
 import ErrorMessage from '../../../components/form/ErrorMessage';
+import PhoneInputField from '../../../components/form/PhoneInputField';
 import { createVanStep4 } from '../../../redux/slices/vanSlice';
 
 const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
@@ -136,6 +137,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                 handleBlur,
                 handleSubmit,
                 setFieldValue,
+                setFieldTouched,
             }) => (
                 <fieldset>
                     <div className="ct_profile_card text-start">
@@ -369,7 +371,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                         id="claim_email"
                                         name="claim_email"
                                         className="form-control ct_input"
-                                        placeholder="claims@abcinsurance.com"
+                                        placeholder="Enter claim email"
                                         value={values.claim_email}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
@@ -384,15 +386,13 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                     <label className="mb-2 ct_label" htmlFor="claim_phone">
                                         Claim Phone <span className="text-danger">*</span>
                                     </label>
-                                    <input
-                                        type="text"
+                                    <PhoneInputField
                                         id="claim_phone"
                                         name="claim_phone"
-                                        className="form-control ct_input"
-                                        placeholder="+61 1300 123 456"
                                         value={values.claim_phone}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
+                                        placeholder="Enter claim phone number"
+                                        onChange={(val) => setFieldValue('claim_phone', val)}
+                                        onBlur={() => setFieldTouched('claim_phone', true)}
                                     />
                                     <ErrorMessage errors={errors} touched={touched} fieldName="claim_phone" />
                                 </div>

@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { Formik, Form } from 'formik';
 import Layout from '../../layout/Layout';
 import SubHeader from '../../components/SubHeader';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
+import ErrorMessage from '../../components/form/ErrorMessage';
+import PhoneInputField from '../../components/form/PhoneInputField';
 import useDebounce from '../../hooks/useDebounce';
 import { pageRoutes } from '../../routes/PageRoutes';
+import { createSupplierSchema } from '../../utils/Schema';
 import {
   getSuppliersByDealer,
+  createSupplier,
   toggleBlockSupplier,
   deleteSupplier,
 } from '../../redux/slices/supplierSlice';
@@ -19,6 +24,7 @@ const Suppliers = () => {
   const {
     suppliersList = [],
     isSuppliersLoading = false,
+    isActionLoading = false,
   } = useSelector((state) => state.supplierReducer || {});
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +34,7 @@ const Suppliers = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
   // Modal & action states
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -147,12 +154,60 @@ const Suppliers = () => {
     );
   };
 
+  // Create Supplier Form Handlers
+  const initialSupplierValues = {
+    full_name: '',
+    email: '',
+    phone_number: '',
+    company_name: '',
+    accounting_software_used: '',
+    service_region: '',
+    services_offered: '',
+    about_us: '',
+  };
+
+  const handleCreateSupplier = (values, { setSubmitting, resetForm }) => {
+    const payload = {
+      full_name: values.full_name?.trim(),
+      email: values.email?.trim(),
+      phone_number: values.phone_number?.trim(),
+      company_name: values.company_name?.trim(),
+      accounting_software_used: values.accounting_software_used?.trim() || undefined,
+      about_us: values.about_us?.trim() || undefined,
+      service_region: values.service_region?.trim() || undefined,
+      services_offered: values.services_offered?.trim() || undefined,
+    };
+
+    dispatch(
+      createSupplier({
+        data: payload,
+        callback: (res) => {
+          setSubmitting(false);
+          if (res) {
+            setShowAddModal(false);
+            resetForm();
+            dispatch(getSuppliersByDealer({ search: debouncedSearch }));
+          }
+        },
+      })
+    );
+  };
+
   return (
     <Layout>
       <SubHeader
         title="Suppliers"
         subtitle="View and manage all suppliers assigned to your dealership."
-      />
+      >
+        <button
+          type="button"
+          onClick={() => setShowAddModal(true)}
+          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center gap-2"
+        >
+          <i className="fa-solid fa-plus"></i>
+          <span>Add New Supplier</span>
+        </button>
+      </SubHeader>
 
       <div className="ct_px_30 mt-4 pb-4">
         <div className="container-fluid">
@@ -206,6 +261,7 @@ const Suppliers = () => {
                 <tr>
                   <th>#</th>
                   <th>Supplier Name</th>
+                  <th>Company Name</th>
                   <th>Email Address</th>
                   <th>Mobile Number</th>
                   <th>Joined On</th>
@@ -217,7 +273,7 @@ const Suppliers = () => {
               <tbody>
                 {isSuppliersLoading ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5">
+                    <td colSpan="8" className="text-center py-5">
                       <div className="d-flex align-items-center justify-content-center gap-2">
                         <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                         <span className="text-muted ct_fs_14">Loading suppliers...</span>
@@ -226,8 +282,8 @@ const Suppliers = () => {
                   </tr>
                 ) : displayedSuppliers.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5 text-muted ct_fs_14">
-                      {searchTerm ? 'No suppliers match your search.' : 'No suppliers found.'}
+                    <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
+                      {searchTerm ? 'No suppliers match your search.' : 'No suppliers found. Click "Add New Supplier" to create one.'}
                     </td>
                   </tr>
                 ) : (
@@ -235,17 +291,25 @@ const Suppliers = () => {
                     const active = isSupplierActive(sup);
                     const isToggling = loadingToggleId === sup.id;
                     const phoneDisplay = sup.phone_number
-                      ? `${sup.country_code ? sup.country_code + ' ' : ''}${sup.phone_number}`
+                      ? (sup.phone_number.startsWith('+')
+                        ? sup.phone_number
+                        : `${sup.country_code ? sup.country_code + ' ' : ''}${sup.phone_number}`)
                       : 'N/A';
-                    const displayName = sup.full_name || 'N/A';
+                    const displayName = sup.full_name || sup.name || 'N/A';
+                    const companyName = sup.company_name || 'N/A';
 
                     return (
                       <tr key={sup.id || index}>
                         <td>{currentPage * listPerPages + index + 1}</td>
 
-                        {/* Supplier Name Only */}
+                        {/* Supplier Name */}
                         <td className="ct_fw_600">
                           {displayName}
+                        </td>
+
+                        {/* Company Name */}
+                        <td className="ct_fw_500">
+                          {companyName}
                         </td>
 
                         <td>{sup.email || 'N/A'}</td>
@@ -327,6 +391,241 @@ const Suppliers = () => {
 
         </div>
       </div>
+
+      {/* Create Supplier Modal */}
+      {showAddModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow">
+              <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                <div>
+                  <h4 className="ct_fs_20 ct_fw_700 ct_head_clr mb-1">
+                    Add New Supplier
+                  </h4>
+                  <p className="text-muted ct_fs_13 mb-0">
+                    Fill in the details below to add a new supplier to your dealership network.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setShowAddModal(false)}
+                ></button>
+              </div>
+
+              <Formik
+                initialValues={initialSupplierValues}
+                validationSchema={createSupplierSchema}
+                onSubmit={handleCreateSupplier}
+              >
+                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setFieldTouched, isSubmitting }) => {
+                  return (
+                    <Form>
+                      <div className="modal-body px-4 py-3">
+                        <div className="row g-3">
+                          {/* Full Name / Contact Person */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="full_name">
+                                Contact Person / Full Name <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                id="full_name"
+                                name="full_name"
+                                className="form-control ct_input"
+                                placeholder="Enter full name"
+                                value={values.full_name}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="full_name" />
+                            </div>
+                          </div>
+
+                          {/* Company Name */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="company_name">
+                                Company Name <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                id="company_name"
+                                name="company_name"
+                                className="form-control ct_input"
+                                placeholder="Enter company name"
+                                value={values.company_name}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="company_name" />
+                            </div>
+                          </div>
+
+                          {/* Email Address */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="email">
+                                Email Address <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                className="form-control ct_input"
+                                placeholder="Enter email address"
+                                value={values.email}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="email" />
+                            </div>
+                          </div>
+
+                          {/* Phone Number */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="phone_number">
+                                Phone / Mobile Number <span className="text-danger">*</span>
+                              </label>
+                              <PhoneInputField
+                                id="phone_number"
+                                name="phone_number"
+                                placeholder="Enter phone number"
+                                value={values.phone_number}
+                                onChange={(phoneVal) => setFieldValue('phone_number', phoneVal)}
+                                onBlur={() => setFieldTouched('phone_number', true)}
+                                isInvalid={Boolean(errors.phone_number && touched.phone_number)}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="phone_number" />
+                            </div>
+                          </div>
+
+
+                          {/* Accounting Software Used */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="accounting_software_used">
+                                Accounting Software Used
+                              </label>
+                              <input
+                                type="text"
+                                id="accounting_software_used"
+                                name="accounting_software_used"
+                                className="form-control ct_input"
+                                placeholder="Enter accounting software"
+                                value={values.accounting_software_used}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="accounting_software_used" />
+                            </div>
+                          </div>
+
+                          {/* Service Region */}
+                          <div className="col-md-6">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="service_region">
+                                Service Region
+                              </label>
+                              <input
+                                type="text"
+                                id="service_region"
+                                name="service_region"
+                                className="form-control ct_input"
+                                placeholder="Enter service region"
+                                value={values.service_region}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="service_region" />
+                            </div>
+                          </div>
+
+                          {/* Services Offered */}
+                          <div className="col-12">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="services_offered">
+                                Services Offered
+                              </label>
+                              <input
+                                type="text"
+                                id="services_offered"
+                                name="services_offered"
+                                className="form-control ct_input"
+                                placeholder="Enter services offered"
+                                value={values.services_offered}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                              />
+                              <ErrorMessage errors={errors} touched={touched} fieldName="services_offered" />
+                            </div>
+                          </div>
+
+                          {/* About Us */}
+                          <div className="col-12">
+                            <div className="form-group text-start">
+                              <label className="mb-2 ct_label" htmlFor="about_us">
+                                About Us / Description
+                              </label>
+                              <textarea
+                                id="about_us"
+                                name="about_us"
+                                rows="3"
+                                className="form-control ct_input"
+                                placeholder="Enter about us / description"
+                                value={values.about_us}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                style={{ height: 'auto' }}
+                              ></textarea>
+                              <ErrorMessage errors={errors} touched={touched} fieldName="about_us" />
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
+                        <button
+                          type="button"
+                          className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
+                          onClick={() => setShowAddModal(false)}
+                          disabled={isSubmitting || isActionLoading}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="ct_green_btn px-4 py-2 ct_btn_h_45 d-flex align-items-center justify-content-center gap-2"
+                          disabled={isSubmitting || isActionLoading}
+                        >
+                          {isSubmitting || isActionLoading ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm text-white" role="status"></span>
+                              <span>Creating...</span>
+                            </>
+                          ) : (
+                            'Create Supplier'
+                          )}
+                        </button>
+                      </div>
+                    </Form>
+                  );
+                }}
+              </Formik>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

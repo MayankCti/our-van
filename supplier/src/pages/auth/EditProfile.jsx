@@ -9,6 +9,7 @@ import { authGetProfile, authUpdateProfile } from '../../redux/actions/authActio
 import { pipGetProfile } from '../../utils/pip';
 import { editProfileSchema } from '../../utils/Schema';
 import ErrorMessage from '../../components/form/ErrorMessage';
+import PhoneInputField from '../../components/form/PhoneInputField';
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -153,6 +154,8 @@ const EditProfile = () => {
               handleChange,
               handleBlur,
               handleSubmit,
+              setFieldValue,
+              setFieldTouched,
             }) => (
               <form onSubmit={handleSubmit}>
                 {/* Profile Image Section */}
@@ -221,22 +224,21 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">Phone Number</label>
-                    <input
-                      type="text"
+                    <label className="form-label ct_label" htmlFor="phone_number">Phone Number</label>
+                    <PhoneInputField
                       name="phone_number"
                       id="phone_number"
-                      className="form-control ct_input"
-                      placeholder="e.g. +919876543210"
+                      placeholder="Enter phone number"
                       value={values.phone_number}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
+                      isInvalid={Boolean(errors.phone_number && touched.phone_number)}
+                      onChange={(val) => setFieldValue('phone_number', val)}
+                      onBlur={() => setFieldTouched('phone_number', true)}
                     />
                     <ErrorMessage errors={errors} touched={touched} fieldName="phone_number" />
                   </div>
 
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">City</label>
+                    <label className="form-label ct_label" htmlFor="city">City</label>
                     <input
                       type="text"
                       name="city"
@@ -251,13 +253,13 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">Service Region</label>
+                    <label className="form-label ct_label" htmlFor="service_region">Service Region</label>
                     <input
                       type="text"
                       name="service_region"
                       id="service_region"
                       className="form-control ct_input"
-                      placeholder="e.g. Delhi NCR, Sydney Metro"
+                      placeholder="Enter service region"
                       value={values.service_region}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -275,7 +277,7 @@ const EditProfile = () => {
                 </h5>
                 <div className="row g-4 mb-4">
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">Company Name <span className="text-danger">*</span></label>
+                    <label className="form-label ct_label" htmlFor="company_name">Company Name <span className="text-danger">*</span></label>
                     <input
                       type="text"
                       name="company_name"
@@ -290,7 +292,7 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">ABN / Business Number</label>
+                    <label className="form-label ct_label" htmlFor="abn">ABN / Business Number</label>
                     <input
                       type="text"
                       name="abn"
@@ -305,13 +307,13 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-4 col-md-6">
-                    <label className="form-label ct_label">Accounting Software</label>
+                    <label className="form-label ct_label" htmlFor="accounting_software_used">Accounting Software</label>
                     <input
                       type="text"
                       name="accounting_software_used"
                       id="accounting_software_used"
                       className="form-control ct_input"
-                      placeholder="e.g. Xero, QuickBooks, MYOB"
+                      placeholder="Enter accounting software used"
                       value={values.accounting_software_used}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -320,13 +322,13 @@ const EditProfile = () => {
                   </div>
 
                   <div className="col-lg-12">
-                    <label className="form-label ct_label">Services Offered</label>
+                    <label className="form-label ct_label" htmlFor="services_offered">Services Offered</label>
                     <input
                       type="text"
                       name="services_offered"
                       id="services_offered"
                       className="form-control ct_input"
-                      placeholder="e.g. Vehicle parts, servicing and maintenance"
+                      placeholder="Enter services offered"
                       value={values.services_offered}
                       onChange={handleChange}
                       onBlur={handleBlur}

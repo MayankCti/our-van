@@ -1,4 +1,40 @@
 import * as Yup from "yup";
+import { isValidPhoneNumber } from "libphonenumber-js";
+
+// Reusable Country-Code Aware Phone Validator
+export const validatePhoneNumberByCountry = (value, defaultCountry = 'AU') => {
+    if (!value || !String(value).trim()) return false;
+    const str = String(value).trim();
+    const digitsOnly = str.replace(/\D/g, '');
+    if (digitsOnly.length < 6) return false;
+
+    try {
+        if (str.startsWith('+')) {
+            return isValidPhoneNumber(str);
+        }
+        if (isValidPhoneNumber('+' + str)) return true;
+        return isValidPhoneNumber(str, defaultCountry);
+    } catch {
+        return digitsOnly.length >= 7 && digitsOnly.length <= 16;
+    }
+};
+
+export const phoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .required(`Please enter ${fieldLabel}`)
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            return validatePhoneNumberByCountry(value);
+        });
+
+export const optionalPhoneValidationRule = (fieldLabel = 'phone number') =>
+    Yup.string()
+        .trim()
+        .nullable()
+        .test('is-valid-phone', `Please enter a valid ${fieldLabel}`, (value) => {
+            if (!value || !String(value).trim()) return true;
+            return validatePhoneNumberByCountry(value);
+        });
 
 // Common Email Validation Rule
 const emailValidation = Yup.string()
@@ -88,12 +124,7 @@ export const dealerSchema = Yup.object().shape({
         .min(2, "Dealer name must be at least 2 characters")
         .max(100, "Dealer name cannot exceed 100 characters"),
     email: emailValidation,
-    phone_number: Yup.string()
-        .trim()
-        .required("Please enter phone number")
-        .min(10, "Phone number must be at least 10 digits")
-        .max(20, "Phone number cannot exceed 20 characters")
-        .matches(/^[+]?[0-9\s-]{10,20}$/, "Please enter a valid phone number"),
+    phone_number: phoneValidationRule("phone number"),
 });
 
 

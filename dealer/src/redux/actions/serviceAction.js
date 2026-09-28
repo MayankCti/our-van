@@ -1,9 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_REQUEST } from "../../services/api";
 
-// Get All Technicians Assigned to Dealer
-export const getTechniciansByDealer = createAsyncThunk(
-  "technician/getTechniciansByDealer",
+// Get All Services for Dealer
+export const getServices = createAsyncThunk(
+  "service/getServices",
   async (props = {}, { rejectWithValue }) => {
     const { page, limit, search, callback } = props;
     try {
@@ -13,7 +13,7 @@ export const getTechniciansByDealer = createAsyncThunk(
       if (search) params.search = search;
 
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_GET_TECHNICIANS_BY_DEALER_API || "/technician/by-dealer",
+        url: import.meta.env.VITE_GET_SERVICES_API || "/dealer/services",
         method: "GET",
         params: Object.keys(params).length > 0 ? params : undefined,
         isErrorToast: true,
@@ -33,15 +33,14 @@ export const getTechniciansByDealer = createAsyncThunk(
   }
 );
 
-// Get Technician Details By ID
-export const getTechnicianById = createAsyncThunk(
-  "technician/getTechnicianById",
+// Get Service Details By ID
+export const getServiceById = createAsyncThunk(
+  "service/getServiceById",
   async (props, { rejectWithValue }) => {
     const { id, callback } = props;
     try {
       const endpoint = (
-        import.meta.env.VITE_GET_TECHNICIAN_DETAILS_BY_DEALER_API ||
-        "/technician/by-dealer/:id"
+        import.meta.env.VITE_GET_SERVICE_DETAILS_API || "/dealer/services/:id"
       ).replace(":id", id);
 
       const response = await API_REQUEST({
@@ -64,45 +63,14 @@ export const getTechnicianById = createAsyncThunk(
   }
 );
 
-// Toggle Block / Unblock Technician
-export const toggleBlockTechnician = createAsyncThunk(
-  "technician/toggleBlockTechnician",
-  async (props, { rejectWithValue }) => {
-    const { id, callback } = props;
-    try {
-      const endpoint = (
-        import.meta.env.VITE_TOGGLE_BLOCK_TECHNICIAN_API ||
-        "/technician/by-dealer/:id/block"
-      ).replace(":id", id);
-
-      const response = await API_REQUEST({
-        url: endpoint,
-        method: "PATCH",
-        isErrorToast: true,
-        isSuccessToast: true,
-      });
-
-      if (typeof callback === "function") {
-        callback(response);
-      }
-      return response;
-    } catch (error) {
-      if (typeof callback === "function") {
-        callback(null, error);
-      }
-      return rejectWithValue(error?.data || error);
-    }
-  }
-);
-
-// Create New Technician
-export const createTechnician = createAsyncThunk(
-  "technician/createTechnician",
+// Create New Service
+export const createService = createAsyncThunk(
+  "service/createService",
   async (props, { rejectWithValue }) => {
     const { data, callback } = props;
     try {
       const response = await API_REQUEST({
-        url: import.meta.env.VITE_CREATE_TECHNICIAN_API || "/technician",
+        url: import.meta.env.VITE_CREATE_SERVICE_API || "/dealer/services",
         method: "POST",
         data,
         isErrorToast: true,
@@ -122,15 +90,45 @@ export const createTechnician = createAsyncThunk(
   }
 );
 
-// Delete Technician
-export const deleteTechnician = createAsyncThunk(
-  "technician/deleteTechnician",
+// Update Service By ID
+export const updateService = createAsyncThunk(
+  "service/updateService",
+  async (props, { rejectWithValue }) => {
+    const { id, data, callback } = props;
+    try {
+      const endpoint = (
+        import.meta.env.VITE_UPDATE_SERVICE_API || "/dealer/services/:id"
+      ).replace(":id", id);
+
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "PATCH",
+        data,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Delete Service By ID
+export const deleteService = createAsyncThunk(
+  "service/deleteService",
   async (props, { rejectWithValue }) => {
     const { id, callback } = props;
     try {
       const endpoint = (
-        import.meta.env.VITE_DELETE_TECHNICIAN_API ||
-        "/technician/by-dealer/:id"
+        import.meta.env.VITE_DELETE_SERVICE_API || "/dealer/services/:id"
       ).replace(":id", id);
 
       const response = await API_REQUEST({
@@ -152,4 +150,3 @@ export const deleteTechnician = createAsyncThunk(
     }
   }
 );
-

@@ -3,6 +3,7 @@ import {
   getTechniciansByDealer,
   getTechnicianById,
   toggleBlockTechnician,
+  createTechnician,
   deleteTechnician,
 } from "../actions/technicianAction";
 
@@ -140,6 +141,25 @@ const technicianSlice = createSlice({
         }
       })
       .addCase(toggleBlockTechnician.rejected, (state) => {
+        state.isActionLoading = false;
+      })
+
+      // Create Technician
+      .addCase(createTechnician.pending, (state) => {
+        state.isActionLoading = true;
+      })
+      .addCase(createTechnician.fulfilled, (state, action) => {
+        state.isActionLoading = false;
+        const newTech = action.payload?.data;
+        if (newTech && Array.isArray(state.techniciansList)) {
+          state.techniciansList = [newTech, ...state.techniciansList];
+          state.techniciansMeta = {
+            ...state.techniciansMeta,
+            totalItems: (state.techniciansMeta.totalItems || 0) + 1,
+          };
+        }
+      })
+      .addCase(createTechnician.rejected, (state) => {
         state.isActionLoading = false;
       })
 

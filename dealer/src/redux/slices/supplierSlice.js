@@ -6,6 +6,7 @@ import {
   getSuppliersByDealer,
   getSupplierById,
   toggleBlockSupplier,
+  createSupplier,
   deleteSupplier,
 } from "../actions/supplierAction";
 
@@ -13,9 +14,11 @@ export {
   getSuppliersByDealer,
   getSupplierById,
   toggleBlockSupplier,
+  createSupplier,
   deleteSupplier,
   clearSupplierDetails,
   setSuppliersList,
 };
 
 export default supplierReducer;
+

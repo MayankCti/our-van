@@ -3,6 +3,7 @@ import {
   getSuppliersByDealer,
   getSupplierById,
   toggleBlockSupplier,
+  createSupplier,
   deleteSupplier,
 } from "../actions/supplierAction";
 
@@ -140,6 +141,25 @@ const supplierSlice = createSlice({
         }
       })
       .addCase(toggleBlockSupplier.rejected, (state) => {
+        state.isActionLoading = false;
+      })
+
+      // Create Supplier
+      .addCase(createSupplier.pending, (state) => {
+        state.isActionLoading = true;
+      })
+      .addCase(createSupplier.fulfilled, (state, action) => {
+        state.isActionLoading = false;
+        const newSupplier = action.payload?.data;
+        if (newSupplier && Array.isArray(state.suppliersList)) {
+          state.suppliersList = [newSupplier, ...state.suppliersList];
+          state.suppliersMeta = {
+            ...state.suppliersMeta,
+            totalItems: (state.suppliersMeta.totalItems || 0) + 1,
+          };
+        }
+      })
+      .addCase(createSupplier.rejected, (state) => {
         state.isActionLoading = false;
       })
 

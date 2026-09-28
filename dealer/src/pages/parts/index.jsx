@@ -625,7 +625,7 @@ const Parts = () => {
                                 id="part_name"
                                 name="part_name"
                                 className="form-control ct_input"
-                                placeholder="e.g. Battery / Brake Pad / Inverter"
+                                placeholder="Enter part name"
                                 value={values.part_name}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -645,7 +645,7 @@ const Parts = () => {
                                 id="manufacturer"
                                 name="manufacturer"
                                 className="form-control ct_input"
-                                placeholder="e.g. Exide / Brembo / Dometic"
+                                placeholder="Enter manufacturer name"
                                 value={values.manufacturer}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -667,7 +667,7 @@ const Parts = () => {
                                 step="0.01"
                                 min="0"
                                 className="form-control ct_input"
-                                placeholder="0.00"
+                                placeholder="Enter original cost"
                                 value={values.original_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -689,7 +689,7 @@ const Parts = () => {
                                 step="0.01"
                                 min="0"
                                 className="form-control ct_input"
-                                placeholder="0.00"
+                                placeholder="Enter service cost"
                                 value={values.service_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -711,7 +711,7 @@ const Parts = () => {
                                 min="0"
                                 step="1"
                                 className="form-control ct_input"
-                                placeholder="e.g. 10"
+                                placeholder="Enter stock quantity"
                                 value={values.stock_quantity}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -733,7 +733,7 @@ const Parts = () => {
                                 min="0"
                                 step="1"
                                 className="form-control ct_input"
-                                placeholder="e.g. 3"
+                                placeholder="Enter low stock alert threshold"
                                 value={values.low_stock_threshold}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -744,7 +744,8 @@ const Parts = () => {
                         </div>
                       </div>
 
-                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-3 justify-content-end">
+
+                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
                         <button
                           type="button"
                           className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"

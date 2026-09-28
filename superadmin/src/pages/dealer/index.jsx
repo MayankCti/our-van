@@ -8,6 +8,7 @@ import { pageRoutes } from "../../routes/PageRoutes";
 import PaginationDropdown from "../../components/table/PaginationDropdown";
 import Pagination from "../../components/table/Pagination";
 import ErrorMessage from "../../components/form/ErrorMessage";
+import PhoneInputField from "../../components/form/PhoneInputField";
 import useDebounce from "../../hooks/useDebounce";
 import {
   getDealersList,
@@ -416,20 +417,16 @@ const Dealer = () => {
 
                   <div className="col-md-6 mb-3">
                     <label className="ct_label">
-                      Phone No. <span className="text-danger">*</span>
+                      Phone Number <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
+                    <PhoneInputField
                       name="phone_number"
-                      className={`form-control ct_input ${
-                        formik.errors.phone_number && formik.touched.phone_number
-                          ? "is-invalid"
-                          : ""
-                      }`}
-                      placeholder="Enter phone no."
+                      id="phone_number"
+                      placeholder="Enter phone number"
                       value={formik.values.phone_number}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
+                      isInvalid={Boolean(formik.errors.phone_number && formik.touched.phone_number)}
+                      onChange={(val) => formik.setFieldValue("phone_number", val)}
+                      onBlur={() => formik.setFieldTouched("phone_number", true)}
                     />
                     <ErrorMessage
                       errors={formik.errors}

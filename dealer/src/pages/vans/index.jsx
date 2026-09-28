@@ -82,7 +82,7 @@ const Vans = () => {
             pipClearVanDraft();
             dispatch(resetVanState());
           }}
-          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575"
+          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center"
         >
           Add New Van
         </Link>

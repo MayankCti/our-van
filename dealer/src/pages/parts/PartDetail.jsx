@@ -105,6 +105,7 @@ const PartDetail = () => {
         title={part.part_name ? `${part.part_name} Details` : 'Part Details'}
         subtitle="View complete part specifications, pricing, and stock status."
         backUrl={pageRoutes.parts}
+        className="ct_flex_col_767"
       >
         {part?.id && (
           <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -407,7 +408,7 @@ const PartDetail = () => {
                         </div>
                       </div>
 
-                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-3 justify-content-end">
+                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
                         <button
                           type="button"
                           className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
