@@ -5,6 +5,7 @@ import technicianReducer from './slices/technicianSlice';
 import supplierReducer from './slices/supplierSlice';
 import partReducer from './slices/partSlice';
 import serviceReducer from './slices/serviceSlice';
+import maintenanceReducer from './slices/maintenanceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     supplierReducer,
     partReducer,
     serviceReducer,
+    maintenanceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

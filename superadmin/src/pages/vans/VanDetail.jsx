@@ -98,25 +98,11 @@ const VanDetail = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="btn p-0 border-0 bg-transparent text-decoration-none shadow-none d-inline-flex align-items-center"
+              className="btn p-0 border-0 bg-transparent text-decoration-none shadow-none d-inline-flex align-items-center text-dark"
               style={{ cursor: "pointer" }}
               aria-label="Go Back"
             >
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M25 30L15 20L25 10"
-                  stroke="#1E293B"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <i className="fa-solid fa-chevron-left"></i>
             </button>
             <div>
               <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">

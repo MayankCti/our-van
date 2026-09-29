@@ -17,6 +17,7 @@ import {
   createTechnician,
   toggleBlockTechnician,
   deleteTechnician,
+  getTechnicianJobRoles,
 } from '../../redux/slices/technicianSlice';
 
 const Technicians = () => {
@@ -25,6 +26,8 @@ const Technicians = () => {
   const {
     techniciansList = [],
     isTechniciansLoading = false,
+    jobRolesList = [],
+    isJobRolesLoading = false,
     isActionLoading = false,
   } = useSelector((state) => state.technicianReducer || {});
 
@@ -42,13 +45,14 @@ const Technicians = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingToggleId, setLoadingToggleId] = useState(null);
 
-  // Fetch technicians on mount and on debouncedSearch
+  // Fetch technicians and job roles on mount and on debouncedSearch
   useEffect(() => {
     dispatch(
       getTechniciansByDealer({
         search: debouncedSearch,
       })
     );
+    dispatch(getTechnicianJobRoles());
   }, [dispatch, debouncedSearch]);
 
   // Reset to first page when search changes
@@ -166,7 +170,7 @@ const Technicians = () => {
       name: values.name?.trim(),
       email: values.email?.trim(),
       password: values.password,
-      job_role: values.job_role?.trim() || undefined,
+      job_role: values.job_role ? Number(values.job_role) : undefined,
       contact_number: values.contact_number?.trim(),
       home_address: values.home_address?.trim() || undefined,
     };
@@ -294,7 +298,10 @@ const Technicians = () => {
                         : `${tech.country_code ? tech.country_code + ' ' : ''}${phoneVal}`)
                       : 'N/A';
                     const displayName = tech.full_name || tech.name || 'N/A';
-                    const roleName = tech.job_role || 'Technician';
+                    const roleObj = Array.isArray(jobRolesList)
+                      ? jobRolesList.find((r) => String(r.id) === String(tech.job_role || tech.job_role_id))
+                      : null;
+                    const roleName = roleObj?.job_role || tech.job_role_name || tech.job_role || 'Technician';
 
                     return (
                       <tr key={tech.id || index}>
@@ -399,7 +406,7 @@ const Technicians = () => {
           aria-modal="true"
           role="dialog"
         >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
+          <div className="modal-dialog modal-dialog-centered modal-lg" style={{ maxWidth: "800px" }}>
             <div className="modal-content border-0 rounded-4 shadow">
               <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                 <div>
@@ -509,22 +516,28 @@ const Technicians = () => {
                             </div>
                           </div>
 
-                          {/* Job Role */}
+                          {/* Job Role Dropdown */}
                           <div className="col-md-6">
                             <div className="form-group text-start">
                               <label className="mb-2 ct_label" htmlFor="job_role">
                                 Job Role / Specialization
                               </label>
-                              <input
-                                type="text"
+                              <select
                                 id="job_role"
                                 name="job_role"
-                                className="form-control ct_input"
-                                placeholder="Enter job role"
+                                className="form-select ct_input ct_fs_14"
                                 value={values.job_role}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
-                              />
+                              >
+                                <option value="">-- Select Job Role --</option>
+                                {Array.isArray(jobRolesList) &&
+                                  jobRolesList.map((role) => (
+                                    <option key={role.id} value={role.id}>
+                                      {role.job_role || role.name || role.title}
+                                    </option>
+                                  ))}
+                              </select>
                               <ErrorMessage errors={errors} touched={touched} fieldName="job_role" />
                             </div>
                           </div>
@@ -533,14 +546,14 @@ const Technicians = () => {
                           <div className="col-md-6">
                             <div className="form-group text-start">
                               <label className="mb-2 ct_label" htmlFor="home_address">
-                                Home Address
+                                Address
                               </label>
                               <input
                                 type="text"
                                 id="home_address"
                                 name="home_address"
                                 className="form-control ct_input"
-                                placeholder="Enter home address"
+                                placeholder="Enter address"
                                 value={values.home_address}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -555,7 +568,7 @@ const Technicians = () => {
                       <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
                         <button
                           type="button"
-                          className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
+                          className="btn ct_btn_gray px-2 py-2 ct_btn_h_45" style={{ minWidth: "100px" }}
                           onClick={() => setShowAddModal(false)}
                           disabled={isSubmitting || isActionLoading}
                         >
@@ -630,10 +643,10 @@ const Technicians = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 rounded-3"
+                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 "
                     onClick={handleConfirmDelete}
                     disabled={isDeleting}
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: '44px', borderRadius: "10px" }}
                   >
                     {isDeleting ? (
                       <div className="d-flex align-items-center justify-content-center gap-2">

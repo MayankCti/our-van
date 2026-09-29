@@ -256,7 +256,6 @@ const Services = () => {
                   <th>Service Name</th>
                   <th>Service Cost</th>
                   <th>Created Date</th>
-                  <th>Last Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -300,8 +299,7 @@ const Services = () => {
                         {/* Created Date */}
                         <td>{formatDate(service.created_at)}</td>
 
-                        {/* Updated Date */}
-                        <td>{formatDate(service.updated_at || service.created_at)}</td>
+
 
                         {/* Actions */}
                         <td>
@@ -334,7 +332,7 @@ const Services = () => {
           </div>
 
           {/* Pagination UI */}
-          {filteredServices.length > 0 && (
+          {totalItems > 10 && (
             <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
               <div>
                 <PaginationDropdown
@@ -438,6 +436,7 @@ const Services = () => {
                                   value={values.cost}
                                   onChange={handleChange}
                                   onBlur={handleBlur}
+                                  onWheel={(e) => e.target.blur()}
                                 />
                               </div>
                               <ErrorMessage errors={errors} touched={touched} fieldName="cost" />
@@ -527,10 +526,10 @@ const Services = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 rounded-3"
+                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 "
                     onClick={handleConfirmDelete}
                     disabled={isDeleting}
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: '44px', borderRadius: "10px" }}
                   >
                     {isDeleting ? (
                       <div className="d-flex align-items-center justify-content-center gap-2">

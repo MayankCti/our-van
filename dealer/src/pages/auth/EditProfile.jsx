@@ -71,6 +71,7 @@ const EditProfile = () => {
       <SubHeader
         title="Edit Profile"
         subtitle="Update your account information"
+        backUrl={pageRoutes.myProfile}
       />
       <div className="ct_px_30 mt-4 pb-4">
         <section className="ct_profile_card">

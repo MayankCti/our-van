@@ -153,3 +153,30 @@ export const deleteTechnician = createAsyncThunk(
   }
 );
 
+// Get Technician Job Roles
+export const getTechnicianJobRoles = createAsyncThunk(
+  "technician/getTechnicianJobRoles",
+  async (props = {}, { rejectWithValue }) => {
+    const { callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_TECHNICIAN_JOB_ROLES_API || "/technician/job-roles",
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+

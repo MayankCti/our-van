@@ -319,7 +319,7 @@ const Dealer = () => {
             </div>
 
             {/* Pagination footer */}
-            {!isDealersLoading && dealersList?.length > 0 && (
+            {!isDealersLoading && totalItems > 10 && (
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
                 <div className="d-flex align-items-center gap-3">
                   <PaginationDropdown

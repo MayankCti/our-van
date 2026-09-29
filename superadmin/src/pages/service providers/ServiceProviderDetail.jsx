@@ -10,10 +10,8 @@ const ServiceProviderDetail = () => {
             <div class="ct_right_panel">
                 <Header />
                 <div class="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
-                    <Link to={pageRoutes.service_providers}>
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M25 30L15 20L25 10" stroke="#1E293B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                    <Link to={pageRoutes.service_providers} className="text-dark text-decoration-none">
+                        <i className="fa-solid fa-chevron-left"></i>
                     </Link>
                     <div>
                         <h4 class="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Service Provider Details</h4>

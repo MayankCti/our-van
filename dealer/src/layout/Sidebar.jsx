@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { pageRoutes } from '../routes/PageRoutes';
 import { useSidebar } from './Layout';
@@ -6,6 +6,7 @@ import { useSidebar } from './Layout';
 const Sidebar = () => {
     const location = useLocation();
     const { closeSidebar } = useSidebar() || {};
+    const menuListRef = useRef(null);
 
     const handleClose = () => {
         if (closeSidebar) {
@@ -13,12 +14,61 @@ const Sidebar = () => {
         }
     };
 
+    const handleMenuClick = () => {
+        if (menuListRef.current) {
+            sessionStorage.setItem('dealer_sidebar_scroll', menuListRef.current.scrollTop);
+        }
+        handleClose();
+    };
+
+    // Restore scroll position before paint
+    useLayoutEffect(() => {
+        const savedScroll = sessionStorage.getItem('dealer_sidebar_scroll');
+        if (savedScroll !== null && menuListRef.current) {
+            menuListRef.current.scrollTop = Number(savedScroll);
+        }
+    }, []);
+
+    // Ensure active element is scrolled into view if not fully visible
     useEffect(() => {
         if (closeSidebar) {
             closeSidebar();
         }
+
+        const timer = setTimeout(() => {
+            if (menuListRef.current) {
+                const activeItem = menuListRef.current.querySelector('a.active');
+                if (activeItem) {
+                    const container = menuListRef.current;
+                    const containerRect = container.getBoundingClientRect();
+                    const activeRect = activeItem.getBoundingClientRect();
+
+                    const isAbove = activeRect.top < containerRect.top;
+                    const isBelow = activeRect.bottom > containerRect.bottom;
+
+                    if (isAbove || isBelow) {
+                        activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+        }, 50);
+
+        return () => clearTimeout(timer);
     }, [location.pathname]);
 
+    const isMenuActive = (itemPath) => {
+        if (itemPath === pageRoutes.dashboard || itemPath === "/") {
+            return location.pathname === "/" || location.pathname === pageRoutes.dashboard;
+        }
+        if (location.pathname === itemPath) return true;
+        if (itemPath === pageRoutes.vans && (location.pathname.startsWith('/van-detail') || location.pathname.startsWith('/vehicle-information'))) return true;
+        if (itemPath === pageRoutes.owners && location.pathname.startsWith('/owner-detail')) return true;
+        if (itemPath === pageRoutes.technicians && location.pathname.startsWith('/technician-detail')) return true;
+        if (itemPath === pageRoutes.suppliers && location.pathname.startsWith('/supplier-detail')) return true;
+        if (itemPath === pageRoutes.parts && location.pathname.startsWith('/part-detail')) return true;
+        if (itemPath === pageRoutes.maintenance && location.pathname.startsWith('/maintenance-detail')) return true;
+        return location.pathname.startsWith(itemPath);
+    };
 
     const sidebarMenu = [
         {
@@ -95,6 +145,17 @@ const Sidebar = () => {
                 </svg>
             ),
         },
+        {
+            name: "Maintenance",
+            path: pageRoutes.maintenance,
+            icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 20L8 16" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M15 4L20 9" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            ),
+        },
     ];
 
     return (
@@ -107,15 +168,20 @@ const Sidebar = () => {
                 <i className="fa-solid fa-xmark"></i>
             </div>
             <div className="ct_admin_logo">
-                <img src="assets/img/logo.png" alt="" />
+                <img src="/assets/img/logo.png" alt="" />
             </div>
-            <ul>
+            <ul
+                ref={menuListRef}
+                onScroll={(e) => {
+                    sessionStorage.setItem('dealer_sidebar_scroll', e.currentTarget.scrollTop);
+                }}
+            >
                 {sidebarMenu.map((item) => (
                     <li key={item.path}>
                         <NavLink
                             to={item.path}
-                            className={({ isActive }) => (isActive ? "active" : "")}
-                            onClick={handleClose}
+                            className={({ isActive }) => (isActive || isMenuActive(item.path) ? "active" : "")}
+                            onClick={handleMenuClick}
                         >
                             {item.icon}
                             {item.name}
@@ -128,4 +194,5 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
 

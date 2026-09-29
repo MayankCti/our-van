@@ -283,7 +283,7 @@ const Owners = () => {
             </div>
 
             {/* Pagination footer */}
-            {!isOwnersLoading && ownersList?.length > 0 && (
+            {!isOwnersLoading && totalItems > 10 && (
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
                 <div className="d-flex align-items-center gap-3">
                   <PaginationDropdown

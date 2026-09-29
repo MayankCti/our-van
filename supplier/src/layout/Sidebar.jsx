@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { pageRoutes } from '../routes/PageRoutes';
 import { useSidebar } from './Layout';
@@ -6,6 +6,7 @@ import { useSidebar } from './Layout';
 const Sidebar = () => {
     const location = useLocation();
     const { closeSidebar } = useSidebar() || {};
+    const menuListRef = useRef(null);
 
     const handleClose = () => {
         if (closeSidebar) {
@@ -13,11 +14,54 @@ const Sidebar = () => {
         }
     };
 
+    const handleMenuClick = () => {
+        if (menuListRef.current) {
+            sessionStorage.setItem('supplier_sidebar_scroll', menuListRef.current.scrollTop);
+        }
+        handleClose();
+    };
+
+    // Restore scroll position before paint
+    useLayoutEffect(() => {
+        const savedScroll = sessionStorage.getItem('supplier_sidebar_scroll');
+        if (savedScroll !== null && menuListRef.current) {
+            menuListRef.current.scrollTop = Number(savedScroll);
+        }
+    }, []);
+
+    // Ensure active element is scrolled into view if not fully visible
     useEffect(() => {
         if (closeSidebar) {
             closeSidebar();
         }
+
+        const timer = setTimeout(() => {
+            if (menuListRef.current) {
+                const activeItem = menuListRef.current.querySelector('a.active');
+                if (activeItem) {
+                    const container = menuListRef.current;
+                    const containerRect = container.getBoundingClientRect();
+                    const activeRect = activeItem.getBoundingClientRect();
+
+                    const isAbove = activeRect.top < containerRect.top;
+                    const isBelow = activeRect.bottom > containerRect.bottom;
+
+                    if (isAbove || isBelow) {
+                        activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+        }, 50);
+
+        return () => clearTimeout(timer);
     }, [location.pathname]);
+
+    const isMenuActive = (itemPath) => {
+        if (itemPath === pageRoutes.dashboard || itemPath === "/") {
+            return location.pathname === "/" || location.pathname === pageRoutes.dashboard;
+        }
+        return location.pathname === itemPath || location.pathname.startsWith(itemPath);
+    };
 
     const sidebarMenu = [
         {
@@ -63,13 +107,18 @@ const Sidebar = () => {
             <div className="ct_admin_logo">
                 <img src="/assets/img/logo.png" alt="Logo" />
             </div>
-            <ul>
+            <ul
+                ref={menuListRef}
+                onScroll={(e) => {
+                    sessionStorage.setItem('supplier_sidebar_scroll', e.currentTarget.scrollTop);
+                }}
+            >
                 {sidebarMenu.map((item) => (
                     <li key={item.path}>
                         <NavLink
                             to={item.path}
-                            className={({ isActive }) => (isActive ? "active" : "")}
-                            onClick={handleClose}
+                            className={({ isActive }) => (isActive || isMenuActive(item.path) ? "active" : "")}
+                            onClick={handleMenuClick}
                         >
                             {item.icon}
                             {item.name}

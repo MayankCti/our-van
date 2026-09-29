@@ -103,22 +103,8 @@ const DealerDetail = () => {
       <div className="ct_right_panel">
         <Header />
         <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
-          <Link to={pageRoutes.dealers} aria-label="Back to Dealers">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 40 40"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M25 30L15 20L25 10"
-                stroke="#1E293B"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <Link to={pageRoutes.dealers} aria-label="Back to Dealers" className="text-dark text-decoration-none">
+            <i className="fa-solid fa-chevron-left"></i>
           </Link>
           <div>
             <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Dealer Details</h4>
@@ -378,7 +364,7 @@ const DealerDetail = () => {
             </div>
 
             {/* Pagination footer */}
-            {!isDealerDetailsLoading && assignedVans?.length > 0 && (
+            {!isDealerDetailsLoading && totalItems > 10 && (
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
                 <div className="d-flex align-items-center gap-3">
                   <PaginationDropdown

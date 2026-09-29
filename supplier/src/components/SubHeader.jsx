@@ -6,6 +6,7 @@ const SubHeader = ({
   subtitle,
   backUrl,
   onBack,
+  showBack,
   children,
   className = '',
 }) => {
@@ -14,7 +15,9 @@ const SubHeader = ({
   const handleBack = () => {
     if (onBack) {
       onBack();
-    } else if (!backUrl) {
+    } else if (backUrl) {
+      navigate(backUrl);
+    } else {
       navigate(-1);
     }
   };
@@ -29,20 +32,16 @@ const SubHeader = ({
     >
       <div className="d-flex align-items-center justify-content-start gap-2">
         {backUrl ? (
-          <Link to={backUrl} className="d-inline-flex align-items-center">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M25 30L15 20L25 10" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <Link to={backUrl} className="d-inline-flex align-items-center text-dark text-decoration-none">
+            <i className="fa-solid fa-chevron-left"></i>
           </Link>
-        ) : onBack ? (
+        ) : (onBack || showBack) ? (
           <button
             type="button"
             onClick={handleBack}
-            className="btn p-0 border-0 bg-transparent d-inline-flex align-items-center"
+            className="btn p-0 border-0 bg-transparent d-inline-flex align-items-center text-dark"
           >
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M25 30L15 20L25 10" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <i className="fa-solid fa-chevron-left"></i>
           </button>
         ) : null}
 

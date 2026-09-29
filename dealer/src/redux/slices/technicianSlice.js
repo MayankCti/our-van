@@ -8,6 +8,7 @@ import {
   toggleBlockTechnician,
   createTechnician,
   deleteTechnician,
+  getTechnicianJobRoles,
 } from "../actions/technicianAction";
 
 export {
@@ -16,6 +17,7 @@ export {
   toggleBlockTechnician,
   createTechnician,
   deleteTechnician,
+  getTechnicianJobRoles,
   clearTechnicianDetails,
   setTechniciansList,
 };

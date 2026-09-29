@@ -38,6 +38,7 @@ const MyProfile = () => {
       <SubHeader
         title="My Profile"
         subtitle="View and manage your supplier account and company information"
+        showBack
       />
       <div className="ct_px_30 mt-4 pb-4">
         <section className="ct_profile_card mb-4">

@@ -367,7 +367,7 @@ const Suppliers = () => {
           </div>
 
           {/* Pagination UI */}
-          {filteredSuppliers.length > 0 && (
+          {totalItems > 10 && (
             <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
               <div>
                 <PaginationDropdown
@@ -674,10 +674,10 @@ const Suppliers = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 rounded-3"
+                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 "
                     onClick={handleConfirmDelete}
                     disabled={isDeleting}
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: '44px', borderRadius: "10px" }}
                   >
                     {isDeleting ? (
                       <div className="d-flex align-items-center justify-content-center gap-2">

@@ -341,6 +341,7 @@ const PartDetail = () => {
                                 value={values.original_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="original_cost" />
                             </div>
@@ -361,6 +362,7 @@ const PartDetail = () => {
                                 value={values.service_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="service_cost" />
                             </div>
@@ -381,6 +383,7 @@ const PartDetail = () => {
                                 value={values.stock_quantity}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="stock_quantity" />
                             </div>
@@ -401,6 +404,7 @@ const PartDetail = () => {
                                 value={values.low_stock_threshold}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="low_stock_threshold" />
                             </div>
@@ -486,10 +490,10 @@ const PartDetail = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 rounded-3"
+                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 "
                     onClick={handleConfirmDelete}
                     disabled={isActionLoading}
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: '44px', borderRadius: "10px" }}
                   >
                     {isActionLoading ? (
                       <div className="d-flex align-items-center justify-content-center gap-2">

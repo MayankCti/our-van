@@ -1,15 +1,28 @@
+import { useNavigate } from "react-router-dom"
 import Layout from "../../layout/Layout"
 import Header from "../../layout/Header"
 
 const Notifications = () => {
+   const navigate = useNavigate();
    return (
 
       <Layout>
          <div class="ct_right_panel">
             <Header />
-            <div class="ct_inner_header_bg mt-4 ct_px_30">
-               <h4 class="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Notification</h4>
-               <p class="mb-0 ct_para_clr">Stay updated with your latest dealership activities.</p>
+            <div class="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
+               <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="btn p-0 border-0 bg-transparent text-decoration-none shadow-none d-inline-flex align-items-center text-dark"
+                  style={{ cursor: "pointer" }}
+                  aria-label="Go Back"
+               >
+                  <i className="fa-solid fa-chevron-left"></i>
+               </button>
+               <div>
+                  <h4 class="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">Notification</h4>
+                  <p class="mb-0 ct_para_clr">Stay updated with your latest dealership activities.</p>
+               </div>
             </div>
             <div class="ct_px_30 mt-4 pb-4">
                <div class="ct_profile_card">

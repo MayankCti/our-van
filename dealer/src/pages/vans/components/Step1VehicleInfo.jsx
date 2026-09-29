@@ -382,6 +382,7 @@ const Step1VehicleInfo = ({ onNext, initialData = {}, vanId }) => {
                                             value={values.manufacture_year}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                         <ErrorMessage errors={errors} touched={touched} fieldName="manufacture_year" />
                                     </div>

@@ -1,1 +1,13 @@
 /* App styles */
+.ct_outline_btn {
+    background: linear-gradient(180deg, #3D8B37 0%, #275F22 100%);
+    color: #fff;
+    padding: 6px 13px;
+    white-space: nowrap;
+}
+
+.ct_outline_btn:hover {
+    background: #fff !important;
+    color: var(--green) !important;
+    border: 1px solid var(--green) !important;
+}

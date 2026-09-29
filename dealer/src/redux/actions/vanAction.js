@@ -96,16 +96,17 @@ export const getVanProgress = createAsyncThunk(
 export const getVansList = createAsyncThunk(
   "van/getVansList",
   async (props = {}, { rejectWithValue }) => {
-    const { page = 1, limit = 10, search = "", callback } = props;
+    const { page, limit, search, callback } = props;
     try {
+      const params = {};
+      if (page !== undefined && page !== null) params.page = page;
+      if (limit !== undefined && limit !== null) params.limit = limit;
+      if (search) params.search = search;
+
       const response = await API_REQUEST({
         url: import.meta.env.VITE_GET_VANS_API || "/dealer/vans/get",
         method: "GET",
-        params: {
-          page,
-          limit,
-          search: search || undefined,
-        },
+        params: Object.keys(params).length > 0 ? params : undefined,
         isErrorToast: true,
         isSuccessToast: false,
       });

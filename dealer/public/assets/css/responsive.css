@@ -56,7 +56,7 @@
   }
 
   .ct_w_100_575 {
-    width: 100%;
+    width: 100% !important;
   }
 
   .ct_profile_card {

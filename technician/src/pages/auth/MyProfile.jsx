@@ -23,6 +23,7 @@ const MyProfile = () => {
       <SubHeader
         title="My Profile"
         subtitle="View your technician account information"
+        showBack
       />
       <div className="ct_px_30 mt-4 pb-4">
         <section className="ct_profile_card">

@@ -176,7 +176,7 @@ const Owners = () => {
           </div>
 
           {/* Pagination UI */}
-          {ownersList?.length != 0 && (
+          {(ownersMeta?.totalItems ?? ownersList?.length ?? 0) > 10 && (
             <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
               <div>
                 <PaginationDropdown

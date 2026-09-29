@@ -8,6 +8,7 @@ const Notifications = () => {
       <SubHeader
         title="Notification"
         subtitle="Stay updated with your latest dealership activities."
+        showBack
       />
       <div className="ct_px_30 mt-4 pb-4">
 

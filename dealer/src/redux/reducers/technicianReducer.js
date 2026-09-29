@@ -5,6 +5,7 @@ import {
   toggleBlockTechnician,
   createTechnician,
   deleteTechnician,
+  getTechnicianJobRoles,
 } from "../actions/technicianAction";
 
 const initialState = {
@@ -19,6 +20,10 @@ const initialState = {
   },
   isTechniciansLoading: false,
   techniciansError: null,
+
+  jobRolesList: [],
+  isJobRolesLoading: false,
+  jobRolesError: null,
 
   technicianDetails: null,
   isDetailsLoading: false,
@@ -185,6 +190,25 @@ const technicianSlice = createSlice({
       })
       .addCase(deleteTechnician.rejected, (state) => {
         state.isActionLoading = false;
+      })
+
+      // Get Technician Job Roles
+      .addCase(getTechnicianJobRoles.pending, (state) => {
+        state.isJobRolesLoading = true;
+        state.jobRolesError = null;
+      })
+      .addCase(getTechnicianJobRoles.fulfilled, (state, action) => {
+        state.isJobRolesLoading = false;
+        const payloadData = action.payload?.data;
+        if (Array.isArray(payloadData)) {
+          state.jobRolesList = payloadData;
+        } else {
+          state.jobRolesList = [];
+        }
+      })
+      .addCase(getTechnicianJobRoles.rejected, (state, action) => {
+        state.isJobRolesLoading = false;
+        state.jobRolesError = action.payload?.message || "Failed to fetch job roles";
       });
   },
 });

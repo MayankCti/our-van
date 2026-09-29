@@ -399,7 +399,7 @@ export const createTechnicianSchema = Yup.object().shape({
     contact_number: phoneValidationRule("contact number"),
     home_address: Yup.string()
         .trim()
-        .max(250, "Home address cannot exceed 250 characters")
+        .max(250, "Address cannot exceed 250 characters")
         .nullable(),
 });
 
@@ -418,4 +418,92 @@ export const serviceSchema = Yup.object().shape({
 
 export const createServiceSchema = serviceSchema;
 export const updateServiceSchema = serviceSchema;
+
+// Maintenance Validation Schema
+export const createMaintenanceSchema = Yup.object().shape({
+    van_id: Yup.number()
+        .typeError("Please select a van")
+        .required("Please select a van"),
+    title: Yup.string()
+        .trim()
+        .required("Please enter task title")
+        .min(3, "Title must be at least 3 characters")
+        .max(200, "Title cannot exceed 200 characters"),
+    maintenance_type: Yup.string()
+        .trim()
+        .required("Please select or enter maintenance type")
+        .max(100, "Maintenance type cannot exceed 100 characters"),
+    priority: Yup.string()
+        .oneOf(["high", "medium", "low"], "Priority must be high, medium, or low")
+        .required("Please select priority"),
+    description: Yup.string()
+        .trim()
+        .max(1000, "Description cannot exceed 1000 characters")
+        .nullable(),
+    job_location: Yup.string()
+        .trim()
+        .required("Please enter job location")
+        .max(300, "Location cannot exceed 300 characters"),
+    schedule_date: Yup.string()
+        .required("Please select schedule date")
+        .test("is-future-or-today", "Schedule date cannot be in the past", (value) => {
+            if (!value) return false;
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            return value >= todayStr;
+        }),
+    schedule_time: Yup.string()
+        .required("Please select schedule time")
+        .test("is-future-time", "Schedule time must be later than current time", function (value) {
+            const { schedule_date } = this.parent;
+            if (!schedule_date || !value) return true;
+
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+
+            if (schedule_date === todayStr) {
+                const currentHours = now.getHours();
+                const currentMinutes = now.getMinutes();
+                const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+
+                const [selectedHours, selectedMinutes] = value.split(':').map(Number);
+                const selectedTimeInMinutes = selectedHours * 60 + (selectedMinutes || 0);
+
+                return selectedTimeInMinutes > currentTimeInMinutes;
+            }
+            return true;
+        }),
+    estimated_hours: Yup.number()
+        .typeError("Estimated hours must be a valid number")
+        .required("Please enter estimated hours")
+        .positive("Estimated hours must be greater than 0")
+        .max(1000, "Estimated hours is too large"),
+    assignee_type: Yup.string()
+        .required("Please select assignee type"),
+    assignee_id: Yup.number()
+        .typeError("Please select an assignee")
+        .required("Please select an assignee"),
+    services: Yup.array()
+        .of(
+            Yup.object().shape({
+                name: Yup.string()
+                    .trim()
+                    .required("Service name is required"),
+                cost: Yup.number()
+                    .typeError("Cost must be a valid number")
+                    .required("Cost is required")
+                    .min(0, "Cost cannot be negative"),
+                is_custom: Yup.boolean().default(false),
+                service_id: Yup.number().nullable(),
+            })
+        )
+        .min(1, "Please add at least one service to the maintenance task"),
+});
+
 

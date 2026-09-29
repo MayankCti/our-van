@@ -19,13 +19,24 @@ const MyProfile = () => {
     <Layout>
       <div className="ct_right_panel">
         <Header />
-        <div className="ct_inner_header_bg mt-4 ct_px_30">
-          <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">
-            My Profile
-          </h4>
-          <p className="mb-0 ct_para_clr">
-            View your account information
-          </p>
+        <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="btn p-0 border-0 bg-transparent text-decoration-none shadow-none d-inline-flex align-items-center text-dark"
+            style={{ cursor: "pointer" }}
+            aria-label="Go Back"
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
+          <div>
+            <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">
+              My Profile
+            </h4>
+            <p className="mb-0 ct_para_clr">
+              View your account information
+            </p>
+          </div>
         </div>
         <div className="ct_px_30 mt-4 pb-4">
           <section className="ct_profile_card">

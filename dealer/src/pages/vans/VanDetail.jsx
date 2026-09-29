@@ -54,18 +54,18 @@ const VanDetail = () => {
   const images = Array.isArray(details?.images)
     ? details.images
     : Array.isArray(details?.vehicle_images)
-    ? details.vehicle_images
-    : Array.isArray(van?.images)
-    ? van.images
-    : Array.isArray(van?.vehicle_images)
-    ? van.vehicle_images
-    : [];
+      ? details.vehicle_images
+      : Array.isArray(van?.images)
+        ? van.images
+        : Array.isArray(van?.vehicle_images)
+          ? van.vehicle_images
+          : [];
   const owner = details?.owner || details?.owner_details || van?.owner || null;
   const components = Array.isArray(details?.components)
     ? details.components
     : Array.isArray(details?.van_components)
-    ? details.van_components
-    : [];
+      ? details.van_components
+      : [];
   const warranty = details?.warranty || details?.warranty_details || details?.van_warranty || null;
   const maintenance = details?.maintenance || details?.van_maintenance || details?.step_6 || details?.maintenance_setup || null;
 
@@ -108,7 +108,6 @@ const VanDetail = () => {
       <SubHeader
         title={van?.van_name ? `${van.van_name} Details` : 'Van Details'}
         subtitle="View and manage the complete digital profile of the assigned van."
-        backUrl={pageRoutes.vans}
       >
         {van?.status && (
           <StatusBadge
@@ -176,7 +175,7 @@ const VanDetail = () => {
                       src={mainImageUrl}
                       className="img-fluid ct_vehicle_img rounded-3"
                       alt={van?.van_name || 'Vehicle'}
-                      style={{ cursor: 'pointer', objectFit: 'cover', width: '100%', height: '140px' }}
+                      style={{ cursor: 'pointer', objectFit: 'contain', width: '100%', height: '140px' }}
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = '/assets/img/vehicle_1.jpg';

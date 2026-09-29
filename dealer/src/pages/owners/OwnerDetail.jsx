@@ -418,7 +418,7 @@ const OwnerDetail = () => {
               </div>
 
               {/* Pagination for Assigned Vans */}
-              {filteredVans.length > 0 && (
+              {totalItems > 10 && (
                 <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
                   <div>
                     <PaginationDropdown

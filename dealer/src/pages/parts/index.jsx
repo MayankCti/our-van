@@ -548,7 +548,7 @@ const Parts = () => {
           </div>
 
           {/* Pagination UI */}
-          {filteredParts.length > 0 && (
+          {totalItems > 10 && (
             <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
               <div>
                 <PaginationDropdown
@@ -582,7 +582,7 @@ const Parts = () => {
           aria-modal="true"
           role="dialog"
         >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
+          <div className="modal-dialog modal-dialog-centered modal-lg" style={{ maxWidth: "800px" }}>
             <div className="modal-content border-0 rounded-4 shadow">
               <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                 <div>
@@ -671,6 +671,7 @@ const Parts = () => {
                                 value={values.original_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="original_cost" />
                             </div>
@@ -693,6 +694,7 @@ const Parts = () => {
                                 value={values.service_cost}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="service_cost" />
                             </div>
@@ -715,6 +717,7 @@ const Parts = () => {
                                 value={values.stock_quantity}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="stock_quantity" />
                             </div>
@@ -737,6 +740,7 @@ const Parts = () => {
                                 value={values.low_stock_threshold}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.target.blur()}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="low_stock_threshold" />
                             </div>
@@ -828,10 +832,10 @@ const Parts = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 rounded-3"
+                    className="btn btn-danger px-4 py-2 ct_fw_600 flex-grow-1 "
                     onClick={handleConfirmDelete}
                     disabled={isActionLoading}
-                    style={{ minHeight: '44px' }}
+                    style={{ minHeight: '44px', borderRadius: "10px" }}
                   >
                     {isActionLoading ? (
                       <div className="d-flex align-items-center justify-content-center gap-2">

@@ -46,14 +46,6 @@ const TechnicianDetail = () => {
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'T';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  };
 
   const isTechnicianActive = () => {
     if (tech.is_block !== undefined && tech.is_block !== null) {
@@ -204,11 +196,8 @@ const TechnicianDetail = () => {
                   </span>
                   <span>
                     <i className="fa-solid fa-phone me-1 text-success"></i>
-                    {(tech.contact_number || tech.phone_number)
-                      ? ((tech.contact_number || tech.phone_number).startsWith('+')
-                        ? (tech.contact_number || tech.phone_number)
-                        : `${tech.country_code ? tech.country_code + ' ' : ''}${tech.contact_number || tech.phone_number}`)
-                      : 'N/A'}
+                    {(tech.phone_number || 'N/A')
+                    }
                   </span>
 
                 </div>
@@ -235,20 +224,24 @@ const TechnicianDetail = () => {
 
 
 
+
               <div className="col-lg-3 col-sm-6">
                 <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">
                   Phone Number
                 </h5>
                 <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                  {(tech.contact_number || tech.phone_number)
-                    ? ((tech.contact_number || tech.phone_number).startsWith('+')
-                      ? (tech.contact_number || tech.phone_number)
-                      : `${tech.country_code ? tech.country_code + ' ' : ''}${tech.contact_number || tech.phone_number}`)
-                    : 'N/A'}
+                  {tech.phone_number || 'N/A'}
                 </h6>
               </div>
 
-
+              <div className="col-lg-3 col-sm-6">
+                <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">
+                  Address
+                </h5>
+                <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
+                  {tech.address || 'N/A'}
+                </h6>
+              </div>
 
 
 
