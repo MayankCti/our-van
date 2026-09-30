@@ -307,8 +307,8 @@ const Parts = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isPartsLoading ? "..." : stats.total}</h3>
                   <p>Total Parts</p>
+                  <h3>{isPartsLoading ? "..." : stats.total}</h3>
                 </div>
               </div>
             </div>
@@ -335,8 +335,8 @@ const Parts = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isPartsLoading ? "..." : stats.inStock}</h3>
                   <p>In Stock</p>
+                  <h3>{isPartsLoading ? "..." : stats.inStock}</h3>
                 </div>
               </div>
             </div>
@@ -361,8 +361,8 @@ const Parts = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isPartsLoading ? "..." : stats.lowStock}</h3>
                   <p>Low Stock Alert</p>
+                  <h3>{isPartsLoading ? "..." : stats.lowStock}</h3>
                 </div>
               </div>
             </div>
@@ -390,8 +390,8 @@ const Parts = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isPartsLoading ? "..." : stats.outOfStock}</h3>
                   <p>Out of Stock</p>
+                  <h3>{isPartsLoading ? "..." : stats.outOfStock}</h3>
                 </div>
               </div>
             </div>

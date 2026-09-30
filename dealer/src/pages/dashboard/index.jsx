@@ -60,8 +60,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_1.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalVans ?? 0}</h3>
                   <p>Total Vans</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalVans ?? 0}</h3>
                 </div>
               </div>
             </div>
@@ -73,8 +73,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_2.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalOwners ?? 0}</h3>
                   <p>Total Owners</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalOwners ?? 0}</h3>
                 </div>
               </div>
             </div>
@@ -86,8 +86,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_3.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.warrantyAlerts ?? 0}</h3>
                   <p>Warranty Alerts</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.warrantyAlerts ?? 0}</h3>
                 </div>
               </div>
             </div>
@@ -99,8 +99,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_4.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.upcomingServices ?? 0}</h3>
                   <p>Upcoming Services</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.upcomingServices ?? 0}</h3>
                 </div>
               </div>
             </div>
@@ -117,8 +117,8 @@ const Dashboard = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalSuppliers ?? 0}</h3>
                   <p>Total Suppliers</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalSuppliers ?? 0}</h3>
                 </div>
               </div>
             </div>
@@ -133,8 +133,8 @@ const Dashboard = () => {
                   </svg>
                 </div>
                 <div className="ct_card_content">
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalTechnicians ?? 0}</h3>
                   <p>Total Technicians</p>
+                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.totalTechnicians ?? 0}</h3>
                 </div>
               </div>
             </div>

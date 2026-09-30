@@ -66,7 +66,7 @@ const Sidebar = () => {
         if (itemPath === pageRoutes.technicians && location.pathname.startsWith('/technician-detail')) return true;
         if (itemPath === pageRoutes.suppliers && location.pathname.startsWith('/supplier-detail')) return true;
         if (itemPath === pageRoutes.parts && location.pathname.startsWith('/part-detail')) return true;
-        if (itemPath === pageRoutes.maintenance && location.pathname.startsWith('/maintenance-detail')) return true;
+        if (itemPath === pageRoutes.maintenance && (location.pathname.startsWith('/maintenance-detail') || location.pathname.startsWith('/create-maintenance'))) return true;
         return location.pathname.startsWith(itemPath);
     };
 

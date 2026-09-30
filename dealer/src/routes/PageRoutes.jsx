@@ -23,6 +23,7 @@ const PartDetail = lazy(() => import("../pages/parts/PartDetail"));
 const Services = lazy(() => import("../pages/services"));
 const Maintenance = lazy(() => import("../pages/maintenance"));
 const MaintenanceDetail = lazy(() => import("../pages/maintenance/MaintenanceDetail"));
+const CreateMaintenance = lazy(() => import("../pages/maintenance/CreateMaintenance"));
 
 export const pageRoutes = {
   login: "/login",
@@ -47,6 +48,7 @@ export const pageRoutes = {
   services: "/services",
   maintenance: "/maintenance",
   maintenance_detail: "/maintenance-detail",
+  create_maintenance: "/create-maintenance",
 };
 
 export const AllRoutes = [
@@ -174,6 +176,12 @@ export const AllRoutes = [
     name: "Maintenance Detail",
     path: pageRoutes.maintenance_detail,
     element: <MaintenanceDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "Create Maintenance Task",
+    path: pageRoutes.create_maintenance,
+    element: <CreateMaintenance />,
     isPrivate: true,
   },
   {

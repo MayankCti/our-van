@@ -2,43 +2,43 @@ import React, { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
-import { pageRoutes } from '../../routes/PageRoutes';
 import SubHeader from '../../components/SubHeader';
+import { pageRoutes } from '../../routes/PageRoutes';
 import {
-  getMaintenanceById,
+  getTechnicianMaintenanceDetail,
   clearMaintenanceDetails,
 } from '../../redux/slices/maintenanceSlice';
 
 const MaintenanceDetail = () => {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const taskId = searchParams.get('id') || searchParams.get('task_id');
+  const taskId = searchParams.get('id') || searchParams.get('maintenance_id');
 
   const {
-    maintenanceDetails,
+    taskDetails,
     isDetailsLoading = false,
     detailsError = null,
   } = useSelector((state) => state.maintenanceReducer || {});
 
   useEffect(() => {
     if (taskId) {
-      dispatch(getMaintenanceById({ id: taskId }));
+      dispatch(getTechnicianMaintenanceDetail({ id: taskId }));
     }
     return () => {
       dispatch(clearMaintenanceDetails());
     };
   }, [dispatch, taskId]);
 
-  const task = maintenanceDetails?.data || maintenanceDetails || {};
+  const task = taskDetails?.data || taskDetails || {};
+  const van = task.van || task.van_details || {};
+  const dealer = task.dealer || {};
+  const services = Array.isArray(task.services) ? task.services : [];
 
   const formatCurrency = (val) => {
     if (val === undefined || val === null || val === '') return '$0.00';
     const num = typeof val === 'number' ? val : parseFloat(val);
     if (isNaN(num)) return '$0.00';
-    return `$${num.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const formatDate = (dateString) => {
@@ -89,8 +89,6 @@ const MaintenanceDetail = () => {
 
   const getPriorityBadgeClass = (priority) => {
     switch ((priority || '').toLowerCase()) {
-      case 'urgent':
-        return 'bg-danger text-white';
       case 'high':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
       case 'medium':
@@ -105,6 +103,7 @@ const MaintenanceDetail = () => {
   const getStatusBadgeClass = (status) => {
     switch ((status || '').toLowerCase()) {
       case 'completed':
+      case 'accepted':
         return 'bg-success-subtle text-success border border-success-subtle';
       case 'in_progress':
       case 'in progress':
@@ -119,19 +118,8 @@ const MaintenanceDetail = () => {
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'A';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  };
-
-  const assignee = task.assignee || {};
-  const van = task.van_details || {};
-  const services = Array.isArray(task.services) ? task.services : [];
-  const quotation = task.quotation_breakdown || {};
+  const taskStatusVal = task.task_status || 'pending';
+  const dealerName = dealer.name || dealer.dealer_name || 'N/A';
 
   return (
     <Layout>
@@ -145,7 +133,7 @@ const MaintenanceDetail = () => {
         backUrl={pageRoutes.maintenance}
         className="ct_flex_col_767"
       >
-        {task?.id && (
+        {task?.maintenance_id || task?.id ? (
           <div className="d-flex align-items-center gap-2 flex-wrap">
             {task.priority && (
               <span
@@ -160,30 +148,28 @@ const MaintenanceDetail = () => {
                 Priority: {task.priority}
               </span>
             )}
-            {task.status && (
-              <span
-                className={`badge ${getStatusBadgeClass(task.status)} text-capitalize`}
-                style={{
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                }}
-              >
-                Status: {task.status}
-              </span>
-            )}
+            <span
+              className={`badge ${getStatusBadgeClass(taskStatusVal)} text-capitalize`}
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                padding: '6px 14px',
+                borderRadius: '20px',
+              }}
+            >
+              Status: {taskStatusVal}
+            </span>
           </div>
-        )}
+        ) : null}
       </SubHeader>
 
       <div className="ct_px_30 mt-4 pb-5">
-        {isDetailsLoading && !task?.id ? (
+        {isDetailsLoading && !task?.maintenance_id && !task?.id ? (
           <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
             <div className="spinner-border text-success mb-3 mx-auto" role="status"></div>
             <p className="text-muted ct_fs_15 mb-0">Loading maintenance task details...</p>
           </div>
-        ) : !taskId || (!task?.id && !isDetailsLoading) ? (
+        ) : !taskId || (!task?.maintenance_id && !task?.id && !isDetailsLoading) ? (
           <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
             <i className="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
             <h5 className="ct_head_clr ct_fs_18 ct_fw_600">Task Not Found</h5>
@@ -198,7 +184,7 @@ const MaintenanceDetail = () => {
           </div>
         ) : (
           <div className="row g-4">
-            {/* Left Column: Task Info & Van Details & Services */}
+            {/* Left Column: Task Overview & Services */}
             <div className="col-xl-8">
               {/* Task Overview Card */}
               <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
@@ -212,12 +198,14 @@ const MaintenanceDetail = () => {
                       {task.maintenance_type || 'General Service'}
                     </span>
                   </div>
-                  <div className="text-end">
-                    <span className="text-muted ct_fs_12 d-block">Estimated Hours</span>
-                    <span className="ct_fw_700 ct_fs_16 text-dark">
-                      {task.estimated_hours ? `${task.estimated_hours} Hours` : 'N/A'}
-                    </span>
-                  </div>
+                  {task.estimated_hours && (
+                    <div className="text-end">
+                      <span className="text-muted ct_fs_12 d-block">Estimated Hours</span>
+                      <span className="ct_fw_700 ct_fs_16 text-dark">
+                        {task.estimated_hours} Hours
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -285,7 +273,7 @@ const MaintenanceDetail = () => {
                         {services.map((srv, idx) => (
                           <tr key={idx}>
                             <td>{idx + 1}</td>
-                            <td className="ct_fw_600 text-dark">{srv.name}</td>
+                            <td className="ct_fw_600 text-dark">{srv.service_name || srv.name}</td>
                             <td>
                               {srv.is_custom ? (
                                 <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
@@ -309,24 +297,15 @@ const MaintenanceDetail = () => {
               </div>
             </div>
 
-            {/* Right Column: Van Info, Assignee Info, Quotation Breakdown */}
+            {/* Right Column: Van Details, Dealer Details, Quotation */}
             <div className="col-xl-4">
-              {/* Van Details Card */}
+              {/* Vehicle Information Card */}
               <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
                   <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
                     <i className="fa-solid fa-van-shuttle text-success"></i>
                     <span>Vehicle Information</span>
                   </h6>
-                  {van.van_id && (
-                    <Link
-                      to={`${pageRoutes.van_detail}?id=${van.van_id}`}
-                      className="ct_outline_btn ct_fs_12"
-                      style={{ borderRadius: '6px' }}
-                    >
-                      View Van
-                    </Link>
-                  )}
                 </div>
 
                 <div className="d-flex flex-column gap-3">
@@ -347,75 +326,49 @@ const MaintenanceDetail = () => {
                     <div className="col-6">
                       <span className="text-muted ct_fs_12 d-block">Year / Model</span>
                       <span className="ct_fw_600 ct_fs_13 text-dark">
-                        {van.year || 'N/A'} {van.model ? `• ${van.model}` : ''}
+                        {van.year || van.model || 'N/A'} {van.make ? `• ${van.make}` : ''}
                       </span>
                     </div>
                   </div>
-
-                  {van.owner_name && (
-                    <div className="pt-2 border-top">
-                      <span className="text-muted ct_fs_12 d-block">Owner Name</span>
-                      <span className="ct_fw_600 ct_fs_14 text-dark">{van.owner_name}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Assignee Card */}
+              {/* Assigned By (Dealer) Card */}
               <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
                   <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
-                    <i
-                      className={`fa-solid ${assignee.type === 'supplier' ? 'fa-truck-field' : 'fa-user-gear'
-                        } text-success`}
-                    ></i>
-                    <span>Assigned {assignee.type === 'supplier' ? 'Supplier' : 'Technician'}</span>
+                    <i className="fa-solid fa-building text-success"></i>
+                    <span>Assigned By (Dealer)</span>
                   </h6>
-                  {assignee.type && (
-                    <span className="badge bg-light text-muted border px-2 py-1 text-capitalize ct_fs_11">
-                      {assignee.type}
-                    </span>
-                  )}
                 </div>
 
-                <div className="d-flex align-items-center gap-3 mb-3">
-                  <div
-                    className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center ct_fw_700 ct_fs_16 flex-shrink-0"
-                    style={{ width: '48px', height: '48px' }}
-                  >
-                    {getInitials(assignee.name)}
-                  </div>
+                <div className="d-flex flex-column gap-2 ct_fs_14">
                   <div>
-                    <h6 className="ct_fw_700 ct_head_clr mb-0 ct_fs_15">
-                      {assignee.name || 'Unassigned'}
-                    </h6>
-                    <span className="text-muted ct_fs_12">
-                      {assignee.type === 'supplier' ? 'Registered Supplier' : 'Certified Technician'}
-                    </span>
+                    <span className="text-muted ct_fs_12 d-block">Dealer Name</span>
+                    <span className="ct_fw_700 text-dark ct_fs_15">{dealerName}</span>
                   </div>
-                </div>
 
-                <div className="d-flex flex-column gap-2 pt-2 border-top ct_fs_13">
-                  {assignee.email && (
-                    <div className="d-flex align-items-center gap-2 text-muted">
+                  {dealer.email && (
+                    <div className="d-flex align-items-center gap-2 text-muted mt-1">
                       <i className="fa-regular fa-envelope text-success"></i>
-                      <a href={`mailto:${assignee.email}`} className="text-decoration-none text-dark">
-                        {assignee.email}
+                      <a href={`mailto:${dealer.email}`} className="text-decoration-none text-dark">
+                        {dealer.email}
                       </a>
                     </div>
                   )}
-                  {assignee.contact && (
+
+                  {dealer.phone && (
                     <div className="d-flex align-items-center gap-2 text-muted">
                       <i className="fa-solid fa-phone text-success"></i>
-                      <a href={`tel:${assignee.contact}`} className="text-decoration-none text-dark">
-                        {assignee.contact}
+                      <a href={`tel:${dealer.phone}`} className="text-decoration-none text-dark">
+                        {dealer.phone}
                       </a>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Quotation Breakdown Card */}
+              {/* Quotation / Total Cost Card */}
               <div
                 className="card border-0 shadow-sm rounded-4 p-4 text-white"
                 style={{
@@ -429,28 +382,19 @@ const MaintenanceDetail = () => {
 
                 <div className="d-flex flex-column gap-2 ct_fs_14">
                   <div className="d-flex justify-content-between text-light">
-                    <span>System Services:</span>
+                    <span>Total Services:</span>
                     <span className="ct_fw_600">
-                      {formatCurrency(quotation.system_services_total)}
-                    </span>
-                  </div>
-                  <div className="d-flex justify-content-between text-light">
-                    <span>Custom Services:</span>
-                    <span className="ct_fw_600">
-                      {formatCurrency(quotation.custom_services_total)}
+                      {services.length} Item(s)
                     </span>
                   </div>
 
                   <div className="border-top border-light pt-3 mt-2 d-flex justify-content-between align-items-center">
                     <div>
-                      <span className="text-light ct_fs_12 d-block">Total Estimated Amount</span>
+                      <span className="text-light ct_fs_12 d-block">Total Task Amount</span>
                       <h4 className="ct_fw_700 mb-0 text-white">
-                        {formatCurrency(quotation.total_estimated_amount ?? task.total_amount)}
+                        {formatCurrency(task.total_amount)}
                       </h4>
                     </div>
-                    <span className="badge bg-white text-success ct_fw_700 px-3 py-2 rounded-pill">
-                      Quote
-                    </span>
                   </div>
                 </div>
               </div>

@@ -348,36 +348,14 @@ export const editPartSchema = Yup.object().shape({
 
 export const partSchema = addPartSchema;
 
-// Create Supplier Validation Schema
+// Supplier Validation Schema (Create)
 export const createSupplierSchema = Yup.object().shape({
     full_name: Yup.string()
         .trim()
-        .required("Please enter contact person / full name")
+        .required("Please enter full name")
         .min(2, "Full name must be at least 2 characters")
         .max(100, "Full name cannot exceed 100 characters"),
     email: emailValidation,
-    phone_number: phoneValidationRule("phone number"),
-    company_name: Yup.string()
-        .trim()
-        .required("Please enter company name")
-        .min(2, "Company name must be at least 2 characters")
-        .max(150, "Company name cannot exceed 150 characters"),
-    accounting_software_used: Yup.string()
-        .trim()
-        .max(100, "Accounting software name cannot exceed 100 characters")
-        .nullable(),
-    service_region: Yup.string()
-        .trim()
-        .max(100, "Service region cannot exceed 100 characters")
-        .nullable(),
-    services_offered: Yup.string()
-        .trim()
-        .max(300, "Services offered cannot exceed 300 characters")
-        .nullable(),
-    about_us: Yup.string()
-        .trim()
-        .max(1000, "About us cannot exceed 1000 characters")
-        .nullable(),
 });
 
 // Create Technician Validation Schema

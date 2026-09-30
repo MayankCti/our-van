@@ -7,15 +7,15 @@ import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
 import useDebounce from '../../hooks/useDebounce';
 import { pageRoutes } from '../../routes/PageRoutes';
-import { getMaintenanceList } from '../../redux/slices/maintenanceSlice';
+import { getTechnicianAssignedTasks } from '../../redux/slices/maintenanceSlice';
 
-const Maintenance = () => {
+const MaintenanceTasks = () => {
   const dispatch = useDispatch();
 
   const {
-    maintenanceList = [],
-    maintenanceMeta = {},
-    isMaintenanceLoading = false,
+    tasksList = [],
+    tasksSummary = {},
+    isTasksLoading = false,
   } = useSelector((state) => state.maintenanceReducer || {});
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,30 +27,26 @@ const Maintenance = () => {
   const [listPerPages, setListPerPages] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Fetch maintenance list
-  const fetchTasks = () => {
+  // Fetch Assigned Maintenance Tasks on mount and on filter changes
+  useEffect(() => {
     dispatch(
-      getMaintenanceList({
-        page: currentPage + 1,
-        limit: listPerPages,
+      getTechnicianAssignedTasks({
         search: debouncedSearch,
+        priority: selectedPriority,
+        status: selectedStatus,
       })
     );
-  };
+  }, [dispatch, debouncedSearch, selectedPriority, selectedStatus]);
 
-  useEffect(() => {
-    fetchTasks();
-  }, [dispatch, currentPage, listPerPages, debouncedSearch]);
-
-  // Reset pagination on search / filter
+  // Reset to first page when search/filter changes
   useEffect(() => {
     setCurrentPage(0);
-  }, [debouncedSearch, selectedPriority, selectedStatus]);
+  }, [debouncedSearch, selectedPriority, selectedStatus, listPerPages]);
 
-  // Filtered maintenance tasks
+  // Client-side filtering as safety
   const filteredTasks = useMemo(() => {
-    if (!Array.isArray(maintenanceList)) return [];
-    return maintenanceList.filter((task) => {
+    if (!Array.isArray(tasksList)) return [];
+    return tasksList.filter((task) => {
       // Priority filter
       if (
         selectedPriority !== 'all' &&
@@ -59,19 +55,40 @@ const Maintenance = () => {
         return false;
       }
       // Status filter
-      if (
-        selectedStatus !== 'all' &&
-        (task.status || '').toLowerCase() !== selectedStatus.toLowerCase()
-      ) {
-        return false;
+      if (selectedStatus !== 'all') {
+        const tStatus = (task.task_status || '').toLowerCase();
+        const filterVal = selectedStatus.toLowerCase();
+        if (tStatus !== filterVal) {
+          return false;
+        }
+      }
+      // Search query filter
+      if (debouncedSearch.trim()) {
+        const query = debouncedSearch.toLowerCase().trim();
+        const title = (task.title || '').toLowerCase();
+        const vanName = (task.van?.van_name || '').toLowerCase();
+        const reg = (task.van?.registration_number || '').toLowerCase();
+        const location = (task.job_location || '').toLowerCase();
+        const dealerName = (task.dealer?.name || task.dealer?.dealer_name || '').toLowerCase();
+        return (
+          title.includes(query) ||
+          vanName.includes(query) ||
+          reg.includes(query) ||
+          location.includes(query) ||
+          dealerName.includes(query)
+        );
       }
       return true;
     });
-  }, [maintenanceList, selectedPriority, selectedStatus]);
+  }, [tasksList, selectedPriority, selectedStatus, debouncedSearch]);
 
   // Pagination calculation
-  const totalItems = maintenanceMeta.totalItems || filteredTasks.length;
-  const totalPages = Math.max(1, maintenanceMeta.totalPages || Math.ceil(totalItems / listPerPages));
+  const totalItems = filteredTasks.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / listPerPages));
+  const displayedTasks = useMemo(() => {
+    const start = currentPage * listPerPages;
+    return filteredTasks.slice(start, start + listPerPages);
+  }, [filteredTasks, currentPage, listPerPages]);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -146,20 +163,91 @@ const Maintenance = () => {
   return (
     <Layout>
       <SubHeader
-        title="Maintenance"
-        subtitle="Manage and track van maintenance requests, service assignments, and tasks."
-      >
-        <Link
-          to={pageRoutes.create_maintenance}
-          className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center gap-2 text-decoration-none"
-        >
-          <i className="fa-solid fa-plus"></i>
-          <span>Create Maintenance Task</span>
-        </Link>
-      </SubHeader>
+        title="Maintenance Tasks"
+        subtitle="Manage and track your assigned maintenance tasks, vehicle repairs, and schedules."
+      />
 
       <div className="ct_px_30 mt-4 pb-4">
         <div className="container-fluid">
+          {/* Summary Cards */}
+          <div className="row">
+            {/* Card 1 - Total Assigned */}
+            <div className="col-xl-4 col-lg-4 col-md-6 mb-4 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#3D8B37"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                    <path d="M9 14l2 2 4-4" />
+                  </svg>
+                </div>
+                <div className="ct_card_content">
+                  <p>Total Assigned</p>
+                  <h3>{isTasksLoading ? "..." : (tasksSummary.total_assigned ?? tasksList.length ?? 0)}</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2 - Completed Tasks */}
+            <div className="col-xl-4 col-lg-4 col-md-6 mb-4 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#3D8B37"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </div>
+                <div className="ct_card_content">
+                  <p>Completed Tasks</p>
+                  <h3>{isTasksLoading ? "..." : (tasksSummary.total_completed ?? 0)}</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3 - Pending Tasks */}
+            <div className="col-xl-4 col-lg-4 col-md-6 mb-4 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#3D8B37"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div className="ct_card_content">
+                  <p>Pending Tasks</p>
+                  <h3>{isTasksLoading ? "..." : (tasksSummary.total_pending ?? 0)}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Filter and Search Bar */}
           <div className="row g-3 mb-4 align-items-center">
             <div className="col-lg-6 col-md-12">
@@ -183,7 +271,7 @@ const Maintenance = () => {
                 <input
                   type="text"
                   className="form-control ct_input ct_input_ps_40 ct_fs_14"
-                  placeholder="Search by Title, Van, Registration, or Assignee..."
+                  placeholder="Search by Title, Van, Registration, Location, or Dealer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -232,6 +320,7 @@ const Maintenance = () => {
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
             </div>
@@ -244,40 +333,48 @@ const Maintenance = () => {
                 <tr>
                   <th>#</th>
                   <th>Task Title</th>
-                  <th>Maintenance Type</th>
                   <th>Van Details</th>
-                  <th>Assigned To</th>
+                  <th>Assigned By (Dealer)</th>
+                  <th>Job Location</th>
                   <th>Schedule</th>
                   <th>Priority</th>
-                  <th>Total Cost</th>
+                  <th>Total Amount</th>
                   <th>Status</th>
                   <th>Created Date</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {isMaintenanceLoading ? (
+                {isTasksLoading ? (
                   <tr>
                     <td colSpan="11" className="text-center py-5">
                       <div className="spinner-border spinner-border-sm text-success" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
-                      <p className="mt-2 text-muted ct_fs_14 mb-0">Loading maintenance tasks...</p>
+                      <p className="mt-2 text-muted ct_fs_14 mb-0">Loading assigned tasks...</p>
                     </td>
                   </tr>
-                ) : filteredTasks.length === 0 ? (
+                ) : displayedTasks.length === 0 ? (
                   <tr>
                     <td colSpan="11" className="text-center py-5 text-muted ct_fs_14">
                       {searchTerm || selectedPriority !== 'all' || selectedStatus !== 'all'
                         ? 'No maintenance tasks match your filter criteria.'
-                        : 'No maintenance tasks created yet.'}
+                        : 'No maintenance tasks assigned to your technician account yet.'}
                     </td>
                   </tr>
                 ) : (
-                  filteredTasks.map((task, index) => {
+                  displayedTasks.map((task, index) => {
                     const rowNumber = currentPage * listPerPages + index + 1;
+                    const taskId = task.maintenance_id || task.id;
+                    const van = task.van || {};
+                    const vanName = van.van_name || van.model || 'N/A';
+                    const regNumber = van.registration_number || '';
+                    const dealer = task.dealer || {};
+                    const dealerName = dealer.name || dealer.dealer_name || 'N/A';
+                    const taskStatusVal = task.task_status || 'pending';
+
                     return (
-                      <tr key={task.id || index}>
+                      <tr key={taskId || index}>
                         <td>{rowNumber}</td>
 
                         {/* Task Title */}
@@ -285,20 +382,31 @@ const Maintenance = () => {
                           {task.title || 'N/A'}
                         </td>
 
-                        {/* Maintenance Type */}
-                        <td>
-                          {task.maintenance_type || 'N/A'}
-                        </td>
-
                         {/* Van Details */}
                         <td>
-                          {task.van_name || 'N/A'}
-                          {task.registration_number ? ` (${task.registration_number})` : ''}
+                          {vanName}
+                          {regNumber ? ` (${regNumber})` : ''}
                         </td>
 
-                        {/* Assigned To */}
+                        {/* Dealer Details */}
                         <td>
-                          {task.assigned_to_name || 'Unassigned'}
+                          <span className="ct_fw_600">{dealerName}</span>
+                          {dealer.phone && (
+                            <div className="text-muted ct_fs_12">
+                              {dealer.phone}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Job Location */}
+                        <td>
+                          <span
+                            className="text-truncate d-inline-block"
+                            style={{ maxWidth: '180px' }}
+                            title={task.job_location || 'N/A'}
+                          >
+                            {task.job_location || 'N/A'}
+                          </span>
                         </td>
 
                         {/* Schedule */}
@@ -326,13 +434,13 @@ const Maintenance = () => {
                           {formatCurrency(task.total_amount)}
                         </td>
 
-                        {/* Status */}
+                        {/* Status (Normal Task Status Badge) */}
                         <td>
                           <span
-                            className={`badge ${getStatusBadgeClass(task.status)} px-3 py-1 text-capitalize`}
+                            className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize`}
                             style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
                           >
-                            {task.status || 'Pending'}
+                            {taskStatusVal}
                           </span>
                         </td>
 
@@ -345,7 +453,7 @@ const Maintenance = () => {
                         <td>
                           <div className="d-flex align-items-center gap-2">
                             <Link
-                              to={`${pageRoutes.maintenance_detail}?id=${task.id}`}
+                              to={`${pageRoutes.maintenance_detail}?id=${taskId}`}
                               className="ct_action_icon_btn ct_view_btn"
                               title="View Details"
                             >
@@ -389,4 +497,4 @@ const Maintenance = () => {
   );
 };
 
-export default Maintenance;
+export default MaintenanceTasks;

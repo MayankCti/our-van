@@ -122,8 +122,8 @@ const supplierSlice = createSlice({
               state.supplierDetails.is_block !== undefined
                 ? state.supplierDetails.is_block
                 : (state.supplierDetails.data?.is_block !== undefined
-                    ? state.supplierDetails.data.is_block
-                    : (state.supplierDetails.status === 0 ? 1 : 0));
+                  ? state.supplierDetails.data.is_block
+                  : (state.supplierDetails.status === 0 ? 1 : 0));
             const toggledBlock = newIsBlock !== null ? newIsBlock : (currentBlock === 1 ? 0 : 1);
             state.supplierDetails = {
               ...state.supplierDetails,

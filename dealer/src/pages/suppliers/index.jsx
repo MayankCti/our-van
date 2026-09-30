@@ -7,7 +7,6 @@ import SubHeader from '../../components/SubHeader';
 import PaginationDropdown from '../../components/table/PaginationDropdown';
 import ReactPagination from '../../components/table/ReactPagination';
 import ErrorMessage from '../../components/form/ErrorMessage';
-import PhoneInputField from '../../components/form/PhoneInputField';
 import useDebounce from '../../hooks/useDebounce';
 import { pageRoutes } from '../../routes/PageRoutes';
 import { createSupplierSchema } from '../../utils/Schema';
@@ -54,21 +53,14 @@ const Suppliers = () => {
     setCurrentPage(0);
   }, [debouncedSearch, listPerPages]);
 
-  // Client-side filtering in case API returns full list
+  // Client-side filtering
   const filteredSuppliers = useMemo(() => {
     if (!debouncedSearch.trim()) return suppliersList;
     const query = debouncedSearch.toLowerCase().trim();
     return suppliersList.filter((sup) => {
-      const company = (sup.company_name || '').toLowerCase();
-      const name = (sup.full_name || '').toLowerCase();
+      const name = (sup.name || sup.full_name || sup.company_name || '').toLowerCase();
       const email = (sup.email || '').toLowerCase();
-      const phone = `${sup.country_code || ''} ${sup.phone_number || ''}`.toLowerCase();
-      return (
-        company.includes(query) ||
-        name.includes(query) ||
-        email.includes(query) ||
-        phone.includes(query)
-      );
+      return name.includes(query) || email.includes(query);
     });
   }, [suppliersList, debouncedSearch]);
 
@@ -126,6 +118,16 @@ const Suppliers = () => {
     );
   };
 
+  // Open Add Modal
+  const handleOpenAdd = () => {
+    setShowAddModal(true);
+  };
+
+  // Close Add Modal
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+  };
+
   // Open Delete Confirmation Modal
   const handleOpenDelete = (sup) => {
     setSelectedSupplier(sup);
@@ -154,28 +156,17 @@ const Suppliers = () => {
     );
   };
 
-  // Create Supplier Form Handlers
+  // Form Initial Values (Only 2 fields: full_name and email)
   const initialSupplierValues = {
     full_name: '',
     email: '',
-    phone_number: '',
-    company_name: '',
-    accounting_software_used: '',
-    service_region: '',
-    services_offered: '',
-    about_us: '',
   };
 
+  // Create Supplier Submit Handler
   const handleCreateSupplier = (values, { setSubmitting, resetForm }) => {
     const payload = {
       full_name: values.full_name?.trim(),
       email: values.email?.trim(),
-      phone_number: values.phone_number?.trim(),
-      company_name: values.company_name?.trim(),
-      accounting_software_used: values.accounting_software_used?.trim() || undefined,
-      about_us: values.about_us?.trim() || undefined,
-      service_region: values.service_region?.trim() || undefined,
-      services_offered: values.services_offered?.trim() || undefined,
     };
 
     dispatch(
@@ -184,7 +175,7 @@ const Suppliers = () => {
         callback: (res) => {
           setSubmitting(false);
           if (res) {
-            setShowAddModal(false);
+            handleCloseModal();
             resetForm();
             dispatch(getSuppliersByDealer({ search: debouncedSearch }));
           }
@@ -201,7 +192,7 @@ const Suppliers = () => {
       >
         <button
           type="button"
-          onClick={() => setShowAddModal(true)}
+          onClick={handleOpenAdd}
           className="ct_green_btn ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center gap-2"
         >
           <i className="fa-solid fa-plus"></i>
@@ -233,7 +224,7 @@ const Suppliers = () => {
             <input
               type="text"
               className="form-control ct_input ct_input_ps_40 ct_fs_14"
-              placeholder="Search by Supplier Name, Email, or Mobile..."
+              placeholder="Search by Supplier Name or Email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -261,9 +252,9 @@ const Suppliers = () => {
                 <tr>
                   <th>#</th>
                   <th>Supplier Name</th>
-                  <th>Company Name</th>
                   <th>Email Address</th>
-                  <th>Mobile Number</th>
+                  <th>Assigned Jobs</th>
+                  <th>Completed Jobs</th>
                   <th>Joined On</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -290,13 +281,9 @@ const Suppliers = () => {
                   displayedSuppliers.map((sup, index) => {
                     const active = isSupplierActive(sup);
                     const isToggling = loadingToggleId === sup.id;
-                    const phoneDisplay = sup.phone_number
-                      ? (sup.phone_number.startsWith('+')
-                        ? sup.phone_number
-                        : `${sup.country_code ? sup.country_code + ' ' : ''}${sup.phone_number}`)
-                      : 'N/A';
-                    const displayName = sup.full_name || sup.name || 'N/A';
-                    const companyName = sup.company_name || 'N/A';
+                    const displayName = sup.name || sup.full_name || sup.company_name || 'N/A';
+                    const assignedJobs = sup.job_summary?.total_assigned_jobs ?? sup.total_assigned_jobs ?? 0;
+                    const completedJobs = sup.job_summary?.total_completed_jobs ?? sup.total_completed_jobs ?? 0;
 
                     return (
                       <tr key={sup.id || index}>
@@ -307,13 +294,24 @@ const Suppliers = () => {
                           {displayName}
                         </td>
 
-                        {/* Company Name */}
-                        <td className="ct_fw_500">
-                          {companyName}
+                        {/* Email Address */}
+                        <td>{sup.email || 'N/A'}</td>
+
+                        {/* Assigned Jobs Count */}
+                        <td>
+
+                          {assignedJobs}
+
                         </td>
 
-                        <td>{sup.email || 'N/A'}</td>
-                        <td>{phoneDisplay}</td>
+                        {/* Completed Jobs Count */}
+                        <td>
+
+                          {completedJobs}
+
+                        </td>
+
+                        {/* Joined Date */}
                         <td>{formatDate(sup.created_at)}</td>
 
                         {/* Status Toggle Switch */}
@@ -392,7 +390,7 @@ const Suppliers = () => {
         </div>
       </div>
 
-      {/* Create Supplier Modal */}
+      {/* Add Supplier Modal (Only 2 Fields: Name & Email) */}
       {showAddModal && (
         <div
           className="modal fade show d-block"
@@ -401,7 +399,7 @@ const Suppliers = () => {
           aria-modal="true"
           role="dialog"
         >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '520px' }}>
             <div className="modal-content border-0 rounded-4 shadow">
               <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                 <div>
@@ -409,29 +407,30 @@ const Suppliers = () => {
                     Add New Supplier
                   </h4>
                   <p className="text-muted ct_fs_13 mb-0">
-                    Fill in the details below to add a new supplier to your dealership network.
+                    Fill in the details below to add a new supplier to your network.
                   </p>
                 </div>
                 <button
                   type="button"
                   className="btn-close"
                   aria-label="Close"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={handleCloseModal}
                 ></button>
               </div>
 
               <Formik
                 initialValues={initialSupplierValues}
+                enableReinitialize
                 validationSchema={createSupplierSchema}
                 onSubmit={handleCreateSupplier}
               >
-                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setFieldTouched, isSubmitting }) => {
+                {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => {
                   return (
                     <Form>
                       <div className="modal-body px-4 py-3">
                         <div className="row g-3">
-                          {/* Full Name / Contact Person */}
-                          <div className="col-md-6">
+                          {/* 1. Supplier Name (full_name) */}
+                          <div className="col-12">
                             <div className="form-group text-start">
                               <label className="mb-2 ct_label" htmlFor="full_name">
                                 Contact Person / Full Name <span className="text-danger">*</span>
@@ -450,28 +449,8 @@ const Suppliers = () => {
                             </div>
                           </div>
 
-                          {/* Company Name */}
-                          <div className="col-md-6">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="company_name">
-                                Company Name <span className="text-danger">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                id="company_name"
-                                name="company_name"
-                                className="form-control ct_input"
-                                placeholder="Enter company name"
-                                value={values.company_name}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                              />
-                              <ErrorMessage errors={errors} touched={touched} fieldName="company_name" />
-                            </div>
-                          </div>
-
-                          {/* Email Address */}
-                          <div className="col-md-6">
+                          {/* 2. Email Address */}
+                          <div className="col-12">
                             <div className="form-group text-start">
                               <label className="mb-2 ct_label" htmlFor="email">
                                 Email Address <span className="text-danger">*</span>
@@ -489,108 +468,6 @@ const Suppliers = () => {
                               <ErrorMessage errors={errors} touched={touched} fieldName="email" />
                             </div>
                           </div>
-
-                          {/* Phone Number */}
-                          <div className="col-md-6">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="phone_number">
-                                Phone / Mobile Number <span className="text-danger">*</span>
-                              </label>
-                              <PhoneInputField
-                                id="phone_number"
-                                name="phone_number"
-                                placeholder="Enter phone number"
-                                value={values.phone_number}
-                                onChange={(phoneVal) => setFieldValue('phone_number', phoneVal)}
-                                onBlur={() => setFieldTouched('phone_number', true)}
-                                isInvalid={Boolean(errors.phone_number && touched.phone_number)}
-                              />
-                              <ErrorMessage errors={errors} touched={touched} fieldName="phone_number" />
-                            </div>
-                          </div>
-
-
-                          {/* Accounting Software Used */}
-                          <div className="col-md-6">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="accounting_software_used">
-                                Accounting Software Used
-                              </label>
-                              <input
-                                type="text"
-                                id="accounting_software_used"
-                                name="accounting_software_used"
-                                className="form-control ct_input"
-                                placeholder="Enter accounting software"
-                                value={values.accounting_software_used}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                              />
-                              <ErrorMessage errors={errors} touched={touched} fieldName="accounting_software_used" />
-                            </div>
-                          </div>
-
-                          {/* Service Region */}
-                          <div className="col-md-6">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="service_region">
-                                Service Region
-                              </label>
-                              <input
-                                type="text"
-                                id="service_region"
-                                name="service_region"
-                                className="form-control ct_input"
-                                placeholder="Enter service region"
-                                value={values.service_region}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                              />
-                              <ErrorMessage errors={errors} touched={touched} fieldName="service_region" />
-                            </div>
-                          </div>
-
-                          {/* Services Offered */}
-                          <div className="col-12">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="services_offered">
-                                Services Offered
-                              </label>
-                              <input
-                                type="text"
-                                id="services_offered"
-                                name="services_offered"
-                                className="form-control ct_input"
-                                placeholder="Enter services offered"
-                                value={values.services_offered}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                              />
-                              <ErrorMessage errors={errors} touched={touched} fieldName="services_offered" />
-                            </div>
-                          </div>
-
-                          {/* About Us */}
-                          <div className="col-12">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="about_us">
-                                About Us / Description
-                              </label>
-                              <textarea
-                                id="about_us"
-                                name="about_us"
-                                rows="3"
-                                className="form-control ct_input"
-                                placeholder="Enter about us / description"
-                                value={values.about_us}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                style={{ height: 'auto' }}
-                              ></textarea>
-                              <ErrorMessage errors={errors} touched={touched} fieldName="about_us" />
-                            </div>
-                          </div>
-
                         </div>
                       </div>
 
@@ -598,7 +475,7 @@ const Suppliers = () => {
                         <button
                           type="button"
                           className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
-                          onClick={() => setShowAddModal(false)}
+                          onClick={handleCloseModal}
                           disabled={isSubmitting || isActionLoading}
                         >
                           Cancel
@@ -658,7 +535,7 @@ const Suppliers = () => {
                 <p className="ct_para_clr mb-4 mx-auto" style={{ maxWidth: '360px', fontSize: '14px' }}>
                   Are you sure you want to delete{' '}
                   <strong className="text-dark">
-                    {selectedSupplier?.company_name || selectedSupplier?.full_name || 'this supplier'}
+                    {selectedSupplier?.name || selectedSupplier?.full_name || selectedSupplier?.company_name || 'this supplier'}
                   </strong>?
                   This action cannot be undone.
                 </p>

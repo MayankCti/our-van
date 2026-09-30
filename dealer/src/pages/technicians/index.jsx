@@ -265,6 +265,8 @@ const Technicians = () => {
                   <th>Job Role</th>
                   <th>Email Address</th>
                   <th>Mobile Number</th>
+                  <th>Assigned Jobs</th>
+                  <th>Completed Jobs</th>
                   <th>Joined On</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -274,7 +276,7 @@ const Technicians = () => {
               <tbody>
                 {isTechniciansLoading ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-5">
+                    <td colSpan="10" className="text-center py-5">
                       <div className="d-flex align-items-center justify-content-center gap-2">
                         <div className="spinner-border spinner-border-sm text-success" role="status"></div>
                         <span className="text-muted ct_fs_14">Loading technicians...</span>
@@ -283,7 +285,7 @@ const Technicians = () => {
                   </tr>
                 ) : displayedTechnicians.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-5 text-muted ct_fs_14">
+                    <td colSpan="10" className="text-center py-5 text-muted ct_fs_14">
                       {searchTerm ? 'No technicians match your search.' : 'No technicians found. Click "Add New Technician" to create one.'}
                     </td>
                   </tr>
@@ -302,6 +304,8 @@ const Technicians = () => {
                       ? jobRolesList.find((r) => String(r.id) === String(tech.job_role || tech.job_role_id))
                       : null;
                     const roleName = roleObj?.job_role || tech.job_role_name || tech.job_role || 'Technician';
+                    const assignedJobs = tech.job_summary?.total_assigned_jobs ?? tech.total_assigned_jobs ?? 0;
+                    const completedJobs = tech.job_summary?.total_completed_jobs ?? tech.total_completed_jobs ?? 0;
 
                     return (
                       <tr key={tech.id || index}>
@@ -319,6 +323,13 @@ const Technicians = () => {
 
                         <td>{tech.email || 'N/A'}</td>
                         <td>{phoneDisplay}</td>
+
+                        {/* Assigned Jobs Count */}
+                        <td>{assignedJobs}</td>
+
+                        {/* Completed Jobs Count */}
+                        <td>{completedJobs}</td>
+
                         <td>{formatDate(tech.created_at)}</td>
 
                         {/* Status Toggle Switch */}

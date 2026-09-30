@@ -64,8 +64,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_1.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>0</h3>
                   <p>Assigned Vans</p>
+                  <h3>0</h3>
                 </div>
               </div>
             </div>
@@ -77,8 +77,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_2.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>0</h3>
                   <p>Active Services</p>
+                  <h3>0</h3>
                 </div>
               </div>
             </div>
@@ -90,8 +90,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_3.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>0</h3>
                   <p>Pending Inspections</p>
+                  <h3>0</h3>
                 </div>
               </div>
             </div>
@@ -103,8 +103,8 @@ const Dashboard = () => {
                   <img src="/assets/img/dash_icon_4.png" alt="" />
                 </div>
                 <div className="ct_card_content">
-                  <h3>0</h3>
                   <p>Completed Tasks</p>
+                  <h3>0</h3>
                 </div>
               </div>
             </div>
