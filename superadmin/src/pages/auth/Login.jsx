@@ -103,7 +103,7 @@ const Login = () => {
                                             />
                                         </div>
 
-                                        <Link to={pageRoutes.fogotPassword} className="ct_fw_600 ct_green_text text-end d-block">
+                                        <Link to={pageRoutes.fogotPassword} className="ct_fw_600 ct_green_text text-end d-block ms-auto" style={{ maxWidth: "fit-content" }}>
                                             Forgot Password?
                                         </Link>
 

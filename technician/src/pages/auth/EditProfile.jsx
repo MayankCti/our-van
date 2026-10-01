@@ -187,6 +187,7 @@ const EditProfile = () => {
                       type="text"
                       name="job_role"
                       id="job_role"
+                      disabled
                       className="form-control ct_input"
                       placeholder="Enter job role"
                       value={values.job_role}

@@ -39,7 +39,7 @@ const Dashboard = () => {
   };
 
   const getProgressNum = (van) => {
-    const val = van?.progress || 0;
+    const val = van?.progress ?? van?.vanDetails?.progress ?? 0;
     const num = typeof val === "number" ? val : parseFloat(String(val).replace("%", ""));
     return !isNaN(num) ? Math.min(Math.max(Math.round(num), 0), 100) : 0;
   };

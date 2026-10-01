@@ -29,6 +29,8 @@ const Dealer = () => {
   } = useSelector((state) => state.dealerReducer || {});
 
   const [togglingId, setTogglingId] = useState(null);
+  const [selectedDealerForBlock, setSelectedDealerForBlock] = useState(null);
+  const [showBlockModal, setShowBlockModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
 
@@ -54,23 +56,46 @@ const Dealer = () => {
     return true;
   };
 
-  const handleToggleBlockDealer = (dealer) => {
-    const dealerId = dealer?.dealerId || dealer?.id || dealer?.dealer_id;
+  const handleOpenBlockModal = (dealer) => {
+    setSelectedDealerForBlock(dealer);
+    setShowBlockModal(true);
+  };
+
+  const handleCloseBlockModal = () => {
+    if (togglingId !== null) return;
+    setShowBlockModal(false);
+    setSelectedDealerForBlock(null);
+  };
+
+  const handleConfirmToggleBlock = () => {
+    if (!selectedDealerForBlock) return;
+    const dealerId = selectedDealerForBlock?.dealerId || selectedDealerForBlock?.id || selectedDealerForBlock?.dealer_id;
     if (!dealerId) return;
 
     setTogglingId(dealerId);
     dispatch(
       toggleBlockDealer({
         dealerId,
-        callback: () => {
+        callback: (res) => {
           setTogglingId(null);
-          dispatch(
-            getDealersList({
-              page: currentPage,
-              limit: listPerPages,
-              search: debouncedSearch,
-            })
-          );
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            setShowBlockModal(false);
+            setSelectedDealerForBlock(null);
+            dispatch(
+              getDealersList({
+                page: currentPage,
+                limit: listPerPages,
+                search: debouncedSearch,
+              })
+            );
+          }
         },
       })
     );
@@ -94,13 +119,12 @@ const Dealer = () => {
           },
           callback: (res) => {
             if (
-              res?.success === true ||
-              res?.status === true ||
-              res?.status === 200 ||
-              res?.statusCode === 200 ||
-              res?.statusCode === 201 ||
-              res?.data ||
-              !res?.error
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
             ) {
               addModalCloseRef.current?.click();
               resetForm();
@@ -294,7 +318,7 @@ const Dealer = () => {
                                 type="checkbox"
                                 checked={isActive}
                                 disabled={isCurrentlyToggling}
-                                onChange={() => handleToggleBlockDealer(dealer)}
+                                onChange={() => handleOpenBlockModal(dealer)}
                               />
                               <div className="toggle-switch-background">
                                 <div className="toggle-switch-handle"></div>
@@ -470,6 +494,97 @@ const Dealer = () => {
           </div>
         </div>
       </div>
+
+      {/* Block / Unblock Confirmation Modal */}
+      {showBlockModal && selectedDealerForBlock && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1055 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content ct_modal">
+              <div className="modal-body p-4 position-relative">
+                {/* Close Icon */}
+                <button
+                  type="button"
+                  className="btn-close ct_delete_close"
+                  onClick={handleCloseBlockModal}
+                  aria-label="Close"
+                  disabled={togglingId !== null}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+
+                {/* Title */}
+                <h3 className="ct_head_clr ct_fw_600 mb-3">
+                  {isDealerActive(selectedDealerForBlock)
+                    ? "Block Dealer?"
+                    : "Unblock Dealer?"}
+                </h3>
+
+                {/* Description */}
+                <p className="ct_para_clr ct_fs_18 mb-5">
+                  {isDealerActive(selectedDealerForBlock)
+                    ? "Are you sure you want to block this dealer? They will lose access to the platform."
+                    : "Are you sure you want to unblock this dealer? They will regain access to the platform."}
+                </p>
+
+                {/* Buttons */}
+                <div className="d-flex gap-3">
+                  <button
+                    type="button"
+                    className="btn ct_btn_gray ct_btn_h_50 w-100"
+                    onClick={handleCloseBlockModal}
+                    disabled={togglingId !== null}
+                  >
+                    No, Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn ct_btn_h_50 w-100 ${
+                      !isDealerActive(selectedDealerForBlock) ? "ct_green_btn" : ""
+                    }`}
+                    style={
+                      isDealerActive(selectedDealerForBlock)
+                        ? {
+                            backgroundColor: "#EF4444",
+                            borderColor: "#EF4444",
+                            color: "#fff",
+                            borderRadius: "10px",
+                            fontWeight: "600",
+                          }
+                        : {
+                            borderRadius: "10px",
+                            fontWeight: "600",
+                          }
+                    }
+                    onClick={handleConfirmToggleBlock}
+                    disabled={togglingId !== null}
+                  >
+                    {togglingId !== null ? (
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm text-white"
+                          role="status"
+                        ></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : isDealerActive(selectedDealerForBlock) ? (
+                      "Yes, Block"
+                    ) : (
+                      "Yes, Unblock"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

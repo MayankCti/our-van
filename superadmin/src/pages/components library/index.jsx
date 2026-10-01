@@ -67,12 +67,12 @@ const ComponentsLibrary = () => {
           },
           callback: (res) => {
             if (
-              res?.success === true ||
-              res?.status === true ||
-              res?.statusCode === 200 ||
-              res?.statusCode === 201 ||
-              res?.data ||
-              !res?.error
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
             ) {
               addModalCloseRef.current?.click();
               resetForm();
@@ -104,7 +104,14 @@ const ComponentsLibrary = () => {
           name: editName.trim(),
         },
         callback: (res) => {
-          if (res?.success || res?.status || res?.statusCode === 200) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             editModalCloseRef.current?.click();
             setSelectedComponent(null);
             setEditName("");
@@ -130,7 +137,14 @@ const ComponentsLibrary = () => {
           name: selectedComponent.name,
         },
         callback: (res) => {
-          if (res?.success || res?.status || res?.statusCode === 200) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             deleteModalCloseRef.current?.click();
             setSelectedComponent(null);
             dispatch(

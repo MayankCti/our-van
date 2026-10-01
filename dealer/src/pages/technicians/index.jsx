@@ -44,6 +44,8 @@ const Technicians = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingToggleId, setLoadingToggleId] = useState(null);
+  const [selectedTechForBlock, setSelectedTechForBlock] = useState(null);
+  const [showBlockModal, setShowBlockModal] = useState(false);
 
   // Fetch technicians and job roles on mount and on debouncedSearch
   useEffect(() => {
@@ -107,21 +109,44 @@ const Technicians = () => {
     return tech.status === 1;
   };
 
-  // Toggle Block / Unblock
-  const handleToggleBlock = (tech) => {
-    const techId = tech?.id || tech?.technician_id;
+  // Toggle Block / Unblock Modal Handlers
+  const handleOpenBlockModal = (tech) => {
+    setSelectedTechForBlock(tech);
+    setShowBlockModal(true);
+  };
+
+  const handleCloseBlockModal = () => {
+    if (loadingToggleId !== null) return;
+    setShowBlockModal(false);
+    setSelectedTechForBlock(null);
+  };
+
+  const handleConfirmToggleBlock = () => {
+    if (!selectedTechForBlock) return;
+    const techId = selectedTechForBlock?.id || selectedTechForBlock?.technician_id;
     if (!techId) return;
     setLoadingToggleId(techId);
     dispatch(
       toggleBlockTechnician({
         id: techId,
-        callback: () => {
+        callback: (res) => {
           setLoadingToggleId(null);
-          dispatch(
-            getTechniciansByDealer({
-              search: debouncedSearch,
-            })
-          );
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            setShowBlockModal(false);
+            setSelectedTechForBlock(null);
+            dispatch(
+              getTechniciansByDealer({
+                search: debouncedSearch,
+              })
+            );
+          }
         },
       })
     );
@@ -147,7 +172,14 @@ const Technicians = () => {
         id: selectedTech.id,
         callback: (res) => {
           setIsDeleting(false);
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             handleCloseDelete();
           }
         },
@@ -180,7 +212,14 @@ const Technicians = () => {
         data: payload,
         callback: (res) => {
           setSubmitting(false);
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             setShowAddModal(false);
             setShowPassword(false);
             resetForm();
@@ -346,7 +385,7 @@ const Technicians = () => {
                               type="checkbox"
                               checked={active}
                               disabled={isToggling}
-                              onChange={() => handleToggleBlock(tech)}
+                              onChange={() => handleOpenBlockModal(tech)}
                             />
                             <div className="toggle-switch-background">
                               <div className="toggle-switch-handle"></div>
@@ -666,6 +705,97 @@ const Technicians = () => {
                       </div>
                     ) : (
                       'Delete'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block / Unblock Confirmation Modal */}
+      {showBlockModal && selectedTechForBlock && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1055 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content ct_modal">
+              <div className="modal-body p-4 position-relative">
+                {/* Close Icon */}
+                <button
+                  type="button"
+                  className="btn-close ct_delete_close"
+                  onClick={handleCloseBlockModal}
+                  aria-label="Close"
+                  disabled={loadingToggleId !== null}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+
+                {/* Title */}
+                <h3 className="ct_head_clr ct_fw_600 mb-3">
+                  {isTechnicianActive(selectedTechForBlock)
+                    ? 'Block Technician?'
+                    : 'Unblock Technician?'}
+                </h3>
+
+                {/* Description */}
+                <p className="ct_para_clr ct_fs_18 mb-5">
+                  {isTechnicianActive(selectedTechForBlock)
+                    ? 'Are you sure you want to block this technician? They will lose access to the platform.'
+                    : 'Are you sure you want to unblock this technician? They will regain access to the platform.'}
+                </p>
+
+                {/* Buttons */}
+                <div className="d-flex gap-3">
+                  <button
+                    type="button"
+                    className="btn ct_btn_gray ct_btn_h_50 w-100"
+                    onClick={handleCloseBlockModal}
+                    disabled={loadingToggleId !== null}
+                  >
+                    No, Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn ct_btn_h_50 w-100 ${
+                      !isTechnicianActive(selectedTechForBlock) ? 'ct_green_btn' : ''
+                    }`}
+                    style={
+                      isTechnicianActive(selectedTechForBlock)
+                        ? {
+                            backgroundColor: '#EF4444',
+                            borderColor: '#EF4444',
+                            color: '#fff',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                          }
+                        : {
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                          }
+                    }
+                    onClick={handleConfirmToggleBlock}
+                    disabled={loadingToggleId !== null}
+                  >
+                    {loadingToggleId !== null ? (
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm text-white"
+                          role="status"
+                        ></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : isTechnicianActive(selectedTechForBlock) ? (
+                      'Yes, Block'
+                    ) : (
+                      'Yes, Unblock'
                     )}
                   </button>
                 </div>

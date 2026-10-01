@@ -17,8 +17,9 @@ const FogotPassword = () => {
 
     const handleForgotPassword = (values, { resetForm }) => {
         const callback = (response) => {
-            if (response?.success || response?.statusCode === 200) {
+            if (response?.success || response?.statusCode === 200 || response?.status) {
                 resetForm();
+                navigate(pageRoutes?.login);
             }
         };
 

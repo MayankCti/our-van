@@ -1342,3 +1342,76 @@
  .ct_fs_15 {
      font-size: 15px;
  }
+
+ .ct_btn_gray {
+     background: #64748B;
+     color: #fff;
+     border-radius: 10px;
+     min-width: 120px;
+     height: 42px;
+     font-weight: 500;
+     border: 1px solid transparent;
+ }
+
+ .ct_btn_gray:hover {
+     background: #475569;
+     color: #fff;
+ }
+
+ .ct_btn_h_50 {
+     height: 50px !important;
+ }
+
+ .ct_modal {
+     border: 0;
+     border-radius: 16px;
+     padding: 10px;
+ }
+
+ .ct_modal .modal-header,
+ .ct_modal .modal-body,
+ .ct_modal .modal-footer {
+     padding-left: 24px;
+     padding-right: 24px;
+ }
+
+ .ct_modal .btn-close {
+     font-size: 12px;
+     opacity: 1;
+ }
+
+ .ct_modal .btn-close:focus {
+     box-shadow: none;
+ }
+
+ .ct_delete_close {
+     position: absolute;
+     top: 18px;
+     right: 18px;
+     width: 40px;
+     height: 40px;
+     border-radius: 50%;
+     background: #F5FCF5;
+     opacity: 1;
+     color: var(--green);
+     padding: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+
+ .ct_delete_close::before {
+     font-size: 18px;
+ }
+
+ .ct_delete_close:hover {
+     background: #EEF8EF;
+ }
+
+ .ct_modal h3 {
+     font-size: 24px;
+ }
+
+ .ct_modal p {
+     line-height: 1.5;
+ }

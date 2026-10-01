@@ -47,7 +47,11 @@ const WarrantyProviderDetail = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <button class="ct_custom_badge text-nowrap">
+                                <button
+                                    class="ct_custom_badge text-nowrap"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#blockUserModal"
+                                >
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M5.40261 14.1419C4.59149 13.7917 3.88594 13.3166 3.28594 12.7166C2.68594 12.1166 2.21105 11.411 1.86127 10.5999C1.51149 9.78881 1.33638 8.92214 1.33594 7.99992C1.33549 7.0777 1.51061 6.21103 1.86127 5.39992C2.21194 4.58881 2.68683 3.88325 3.28594 3.28325C3.88505 2.68325 4.59061 2.20836 5.40261 1.85859C6.21461 1.50881 7.08127 1.3337 8.0026 1.33325C8.92394 1.33281 9.7906 1.50792 10.6026 1.85859C11.4146 2.20925 12.1202 2.68414 12.7193 3.28325C13.3184 3.88236 13.7935 4.58792 14.1446 5.39992C14.4957 6.21192 14.6706 7.07859 14.6693 7.99992C14.6679 8.92125 14.4928 9.78792 14.1439 10.5999C13.795 11.4119 13.3202 12.1175 12.7193 12.7166C12.1184 13.3157 11.4128 13.7908 10.6026 14.1419C9.79238 14.493 8.92572 14.6679 8.0026 14.6666C7.07949 14.6653 6.21283 14.4908 5.40261 14.1419ZM8.0026 13.3333C8.6026 13.3333 9.18038 13.2361 9.73594 13.0419C10.2915 12.8477 10.8026 12.567 11.2693 12.1999L3.8026 4.73325C3.43594 5.19992 3.15527 5.71103 2.9606 6.26659C2.76594 6.82214 2.66883 7.39992 2.66927 7.99992C2.66927 9.48881 3.18594 10.7499 4.21927 11.7833C5.2526 12.8166 6.51372 13.3333 8.0026 13.3333ZM12.2026 11.2666C12.5693 10.7999 12.8499 10.2888 13.0446 9.73325C13.2393 9.1777 13.3364 8.59992 13.3359 7.99992C13.3359 6.51103 12.8193 5.24992 11.7859 4.21659C10.7526 3.18325 9.49149 2.66659 8.0026 2.66659C7.4026 2.66659 6.82483 2.7637 6.26927 2.95792C5.71372 3.15214 5.2026 3.43281 4.73594 3.79992L12.2026 11.2666Z" fill="#EF4444" />
                                     </svg>
@@ -59,7 +63,49 @@ const WarrantyProviderDetail = () => {
                 </div>
             </div>
 
+            {/* Block User Modal */}
+            <div class="modal fade" id="blockUserModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content ct_modal">
+                        <div class="modal-body p-4 position-relative">
+                            {/* Close */}
+                            <button
+                                type="button"
+                                class="btn-close ct_delete_close"
+                                data-bs-dismiss="modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
 
+                            {/* Heading */}
+                            <h3 class="ct_head_clr ct_fw_600 mb-3">
+                                Block?
+                            </h3>
+
+                            {/* Description */}
+                            <p class="ct_para_clr ct_fs_18 mb-5">
+                                Are you sure you want to block this user?
+                            </p>
+
+                            {/* Buttons */}
+                            <div class="d-flex gap-3">
+                                <button
+                                    type="button"
+                                    class="btn ct_btn_gray ct_btn_h_50 w-100"
+                                    data-bs-dismiss="modal">
+                                    No, Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn ct_green_btn ct_btn_h_50 w-100"
+                                    data-bs-dismiss="modal">
+                                    Yes, Block
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </Layout>
     )
 }

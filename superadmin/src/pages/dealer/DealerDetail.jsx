@@ -69,15 +69,24 @@ const DealerDetail = () => {
     dispatch(
       toggleBlockDealer({
         dealerId,
-        callback: () => {
-          modalCloseRef.current?.click();
-          dispatch(
-            getDealerDetails({
-              dealerId,
-              page: currentPage,
-              limit: listPerPages,
-            })
-          );
+        callback: (res) => {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            modalCloseRef.current?.click();
+            dispatch(
+              getDealerDetails({
+                dealerId,
+                page: currentPage,
+                limit: listPerPages,
+              })
+            );
+          }
         },
       })
     );

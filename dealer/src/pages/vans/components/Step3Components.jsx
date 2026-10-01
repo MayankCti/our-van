@@ -660,15 +660,15 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                             htmlFor={`comp_chk_${custom.temp_id}`}
                                             className={`van-component-box ${isChecked && hasErr ? 'border-danger' : ''}`}
                                         >
-                                            <h5>{custom.name}</h5>
+                                            <h5 className="text-capitalize">{custom.name}</h5>
                                             {isChecked && (
-                                                <div className="position-absolute top-0 start-0 m-2">
+                                                <div className="position-absolute top-0 m-2" style={{ right: "20px" }}>
                                                     {hasErr ? (
-                                                        <span className="badge rounded-pill bg-danger" title="Incomplete details" style={{ fontSize: '10px' }}>
+                                                        <span className="badge rounded-pill d-flex align-items-center justify-content-center bg-danger" title="Incomplete details" style={{ fontSize: '10px', width: "20px", height: "20px" }}>
                                                             !
                                                         </span>
                                                     ) : (
-                                                        <span className="badge rounded-pill bg-success" title="Configured" style={{ fontSize: '10px' }}>
+                                                        <span className="badge rounded-pill d-flex align-items-center justify-content-center bg-success" title="Configured" style={{ fontSize: '10px', width: "20px", height: "20px" }}>
                                                             <i className="fa-solid fa-check"></i>
                                                         </span>
                                                     )}
@@ -677,15 +677,24 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
                                         </label>
                                         <button
                                             type="button"
-                                            className="btn btn-sm btn-danger position-absolute top-0  m-2 rounded-circle d-flex align-items-center justify-content-center"
-                                            style={{ width: '22px', height: '22px', right: "20px", padding: 0, zIndex: 10 }}
+                                            className="btn btn-sm position-absolute top-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                left: "20px",
+                                                padding: 0,
+                                                zIndex: 10,
+                                                backgroundColor: isChecked ? 'rgba(255, 255, 255, 0.25)' : 'rgba(220, 53, 69, 0.12)',
+                                                color: isChecked ? '#fff' : '#dc3545',
+                                                border: 'none',
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleRemoveCustomComponent(custom.temp_id);
                                             }}
                                             title="Remove custom component"
                                         >
-                                            <i className="fa-solid fa-xmark" style={{ fontSize: '11px' }}></i>
+                                            <i className="fa-solid fa-xmark" style={{ fontSize: '10px' }}></i>
                                         </button>
                                     </div>
                                 );

@@ -127,7 +127,14 @@ const Services = () => {
           data: payload,
           callback: (res) => {
             setSubmitting(false);
-            if (res) {
+            if (
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
+            ) {
               handleCloseServiceModal();
               resetForm();
               dispatch(getServices({ search: debouncedSearch }));
@@ -141,7 +148,14 @@ const Services = () => {
           data: payload,
           callback: (res) => {
             setSubmitting(false);
-            if (res) {
+            if (
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
+            ) {
               handleCloseServiceModal();
               resetForm();
               dispatch(getServices({ search: debouncedSearch }));
@@ -172,7 +186,14 @@ const Services = () => {
         id: selectedService.id,
         callback: (res) => {
           setIsDeleting(false);
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             handleCloseDelete();
             dispatch(getServices({ search: debouncedSearch }));
           }

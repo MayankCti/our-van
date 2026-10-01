@@ -64,15 +64,21 @@ const OwnerDetail = () => {
   };
 
   const getProgressNum = (item) => {
-    if (item?.progress !== undefined && item?.progress !== null) {
-      const val = item.progress;
+    const vd = item?.vanDetails || {};
+    const val =
+      item?.progress !== undefined && item?.progress !== null
+        ? item.progress
+        : vd?.progress !== undefined && vd?.progress !== null
+        ? vd.progress
+        : null;
+
+    if (val !== null && val !== undefined) {
       const num =
         typeof val === 'number'
           ? val
           : parseFloat(String(val).replace('%', ''));
       return !isNaN(num) ? Math.min(Math.max(Math.round(num), 0), 100) : 0;
     }
-    const vd = item?.vanDetails || {};
     if (vd.currentStep && vd.totalSteps) {
       const cur = Number(vd.currentStep);
       const total = Number(vd.totalSteps);

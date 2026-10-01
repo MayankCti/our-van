@@ -205,7 +205,14 @@ const Parts = () => {
           data: payload,
           callback: (res) => {
             setSubmitting(false);
-            if (res) {
+            if (
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
+            ) {
               handleClosePartModal();
               resetForm();
               dispatch(getParts({ search: debouncedSearch }));
@@ -219,7 +226,14 @@ const Parts = () => {
           data: payload,
           callback: (res) => {
             setSubmitting(false);
-            if (res) {
+            if (
+              (res?.success === true ||
+                res?.status === true ||
+                res?.statusCode === 200 ||
+                res?.statusCode === 201) &&
+              res?.success !== false &&
+              res?.status !== false
+            ) {
               handleClosePartModal();
               resetForm();
               dispatch(getParts({ search: debouncedSearch }));
@@ -247,7 +261,14 @@ const Parts = () => {
       deletePart({
         id: selectedPart.id,
         callback: (res) => {
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             handleCloseDelete();
             dispatch(getParts({ search: debouncedSearch }));
           }

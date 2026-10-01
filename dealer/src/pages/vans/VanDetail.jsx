@@ -66,7 +66,7 @@ const VanDetail = () => {
     : Array.isArray(details?.van_components)
       ? details.van_components
       : [];
-  const warranty = details?.warranty || details?.warranty_details || details?.van_warranty || null;
+  const warranty = details?.warranty || null;
   const maintenance = details?.maintenance || details?.van_maintenance || details?.step_6 || details?.maintenance_setup || null;
 
   // Normalized documents list supporting both array of objects and key-value object map

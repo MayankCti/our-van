@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
@@ -14,6 +14,7 @@ import {
 
 const TechnicianDetail = () => {
   const dispatch = useDispatch();
+  const modalCloseRef = useRef(null);
   const [searchParams] = useSearchParams();
   const techId = searchParams.get('id') || searchParams.get('tech_id');
 
@@ -131,8 +132,18 @@ const TechnicianDetail = () => {
     dispatch(
       toggleBlockTechnician({
         id: techId,
-        callback: () => {
-          dispatch(getTechnicianById({ id: techId }));
+        callback: (res) => {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            modalCloseRef.current?.click();
+            dispatch(getTechnicianById({ id: techId }));
+          }
         },
       })
     );
@@ -223,17 +234,11 @@ const TechnicianDetail = () => {
               className={`btn btn-sm ${
                 active ? 'btn-outline-danger' : 'btn-outline-success'
               } ct_fw_600 px-3 py-1`}
-              onClick={handleToggleStatus}
-              disabled={isActionLoading}
+              data-bs-toggle="modal"
+              data-bs-target="#blockTechnicianModal"
               style={{ borderRadius: '8px', fontSize: '13px' }}
             >
-              {isActionLoading ? (
-                <span className="spinner-border spinner-border-sm" role="status"></span>
-              ) : active ? (
-                'Block Technician'
-              ) : (
-                'Unblock Technician'
-              )}
+              {active ? 'Block Technician' : 'Unblock Technician'}
             </button>
           </div>
         )}
@@ -374,22 +379,23 @@ const TechnicianDetail = () => {
               <div className="row align-items-center mb-4 pb-4 border-bottom">
                 <div className="col-auto">
                   <img
-                    src={tech.profile_image || "/image.png"}
+                    src={tech.profile_image || tech.profile_image_url || "/image.png"}
                     alt={displayName}
                     className="rounded-circle object-fit-cover shadow-sm border"
                     style={{
                       width: '80px',
                       height: '80px',
-                      cursor: tech.profile_image ? 'pointer' : 'default',
+                      cursor: (tech.profile_image || tech.profile_image_url) ? 'pointer' : 'default',
                     }}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = '/image.png';
                     }}
                     onClick={() => {
-                      if (tech.profile_image) window.open(tech.profile_image, '_blank');
+                      const img = tech.profile_image || tech.profile_image_url;
+                      if (img) window.open(img, '_blank');
                     }}
-                    title={tech.profile_image ? "Click to view image in full size" : "Technician Profile"}
+                    title={(tech.profile_image || tech.profile_image_url) ? "Click to view image in full size" : "Technician Profile"}
                   />
                 </div>
 
@@ -716,6 +722,91 @@ const TechnicianDetail = () => {
             </section>
           </>
         )}
+      </div>
+
+      {/* Block / Unblock Confirmation Modal */}
+      <div
+        className="modal fade"
+        id="blockTechnicianModal"
+        tabIndex="-1"
+        aria-labelledby="blockTechnicianModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content ct_modal">
+            <div className="modal-body p-4 position-relative">
+              {/* Close Icon */}
+              <button
+                type="button"
+                ref={modalCloseRef}
+                className="btn-close ct_delete_close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+
+              {/* Title */}
+              <h3 className="ct_head_clr ct_fw_600 mb-3">
+                {active ? 'Block Technician?' : 'Unblock Technician?'}
+              </h3>
+
+              {/* Description */}
+              <p className="ct_para_clr ct_fs_18 mb-5">
+                {active
+                  ? 'Are you sure you want to block this technician? They will lose access to the platform.'
+                  : 'Are you sure you want to unblock this technician? They will regain access to the platform.'}
+              </p>
+
+              {/* Buttons */}
+              <div className="d-flex gap-3">
+                <button
+                  type="button"
+                  className="btn ct_btn_gray ct_btn_h_50 w-100"
+                  data-bs-dismiss="modal"
+                  disabled={isActionLoading}
+                >
+                  No, Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn ct_btn_h_50 w-100 ${!active ? 'ct_green_btn' : ''}`}
+                  style={
+                    active
+                      ? {
+                          backgroundColor: '#EF4444',
+                          borderColor: '#EF4444',
+                          color: '#fff',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                        }
+                      : {
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                        }
+                  }
+                  onClick={handleToggleStatus}
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? (
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <div
+                        className="spinner-border spinner-border-sm text-white"
+                        role="status"
+                      ></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : active ? (
+                    'Yes, Block'
+                  ) : (
+                    'Yes, Unblock'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Layout>
   );

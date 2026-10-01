@@ -19,6 +19,8 @@ const Owners = () => {
   } = useSelector((state) => state.ownerReducer || {});
 
   const [togglingId, setTogglingId] = useState(null);
+  const [selectedOwnerForBlock, setSelectedOwnerForBlock] = useState(null);
+  const [showBlockModal, setShowBlockModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
 
@@ -44,23 +46,46 @@ const Owners = () => {
     return true;
   };
 
-  const handleToggleBlockOwner = (owner) => {
-    const ownerId = owner?.ownerId || owner?.id || owner?.owner_id;
+  const handleOpenBlockModal = (owner) => {
+    setSelectedOwnerForBlock(owner);
+    setShowBlockModal(true);
+  };
+
+  const handleCloseBlockModal = () => {
+    if (togglingId !== null) return;
+    setShowBlockModal(false);
+    setSelectedOwnerForBlock(null);
+  };
+
+  const handleConfirmToggleBlock = () => {
+    if (!selectedOwnerForBlock) return;
+    const ownerId = selectedOwnerForBlock?.ownerId || selectedOwnerForBlock?.id || selectedOwnerForBlock?.owner_id;
     if (!ownerId) return;
 
     setTogglingId(ownerId);
     dispatch(
       toggleBlockOwner({
         ownerId,
-        callback: () => {
+        callback: (res) => {
           setTogglingId(null);
-          dispatch(
-            getOwnersList({
-              page: currentPage,
-              limit: listPerPages,
-              search: debouncedSearch,
-            })
-          );
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            setShowBlockModal(false);
+            setSelectedOwnerForBlock(null);
+            dispatch(
+              getOwnersList({
+                page: currentPage,
+                limit: listPerPages,
+                search: debouncedSearch,
+              })
+            );
+          }
         },
       })
     );
@@ -258,7 +283,7 @@ const Owners = () => {
                                 type="checkbox"
                                 checked={isActive}
                                 disabled={isCurrentlyToggling}
-                                onChange={() => handleToggleBlockOwner(owner)}
+                                onChange={() => handleOpenBlockModal(owner)}
                               />
                               <div className="toggle-switch-background">
                                 <div className="toggle-switch-handle"></div>
@@ -308,6 +333,97 @@ const Owners = () => {
           </div>
         </div>
       </div>
+
+      {/* Block / Unblock Confirmation Modal */}
+      {showBlockModal && selectedOwnerForBlock && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1055 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content ct_modal">
+              <div className="modal-body p-4 position-relative">
+                {/* Close Icon */}
+                <button
+                  type="button"
+                  className="btn-close ct_delete_close"
+                  onClick={handleCloseBlockModal}
+                  aria-label="Close"
+                  disabled={togglingId !== null}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+
+                {/* Title */}
+                <h3 className="ct_head_clr ct_fw_600 mb-3">
+                  {isOwnerActive(selectedOwnerForBlock)
+                    ? "Block Owner?"
+                    : "Unblock Owner?"}
+                </h3>
+
+                {/* Description */}
+                <p className="ct_para_clr ct_fs_18 mb-5">
+                  {isOwnerActive(selectedOwnerForBlock)
+                    ? "Are you sure you want to block this owner? They will lose access to the platform."
+                    : "Are you sure you want to unblock this owner? They will regain access to the platform."}
+                </p>
+
+                {/* Buttons */}
+                <div className="d-flex gap-3">
+                  <button
+                    type="button"
+                    className="btn ct_btn_gray ct_btn_h_50 w-100"
+                    onClick={handleCloseBlockModal}
+                    disabled={togglingId !== null}
+                  >
+                    No, Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn ct_btn_h_50 w-100 ${
+                      !isOwnerActive(selectedOwnerForBlock) ? "ct_green_btn" : ""
+                    }`}
+                    style={
+                      isOwnerActive(selectedOwnerForBlock)
+                        ? {
+                            backgroundColor: "#EF4444",
+                            borderColor: "#EF4444",
+                            color: "#fff",
+                            borderRadius: "10px",
+                            fontWeight: "600",
+                          }
+                        : {
+                            borderRadius: "10px",
+                            fontWeight: "600",
+                          }
+                    }
+                    onClick={handleConfirmToggleBlock}
+                    disabled={togglingId !== null}
+                  >
+                    {togglingId !== null ? (
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm text-white"
+                          role="status"
+                        ></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : isOwnerActive(selectedOwnerForBlock) ? (
+                      "Yes, Block"
+                    ) : (
+                      "Yes, Unblock"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

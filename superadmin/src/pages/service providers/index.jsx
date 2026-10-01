@@ -195,7 +195,7 @@ const ServiceProviders = () => {
                      </button>
                      <button
                         type="button"
-                        class="btn ct_green_btn ct_btn_h_50 ct_w_100_575" data-bs-dismiss="modal">
+                        class="btn ct_green_btn ct_btn_h_50 ct_w_100_575">
                         Add Service Provider
                      </button>
                   </div>

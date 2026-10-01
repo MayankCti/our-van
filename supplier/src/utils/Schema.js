@@ -80,10 +80,18 @@ export const editProfileSchema = Yup.object().shape({
 export const changePasswordSchema = Yup.object().shape({
     current_password: Yup.string()
         .required("Please enter current password")
-        .min(6, "Current password cannot be less than 6 characters"),
+        .min(8, "Current password cannot be less than 8 characters")
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&'*+-.,:;<=>?^_`{|}~])/,
+            "Please enter a valid password"
+        ),
     new_password: Yup.string()
         .required("Please enter new password")
-        .min(6, "New password cannot be less than 6 characters"),
+        .min(8, "New password cannot be less than 8 characters")
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&'*+-.,:;<=>?^_`{|}~])/,
+            "Strong passwords require at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character."
+        ),
     confirm_password: Yup.string()
         .required("Please enter confirm password")
         .oneOf([Yup.ref("new_password"), null], "Your password must match"),

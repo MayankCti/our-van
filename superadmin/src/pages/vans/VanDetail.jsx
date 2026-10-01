@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Layout from "../../layout/Layout";
 import Header from "../../layout/Header";
@@ -48,8 +48,6 @@ const VanDetail = () => {
     searchParams.get("vanId") ||
     searchParams.get("van_id");
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-
   const {
     vanDetails = null,
     isVanDetailsLoading = false,
@@ -81,11 +79,18 @@ const VanDetail = () => {
 
   const images = Array.isArray(vehicle?.images)
     ? vehicle.images
-    : Array.isArray(data?.images)
-      ? data.images
-      : [];
+    : Array.isArray(vehicle?.vehicle_images)
+      ? vehicle.vehicle_images
+      : Array.isArray(data?.images)
+        ? data.images
+        : Array.isArray(data?.vehicle_images)
+          ? data.vehicle_images
+          : [];
 
-  const mainImageUrl = images.length > 0 ? images[activeImageIndex] || images[0] : null;
+  const mainImageUrl =
+    images.length > 0
+      ? (typeof images[0] === "string" ? images[0] : (images[0]?.image_url || images[0]?.url))
+      : (vehicle?.vehicle_photo || data?.vehicle_photo || null);
 
   return (
     <Layout>
@@ -214,64 +219,44 @@ const VanDetail = () => {
                   </h5>
                 </div>
 
-                <div className="row">
-                  {/* Main Image */}
-                  <div className="col-xl-3 col-md-4 mb-3 mb-md-0">
+                <div className="row align-items-center">
+                  <div className="col-xl-2 col-md-3 mb-3 mb-md-0">
                     {mainImageUrl ? (
                       <img
                         src={formatFileUrl(mainImageUrl)}
-                        className="img-fluid ct_vehicle_img rounded-3 mb-2"
+                        className="img-fluid ct_vehicle_img rounded-3"
                         alt={vehicle?.van_name || "Vehicle"}
                         style={{
-                          width: "100%",
-                          height: "170px",
-                          objectFit: "cover",
                           cursor: "pointer",
+                          objectFit: "contain",
+                          width: "100%",
+                          height: "140px",
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/assets/img/vehicle_1.jpg";
                         }}
                         onClick={() => window.open(formatFileUrl(mainImageUrl), "_blank")}
-                        title="Click to open image"
+                        title="Click to view full image in new tab"
                       />
                     ) : (
                       <div
                         className="bg-light rounded-3 d-flex flex-column align-items-center justify-content-center text-muted border"
-                        style={{ height: "170px" }}
+                        style={{ height: "140px" }}
                       >
                         <i className="fa-solid fa-van-shuttle fs-2 mb-1"></i>
-                        <span className="ct_fs_12">No Image Available</span>
-                      </div>
-                    )}
-
-                    {/* Thumbnail Strip */}
-                    {images.length > 1 && (
-                      <div className="d-flex gap-2 flex-wrap mt-2">
-                        {images.map((img, idx) => (
-                          <img
-                            key={idx}
-                            src={formatFileUrl(img)}
-                            className={`ct_vehicle_thumb rounded ${activeImageIndex === idx ? "border border-2 border-success" : ""
-                              }`}
-                            alt={`Thumbnail ${idx + 1}`}
-                            style={{
-                              width: "48px",
-                              height: "48px",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => setActiveImageIndex(idx)}
-                          />
-                        ))}
+                        <span className="ct_fs_12">No Photo</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Details Grid */}
-                  <div className="col-xl-9 col-md-8">
+                  <div className="col-xl-10 col-md-9">
                     <div className="row gy-3">
                       <div className="col-lg-3 col-sm-6">
                         <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">
                           Van Name
                         </h5>
-                        <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_600">
+                        <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
                           {vehicle?.van_name || "N/A"}
                         </h6>
                       </div>
@@ -296,7 +281,7 @@ const VanDetail = () => {
                           VIN
                         </h5>
                         <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {vehicle?.vin || "N/A"}
+                          {vehicle?.vin || vehicle?.vin_number || "N/A"}
                         </h6>
                       </div>
                       <div className="col-lg-3 col-sm-6">
@@ -304,7 +289,7 @@ const VanDetail = () => {
                           Registration
                         </h5>
                         <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {vehicle?.registration || vehicle?.registration_number || "N/A"}
+                          {vehicle?.registration_number || vehicle?.registration || "N/A"}
                         </h6>
                       </div>
                       <div className="col-lg-3 col-sm-6">
@@ -312,7 +297,7 @@ const VanDetail = () => {
                           Engine
                         </h5>
                         <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {vehicle?.engine || "N/A"}
+                          {vehicle?.engine || vehicle?.engine_details || "N/A"}
                         </h6>
                       </div>
                       <div className="col-lg-3 col-sm-6">
@@ -320,7 +305,7 @@ const VanDetail = () => {
                           Year
                         </h5>
                         <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {vehicle?.year || "N/A"}
+                          {vehicle?.manufacture_year || vehicle?.year || "N/A"}
                         </h6>
                       </div>
                       <div className="col-lg-3 col-sm-6">
@@ -336,20 +321,48 @@ const VanDetail = () => {
                           Colour
                         </h5>
                         <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {vehicle?.colour || vehicle?.color || "N/A"}
-                        </h6>
-                      </div>
-                      <div className="col-lg-3 col-sm-6">
-                        <h5 className="ct_fs_12 ct_fw_600 ct_para_clr mb-1 text-uppercase">
-                          Created On
-                        </h5>
-                        <h6 className="mb-0 ct_head_clr ct_fs_15 ct_fw_500">
-                          {formatDate(vehicle?.created_at)}
+                          {vehicle?.color || vehicle?.colour || vehicle?.vehicle_colour || "N/A"}
                         </h6>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Vehicle Photos Gallery */}
+                {images.length > 0 && (
+                  <div className="mt-4 pt-3 border-top">
+                    <h6 className="ct_fs_13 ct_fw_600 ct_para_clr mb-2">
+                      VEHICLE PHOTOS ({images.length})
+                    </h6>
+                    <div className="upload-imgs ct_custom_scroll d-flex flex-wrap gap-2">
+                      {images.map((img, idx) => {
+                        const rawUrl =
+                          img?.image_url ||
+                          img?.url ||
+                          (typeof img === "string" ? img : "");
+                        const imgUrl = formatFileUrl(rawUrl);
+                        return (
+                          <div
+                            className="img-item position-relative"
+                            key={img?.id || idx}
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Van Photo ${idx + 1}`}
+                              style={{ cursor: "pointer" }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/assets/img/vehicle_mini_1.jpg";
+                              }}
+                              onClick={() => imgUrl && window.open(imgUrl, "_blank")}
+                              title="Click to view full image in new tab"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </section>
 
               {/* 2. Owner Details Section */}

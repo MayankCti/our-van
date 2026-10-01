@@ -38,6 +38,8 @@ const Suppliers = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingToggleId, setLoadingToggleId] = useState(null);
+  const [selectedSupplierForBlock, setSelectedSupplierForBlock] = useState(null);
+  const [showBlockModal, setShowBlockModal] = useState(false);
 
   // Fetch suppliers on mount and on debouncedSearch
   useEffect(() => {
@@ -98,21 +100,44 @@ const Suppliers = () => {
     return sup.status === 1;
   };
 
-  // Toggle Block / Unblock
-  const handleToggleBlock = (sup) => {
-    const suppId = sup?.id || sup?.supplier_id;
+  // Toggle Block / Unblock Modal Handlers
+  const handleOpenBlockModal = (sup) => {
+    setSelectedSupplierForBlock(sup);
+    setShowBlockModal(true);
+  };
+
+  const handleCloseBlockModal = () => {
+    if (loadingToggleId !== null) return;
+    setShowBlockModal(false);
+    setSelectedSupplierForBlock(null);
+  };
+
+  const handleConfirmToggleBlock = () => {
+    if (!selectedSupplierForBlock) return;
+    const suppId = selectedSupplierForBlock?.id || selectedSupplierForBlock?.supplier_id;
     if (!suppId) return;
     setLoadingToggleId(suppId);
     dispatch(
       toggleBlockSupplier({
         id: suppId,
-        callback: () => {
+        callback: (res) => {
           setLoadingToggleId(null);
-          dispatch(
-            getSuppliersByDealer({
-              search: debouncedSearch,
-            })
-          );
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            setShowBlockModal(false);
+            setSelectedSupplierForBlock(null);
+            dispatch(
+              getSuppliersByDealer({
+                search: debouncedSearch,
+              })
+            );
+          }
         },
       })
     );
@@ -148,7 +173,14 @@ const Suppliers = () => {
         id: selectedSupplier.id,
         callback: (res) => {
           setIsDeleting(false);
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             handleCloseDelete();
           }
         },
@@ -174,7 +206,14 @@ const Suppliers = () => {
         data: payload,
         callback: (res) => {
           setSubmitting(false);
-          if (res) {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
             handleCloseModal();
             resetForm();
             dispatch(getSuppliersByDealer({ search: debouncedSearch }));
@@ -328,7 +367,7 @@ const Suppliers = () => {
                               type="checkbox"
                               checked={active}
                               disabled={isToggling}
-                              onChange={() => handleToggleBlock(sup)}
+                              onChange={() => handleOpenBlockModal(sup)}
                             />
                             <div className="toggle-switch-background">
                               <div className="toggle-switch-handle"></div>
@@ -563,6 +602,97 @@ const Suppliers = () => {
                       </div>
                     ) : (
                       'Delete'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block / Unblock Confirmation Modal */}
+      {showBlockModal && selectedSupplierForBlock && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1055 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content ct_modal">
+              <div className="modal-body p-4 position-relative">
+                {/* Close Icon */}
+                <button
+                  type="button"
+                  className="btn-close ct_delete_close"
+                  onClick={handleCloseBlockModal}
+                  aria-label="Close"
+                  disabled={loadingToggleId !== null}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+
+                {/* Title */}
+                <h3 className="ct_head_clr ct_fw_600 mb-3">
+                  {isSupplierActive(selectedSupplierForBlock)
+                    ? 'Block Supplier?'
+                    : 'Unblock Supplier?'}
+                </h3>
+
+                {/* Description */}
+                <p className="ct_para_clr ct_fs_18 mb-5">
+                  {isSupplierActive(selectedSupplierForBlock)
+                    ? 'Are you sure you want to block this supplier? They will lose access to the platform.'
+                    : 'Are you sure you want to unblock this supplier? They will regain access to the platform.'}
+                </p>
+
+                {/* Buttons */}
+                <div className="d-flex gap-3">
+                  <button
+                    type="button"
+                    className="btn ct_btn_gray ct_btn_h_50 w-100"
+                    onClick={handleCloseBlockModal}
+                    disabled={loadingToggleId !== null}
+                  >
+                    No, Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn ct_btn_h_50 w-100 ${
+                      !isSupplierActive(selectedSupplierForBlock) ? 'ct_green_btn' : ''
+                    }`}
+                    style={
+                      isSupplierActive(selectedSupplierForBlock)
+                        ? {
+                            backgroundColor: '#EF4444',
+                            borderColor: '#EF4444',
+                            color: '#fff',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                          }
+                        : {
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                          }
+                    }
+                    onClick={handleConfirmToggleBlock}
+                    disabled={loadingToggleId !== null}
+                  >
+                    {loadingToggleId !== null ? (
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm text-white"
+                          role="status"
+                        ></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : isSupplierActive(selectedSupplierForBlock) ? (
+                      'Yes, Block'
+                    ) : (
+                      'Yes, Unblock'
                     )}
                   </button>
                 </div>

@@ -368,8 +368,11 @@ export const createTechnicianSchema = Yup.object().shape({
     email: emailValidation,
     password: Yup.string()
         .required("Please enter password")
-        .min(6, "Password must be at least 6 characters")
-        .max(50, "Password cannot exceed 50 characters"),
+        .min(8, "Password cannot be less than 8 characters")
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&'*+-.,:;<=>?^_`{|}~])/,
+            "Strong passwords require at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character."
+        ),
     job_role: Yup.string()
         .trim()
         .max(100, "Job role cannot exceed 100 characters")

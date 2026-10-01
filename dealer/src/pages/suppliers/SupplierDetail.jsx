@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../layout/Layout';
@@ -14,6 +14,7 @@ import {
 
 const SupplierDetail = () => {
   const dispatch = useDispatch();
+  const modalCloseRef = useRef(null);
   const [searchParams] = useSearchParams();
   const supplierId = searchParams.get('id') || searchParams.get('supplier_id');
 
@@ -127,8 +128,18 @@ const SupplierDetail = () => {
     dispatch(
       toggleBlockSupplier({
         id: supplierId,
-        callback: () => {
-          dispatch(getSupplierById({ id: supplierId }));
+        callback: (res) => {
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            modalCloseRef.current?.click();
+            dispatch(getSupplierById({ id: supplierId }));
+          }
         },
       })
     );
@@ -219,17 +230,11 @@ const SupplierDetail = () => {
               className={`btn btn-sm ${
                 active ? 'btn-outline-danger' : 'btn-outline-success'
               } ct_fw_600 px-3 py-1`}
-              onClick={handleToggleStatus}
-              disabled={isActionLoading}
+              data-bs-toggle="modal"
+              data-bs-target="#blockSupplierModal"
               style={{ borderRadius: '8px', fontSize: '13px' }}
             >
-              {isActionLoading ? (
-                <span className="spinner-border spinner-border-sm" role="status"></span>
-              ) : active ? (
-                'Block Supplier'
-              ) : (
-                'Unblock Supplier'
-              )}
+              {active ? 'Block Supplier' : 'Unblock Supplier'}
             </button>
           </div>
         )}
@@ -370,20 +375,24 @@ const SupplierDetail = () => {
               <div className="row align-items-center mb-4 pb-4 border-bottom">
                 <div className="col-auto">
                   <img
-                    src={supplier.company_logo || supplier.profile_image || "/image.png"}
+                    src={supplier.profile_image || supplier.profile_image_url || supplier.company_logo || "/image.png"}
                     alt={displayName}
                     className="rounded-circle object-fit-cover shadow-sm border"
                     style={{
                       width: '80px',
                       height: '80px',
-                      cursor: (supplier.company_logo || supplier.profile_image) ? 'pointer' : 'default',
+                      cursor: (supplier.profile_image || supplier.profile_image_url || supplier.company_logo) ? 'pointer' : 'default',
                     }}
                     onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/image.png';
+                      if (supplier.company_logo && e.target.src !== supplier.company_logo && !e.target.src.endsWith(supplier.company_logo)) {
+                        e.target.src = supplier.company_logo;
+                      } else {
+                        e.target.onerror = null;
+                        e.target.src = '/image.png';
+                      }
                     }}
                     onClick={() => {
-                      const img = supplier.company_logo || supplier.profile_image;
+                      const img = supplier.profile_image || supplier.profile_image_url || supplier.company_logo;
                       if (img) window.open(img, '_blank');
                     }}
                     title="Supplier Profile"
@@ -759,6 +768,91 @@ const SupplierDetail = () => {
             </section>
           </>
         )}
+      </div>
+
+      {/* Block / Unblock Confirmation Modal */}
+      <div
+        className="modal fade"
+        id="blockSupplierModal"
+        tabIndex="-1"
+        aria-labelledby="blockSupplierModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content ct_modal">
+            <div className="modal-body p-4 position-relative">
+              {/* Close Icon */}
+              <button
+                type="button"
+                ref={modalCloseRef}
+                className="btn-close ct_delete_close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+
+              {/* Title */}
+              <h3 className="ct_head_clr ct_fw_600 mb-3">
+                {active ? 'Block Supplier?' : 'Unblock Supplier?'}
+              </h3>
+
+              {/* Description */}
+              <p className="ct_para_clr ct_fs_18 mb-5">
+                {active
+                  ? 'Are you sure you want to block this supplier? They will lose access to the platform.'
+                  : 'Are you sure you want to unblock this supplier? They will regain access to the platform.'}
+              </p>
+
+              {/* Buttons */}
+              <div className="d-flex gap-3">
+                <button
+                  type="button"
+                  className="btn ct_btn_gray ct_btn_h_50 w-100"
+                  data-bs-dismiss="modal"
+                  disabled={isActionLoading}
+                >
+                  No, Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn ct_btn_h_50 w-100 ${!active ? 'ct_green_btn' : ''}`}
+                  style={
+                    active
+                      ? {
+                          backgroundColor: '#EF4444',
+                          borderColor: '#EF4444',
+                          color: '#fff',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                        }
+                      : {
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                        }
+                  }
+                  onClick={handleToggleStatus}
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? (
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <div
+                        className="spinner-border spinner-border-sm text-white"
+                        role="status"
+                      ></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : active ? (
+                    'Yes, Block'
+                  ) : (
+                    'Yes, Unblock'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Layout>
   );
