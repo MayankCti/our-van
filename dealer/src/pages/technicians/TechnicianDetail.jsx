@@ -206,7 +206,7 @@ const TechnicianDetail = () => {
   return (
     <Layout>
       <SubHeader
-        title={displayName ? `${displayName}` : 'Technician Details'}
+        title="Technician Details"
         subtitle="View complete information, status, and assigned maintenance tasks."
         backUrl={pageRoutes.technicians}
         className="ct_flex_col_767"

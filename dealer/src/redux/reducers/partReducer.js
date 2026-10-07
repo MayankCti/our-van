@@ -5,6 +5,8 @@ import {
   createPart,
   updatePart,
   deletePart,
+  getDealerPartRequests,
+  completeDealerPartRequest,
 } from "../actions/partAction";
 
 const initialState = {
@@ -19,6 +21,18 @@ const initialState = {
   },
   isPartsLoading: false,
   partsError: null,
+
+  partRequestsList: [],
+  partRequestsMeta: {
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
+  isPartRequestsLoading: false,
+  partRequestsError: null,
 
   partDetails: null,
   isDetailsLoading: false,
@@ -157,6 +171,47 @@ const partSlice = createSlice({
         }
       })
       .addCase(deletePart.rejected, (state) => {
+        state.isActionLoading = false;
+      })
+
+      // Get Dealer Part Requests
+      .addCase(getDealerPartRequests.pending, (state) => {
+        state.isPartRequestsLoading = true;
+        state.partRequestsError = null;
+      })
+      .addCase(getDealerPartRequests.fulfilled, (state, action) => {
+        state.isPartRequestsLoading = false;
+        const payloadData = action.payload?.data;
+        if (Array.isArray(payloadData)) {
+          state.partRequestsList = payloadData;
+          state.partRequestsMeta = {
+            totalItems: action.payload?.meta?.totalItems || payloadData.length,
+            totalPages: action.payload?.meta?.totalPages || 1,
+            currentPage: action.payload?.meta?.currentPage || 1,
+            limit: action.payload?.meta?.limit || payloadData.length || 10,
+            hasNextPage: action.payload?.meta?.hasNextPage || false,
+            hasPrevPage: action.payload?.meta?.hasPrevPage || false,
+          };
+        } else if (payloadData && Array.isArray(payloadData.data)) {
+          state.partRequestsList = payloadData.data;
+          state.partRequestsMeta = payloadData.meta || action.payload?.meta || state.partRequestsMeta;
+        } else {
+          state.partRequestsList = [];
+        }
+      })
+      .addCase(getDealerPartRequests.rejected, (state, action) => {
+        state.isPartRequestsLoading = false;
+        state.partRequestsError = action.payload?.message || "Failed to fetch part requests";
+      })
+
+      // Complete Part Request
+      .addCase(completeDealerPartRequest.pending, (state) => {
+        state.isActionLoading = true;
+      })
+      .addCase(completeDealerPartRequest.fulfilled, (state, action) => {
+        state.isActionLoading = false;
+      })
+      .addCase(completeDealerPartRequest.rejected, (state) => {
         state.isActionLoading = false;
       });
   },

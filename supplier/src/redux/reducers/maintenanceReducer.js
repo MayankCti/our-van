@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   getSupplierAssignedTasks,
   getSupplierMaintenanceDetail,
+  getSupplierPartsList,
+  updateSupplierMaintenanceTimer,
 } from "../actions/maintenanceAction";
 
 const initialState = {
@@ -18,6 +20,9 @@ const initialState = {
   taskDetails: null,
   isDetailsLoading: false,
   detailsError: null,
+
+  partsCatalog: [],
+  isPartsLoading: false,
 };
 
 const maintenanceSlice = createSlice({
@@ -72,9 +77,51 @@ const maintenanceSlice = createSlice({
       .addCase(getSupplierMaintenanceDetail.rejected, (state, action) => {
         state.isDetailsLoading = false;
         state.detailsError = action.payload?.message || "Failed to fetch task details";
+      })
+
+      // Update Supplier Maintenance Timer
+      .addCase(updateSupplierMaintenanceTimer.fulfilled, (state, action) => {
+        const timerData =
+          action.payload?.data?.timer ||
+          action.payload?.data ||
+          action.payload?.timer;
+        if (state.taskDetails && timerData) {
+          state.taskDetails = {
+            ...state.taskDetails,
+            timer: {
+              ...(state.taskDetails.timer || {}),
+              ...(typeof timerData === 'object' ? timerData : {}),
+            },
+            timer_status:
+              timerData.timer_status ||
+              (state.taskDetails.timer
+                ? state.taskDetails.timer.timer_status
+                : undefined),
+          };
+        }
+      })
+
+      // Get Parts List for selection
+      .addCase(getSupplierPartsList.pending, (state) => {
+        state.isPartsLoading = true;
+      })
+      .addCase(getSupplierPartsList.fulfilled, (state, action) => {
+        state.isPartsLoading = false;
+        const resData = action.payload?.data || action.payload;
+        if (Array.isArray(resData)) {
+          state.partsCatalog = resData;
+        } else if (resData && Array.isArray(resData.parts)) {
+          state.partsCatalog = resData.parts;
+        } else {
+          state.partsCatalog = [];
+        }
+      })
+      .addCase(getSupplierPartsList.rejected, (state) => {
+        state.isPartsLoading = false;
       });
   },
 });
 
 export const { clearMaintenanceDetails } = maintenanceSlice.actions;
 export default maintenanceSlice.reducer;
+

@@ -136,11 +136,7 @@ const OwnerDetail = () => {
   return (
     <Layout>
       <SubHeader
-        title={
-          owner?.ownerName
-            ? `${owner.ownerName} Details`
-            : 'Owner Details'
-        }
+        title="Owner Details"
         subtitle="View complete owner information and their assigned vans."
         backUrl={pageRoutes.owners}
       />

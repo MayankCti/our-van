@@ -202,7 +202,7 @@ const SupplierDetail = () => {
   return (
     <Layout>
       <SubHeader
-        title={displayName ? `${displayName}` : 'Supplier Details'}
+        title="Supplier Details"
         subtitle="View complete supplier information, status, and assigned maintenance tasks."
         backUrl={pageRoutes.suppliers}
         className="ct_flex_col_767"

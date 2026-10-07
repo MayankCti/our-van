@@ -116,7 +116,7 @@ const PartDetail = () => {
   return (
     <Layout>
       <SubHeader
-        title={part.part_name ? `${part.part_name} Details` : 'Part Details'}
+        title="Part Details"
         subtitle="View complete part specifications, pricing, and stock status."
         backUrl={pageRoutes.parts}
         className="ct_flex_col_767"

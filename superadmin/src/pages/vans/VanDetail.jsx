@@ -111,7 +111,7 @@ const VanDetail = () => {
             </button>
             <div>
               <h4 className="fs-4 ct_head_clr ct_fw_600 mb-0 ct_black_text">
-                {vehicle?.van_name ? `${vehicle.van_name} Details` : "Van Details"}
+                Van Details
               </h4>
               <p className="mb-0 ct_para_clr">
                 View and manage the complete digital profile of the assigned van.

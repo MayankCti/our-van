@@ -119,13 +119,27 @@ const MaintenanceDetail = () => {
     }
   };
 
+  const isCommenceTask = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commencedtask' || s === 'commencetask' || s === 'commence';
+  };
+
+  const isCommenced = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commenced' || s === 'inprogress';
+  };
+
   const getStatusBadgeClass = (status) => {
-    switch ((status || '').toLowerCase()) {
+    const s = String(status || '').toLowerCase().replace(/[\s_-]+/g, '');
+    switch (s) {
       case 'completed':
       case 'accepted':
         return 'bg-success-subtle text-success border border-success-subtle';
-      case 'in_progress':
-      case 'in progress':
+      case 'inprogress':
+      case 'commencedtask':
+      case 'commenced':
+      case 'commence':
+      case 'commencetask':
         return 'bg-primary-subtle text-primary border border-primary-subtle';
       case 'pending':
         return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
@@ -137,7 +151,7 @@ const MaintenanceDetail = () => {
     }
   };
 
-  const taskStatusVal = task.task_status || 'pending';
+  const taskStatusVal = task.task_status || task.status || 'pending';
   const supplierStatusVal = (task.supplier_status || 'pending').toLowerCase();
   const dealerName = dealer.dealer_name || dealer.name || 'N/A';
 
@@ -191,6 +205,32 @@ const MaintenanceDetail = () => {
               Supplier: {supplierStatusVal}
             </span>
 
+            {/* If commence_task -> CDS Job Sheet button */}
+            {isCommenceTask(taskStatusVal) && (
+              <Link
+                to={`${pageRoutes.maintenance_cds_sheet}?id=${taskId}`}
+                className="btn btn-sm btn-primary px-3 fw-semibold shadow-sm text-decoration-none d-inline-flex align-items-center gap-1 ms-1"
+                style={{ borderRadius: '8px' }}
+                title="Open CDS Job Sheet"
+              >
+                <i className="fa-solid fa-file-signature"></i>
+                <span>CDS Job Sheet</span>
+              </Link>
+            )}
+
+            {/* If commenced / inprogress -> Complete Task button */}
+            {isCommenced(taskStatusVal) && (
+              <Link
+                to={`${pageRoutes.maintenance_complete_task}?id=${taskId}`}
+                className="btn btn-sm btn-success px-3 fw-semibold shadow-sm text-decoration-none d-inline-flex align-items-center gap-1 ms-1"
+                style={{ borderRadius: '8px' }}
+                title="Complete Maintenance Task"
+              >
+                <i className="fa-solid fa-circle-check"></i>
+                <span>Complete Task</span>
+              </Link>
+            )}
+
             {/* Accept / Reject actions if supplier status is pending */}
             {supplierStatusVal === 'pending' && (
               <div className="d-flex align-items-center gap-2 ms-2">
@@ -235,8 +275,10 @@ const MaintenanceDetail = () => {
             <p className="text-muted ct_fs_15 mb-0">Loading maintenance task details...</p>
           </div>
         ) : !taskId || (!task?.maintenance_id && !task?.id && !isDetailsLoading) ? (
-          <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-            <i className="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
+          <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white d-flex flex-column align-items-center justify-content-center">
+            <div className="d-flex justify-content-center mb-3">
+              <i className="fa-solid fa-triangle-exclamation text-warning fs-1"></i>
+            </div>
             <h5 className="ct_head_clr ct_fs_18 ct_fw_600">Task Not Found</h5>
             <p className="ct_para_clr ct_fs_14 mb-4">
               {detailsError || 'The requested maintenance task could not be found or has been removed.'}

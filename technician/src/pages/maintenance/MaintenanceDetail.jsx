@@ -170,8 +170,10 @@ const MaintenanceDetail = () => {
             <p className="text-muted ct_fs_15 mb-0">Loading maintenance task details...</p>
           </div>
         ) : !taskId || (!task?.maintenance_id && !task?.id && !isDetailsLoading) ? (
-          <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-            <i className="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
+          <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white d-flex flex-column align-items-center justify-content-center">
+            <div className="d-flex justify-content-center mb-3">
+              <i className="fa-solid fa-triangle-exclamation text-warning fs-1"></i>
+            </div>
             <h5 className="ct_head_clr ct_fs_18 ct_fw_600">Task Not Found</h5>
             <p className="ct_para_clr ct_fs_14 mb-4">
               {detailsError || 'The requested maintenance task could not be found or has been removed.'}

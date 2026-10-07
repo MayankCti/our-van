@@ -5,6 +5,8 @@ const FogotPassword = lazy(() => import("../pages/auth/FogotPassword"));
 const Dashboard = lazy(() => import("../pages/dashboard"));
 const Maintenance = lazy(() => import("../pages/maintenance"));
 const MaintenanceDetail = lazy(() => import("../pages/maintenance/MaintenanceDetail"));
+const MaintenanceCdsSheet = lazy(() => import("../pages/maintenance/MaintenanceCdsSheet"));
+const MaintenanceCompleteTask = lazy(() => import("../pages/maintenance/MaintenanceCompleteTask"));
 const MyProfile = lazy(() => import("../pages/auth/MyProfile"));
 const EditProfile = lazy(() => import("../pages/auth/EditProfile"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
@@ -17,6 +19,8 @@ export const pageRoutes = {
   dashboard: "/",
   maintenance: "/maintenance",
   maintenance_detail: "/maintenance-detail",
+  maintenance_cds_sheet: "/maintenance-cds-sheet",
+  maintenance_complete_task: "/maintenance-complete-task",
   myProfile: "/my-profile",
   editProfile: "/edit-profile",
   changePassword: "/change-password",
@@ -57,6 +61,18 @@ export const AllRoutes = [
     name: "MaintenanceDetail",
     path: pageRoutes.maintenance_detail,
     element: <MaintenanceDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "MaintenanceCdsSheet",
+    path: pageRoutes.maintenance_cds_sheet,
+    element: <MaintenanceCdsSheet />,
+    isPrivate: true,
+  },
+  {
+    name: "MaintenanceCompleteTask",
+    path: pageRoutes.maintenance_complete_task,
+    element: <MaintenanceCompleteTask />,
     isPrivate: true,
   },
   {

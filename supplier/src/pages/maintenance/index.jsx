@@ -160,6 +160,33 @@ const MaintenanceTasks = () => {
     }
   };
 
+  const isCommenceTask = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commencedtask' || s === 'commencetask' || s === 'commence';
+  };
+
+  const isCommenced = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commenced' || s === 'inprogress';
+  };
+
+  const isCommencedTask = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commencedtask' || s === 'commenced' || s === 'commence' || s === 'commencetask' || s === 'inprogress';
+  };
+
+  const getTaskRedirectUrl = (status, taskId) => {
+    if (!taskId) return null;
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence') {
+      return `${pageRoutes.maintenance_cds_sheet}?id=${taskId}`;
+    }
+    if (s === 'commenced' || s === 'inprogress') {
+      return `${pageRoutes.maintenance_complete_task}?id=${taskId}`;
+    }
+    return null;
+  };
+
   const getPriorityBadgeClass = (priority) => {
     switch ((priority || '').toLowerCase()) {
       case 'high':
@@ -174,12 +201,16 @@ const MaintenanceTasks = () => {
   };
 
   const getStatusBadgeClass = (status) => {
-    switch ((status || '').toLowerCase()) {
+    const s = String(status || '').toLowerCase().replace(/[\s_-]+/g, '');
+    switch (s) {
       case 'completed':
       case 'accepted':
         return 'bg-success-subtle text-success border border-success-subtle';
-      case 'in_progress':
-      case 'in progress':
+      case 'inprogress':
+      case 'commencedtask':
+      case 'commenced':
+      case 'commence':
+      case 'commencetask':
         return 'bg-primary-subtle text-primary border border-primary-subtle';
       case 'pending':
         return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
@@ -429,7 +460,7 @@ const MaintenanceTasks = () => {
                     const regNumber = van.registration_number || '';
                     const dealer = task.dealer || {};
                     const dealerName = dealer.dealer_name || dealer.name || 'N/A';
-                    const taskStatusVal = task.task_status || 'pending';
+                    const taskStatusVal = task.task_status || task.status || 'pending';
                     const supplierStatusVal = (task.supplier_status || 'pending').toLowerCase();
                     const isRowUpdating = updatingTaskId === taskId;
 
@@ -496,12 +527,33 @@ const MaintenanceTasks = () => {
 
                         {/* Task Status */}
                         <td>
-                          <span
-                            className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize`}
-                            style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
-                          >
-                            {taskStatusVal}
-                          </span>
+                          {getTaskRedirectUrl(taskStatusVal, taskId) ? (
+                            <Link
+                              to={getTaskRedirectUrl(taskStatusVal, taskId)}
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize text-decoration-none d-inline-flex align-items-center gap-1`}
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                              }}
+                              title={
+                                isCommenceTask(taskStatusVal)
+                                  ? 'Click to open CDS Job Sheet'
+                                  : 'Click to complete maintenance task'
+                              }
+                            >
+                              <span>{taskStatusVal.replace(/_/g, ' ')}</span>
+                              <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '9px' }}></i>
+                            </Link>
+                          ) : (
+                            <span
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize`}
+                              style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
+                            >
+                              {taskStatusVal.replace(/_/g, ' ')}
+                            </span>
+                          )}
                         </td>
 
                         {/* Supplier Status (Dropdown if pending, Badge if accepted/rejected) */}
@@ -571,6 +623,36 @@ const MaintenanceTasks = () => {
                             >
                               <i className="fa-regular fa-eye"></i>
                             </Link>
+
+                            {isCommenceTask(taskStatusVal) && (
+                              <Link
+                                to={`${pageRoutes.maintenance_cds_sheet}?id=${taskId}`}
+                                className="ct_action_icon_btn"
+                                style={{
+                                  backgroundColor: '#EFF6FF',
+                                  color: '#2563EB',
+                                  borderColor: '#DBEAFE',
+                                }}
+                                title="Open CDS Job Sheet"
+                              >
+                                <i className="fa-solid fa-file-signature"></i>
+                              </Link>
+                            )}
+
+                            {isCommenced(taskStatusVal) && (
+                              <Link
+                                to={`${pageRoutes.maintenance_complete_task}?id=${taskId}`}
+                                className="ct_action_icon_btn"
+                                style={{
+                                  backgroundColor: '#ECFDF5',
+                                  color: '#059669',
+                                  borderColor: '#A7F3D0',
+                                }}
+                                title="Complete Maintenance Task"
+                              >
+                                <i className="fa-solid fa-circle-check"></i>
+                              </Link>
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -123,7 +123,7 @@ export default function Header() {
                         <div className="modal-body" style={{ paddingInline: "40px" }}>
                             <div className="ct_delete_post_modal">
                                 <figure>
-                                    <i class="fa-solid fa-arrow-right-from-bracket d-block text-danger text-center mx-auto mb-4 fs-3"></i>
+                                    <i className="fa-solid fa-arrow-right-from-bracket d-block text-danger text-center mx-auto mb-4 fs-3"></i>
                                     <figcaption className="mt-0 text-center">
                                         <h4 className="ct_fs_28 ct_fw_600 mb-2">You are about to LogOut</h4>
                                         <p className="mb-0 ct_fs_18 ct_fw_400 ct_para_clr mb-1">Are you sure you want to logout?

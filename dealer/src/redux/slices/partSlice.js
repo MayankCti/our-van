@@ -8,6 +8,8 @@ import {
   createPart,
   updatePart,
   deletePart,
+  getDealerPartRequests,
+  completeDealerPartRequest,
 } from "../actions/partAction";
 
 export {
@@ -16,8 +18,11 @@ export {
   createPart,
   updatePart,
   deletePart,
+  getDealerPartRequests,
+  completeDealerPartRequest,
   clearPartDetails,
   setPartsList,
 };
 
 export default partReducer;
+

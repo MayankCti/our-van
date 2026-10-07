@@ -106,9 +106,9 @@ const VanDetail = () => {
   return (
     <Layout>
       <SubHeader
-        title={van?.van_name ? `${van.van_name} Details` : 'Van Details'}
+        title="Van Details"
         subtitle="View and manage the complete digital profile of the assigned van."
-        backUrl={pageRoutes.vans}
+        showBack={true}
         className="ct_flex_col_767"
       >
         {van?.status && (

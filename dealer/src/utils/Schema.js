@@ -346,6 +346,33 @@ export const editPartSchema = Yup.object().shape({
         .min(0, "Low stock threshold cannot be negative"),
 });
 
+// Parts Management - Complete Part Request Schema
+export const completePartRequestSchema = Yup.object().shape({
+    quantity: Yup.number()
+        .typeError("Quantity must be a valid number")
+        .required("Please enter quantity")
+        .integer("Quantity must be a whole number")
+        .min(1, "Quantity must be at least 1"),
+    manufacturer: Yup.string()
+        .trim()
+        .required("Please enter manufacturer name")
+        .min(2, "Manufacturer name must be at least 2 characters")
+        .max(100, "Manufacturer name cannot exceed 100 characters"),
+    original_cost: Yup.number()
+        .typeError("Original cost must be a valid number")
+        .required("Please enter original cost")
+        .min(0, "Original cost cannot be negative"),
+    service_cost: Yup.number()
+        .typeError("Service cost must be a valid number")
+        .required("Please enter service cost")
+        .min(0, "Service cost cannot be negative"),
+    low_stock_threshold: Yup.number()
+        .typeError("Low stock threshold must be a valid number")
+        .required("Please enter low stock threshold")
+        .integer("Low stock threshold must be a whole number")
+        .min(0, "Low stock threshold cannot be negative"),
+});
+
 export const partSchema = addPartSchema;
 
 // Supplier Validation Schema (Create)
