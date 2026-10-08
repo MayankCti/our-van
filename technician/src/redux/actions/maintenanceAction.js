@@ -65,3 +65,156 @@ export const getTechnicianMaintenanceDetail = createAsyncThunk(
     }
   }
 );
+
+// Update Maintenance Job Timer (START, PAUSE, RESUME)
+export const updateTechnicianMaintenanceTimer = createAsyncThunk(
+  "maintenance/updateTechnicianMaintenanceTimer",
+  async (props, { rejectWithValue }) => {
+    const { maintenance_id, type, callback } = props;
+    try {
+      const endpoint =
+        import.meta.env.VITE_TECHNICIAN_TIMER_API || "/technician/timer";
+
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data: { maintenance_id: Number(maintenance_id), type },
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Submit / Update CDS Job Sheet
+export const updateTechnicianCdsSheet = createAsyncThunk(
+  "maintenance/updateTechnicianCdsSheet",
+  async (props, { rejectWithValue }) => {
+    const { id, data, callback } = props;
+    try {
+      const endpoint = (
+        import.meta.env.VITE_TECHNICIAN_CDS_SHEET_API ||
+        "/technician/maintenance/:id/cds-sheet"
+      ).replace(":id", id);
+
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Parts List for Selection
+export const getTechnicianPartsList = createAsyncThunk(
+  "maintenance/getTechnicianPartsList",
+  async (props = {}, { rejectWithValue }) => {
+    const { callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: import.meta.env.VITE_GET_PARTS_API || "/dealer/parts",
+        method: "GET",
+        isErrorToast: false,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Request Extra Part
+export const createTechnicianPartRequest = createAsyncThunk(
+  "maintenance/createTechnicianPartRequest",
+  async (props, { rejectWithValue }) => {
+    const { maintenance_id, part_name, quantity, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url:
+          import.meta.env.VITE_TECHNICIAN_PART_REQUESTS_API ||
+          "/technician/part-requests",
+        method: "POST",
+        data: {
+          maintenance_id: Number(maintenance_id),
+          part_name: String(part_name).trim(),
+          quantity: Number(quantity),
+        },
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Complete Maintenance Task (Upload Images & Summary)
+export const completeTechnicianMaintenanceTask = createAsyncThunk(
+  "maintenance/completeTechnicianMaintenanceTask",
+  async (props, { rejectWithValue }) => {
+    const { id, data, callback } = props;
+    try {
+      const endpoint = (
+        import.meta.env.VITE_TECHNICIAN_COMPLETE_TASK_API ||
+        "/technician/maintenance/:id/complete-task"
+      ).replace(":id", id);
+
+      const response = await API_REQUEST({
+        url: endpoint,
+        method: "POST",
+        data, // FormData
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);

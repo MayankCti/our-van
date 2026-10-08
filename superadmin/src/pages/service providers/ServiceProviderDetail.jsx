@@ -10,7 +10,7 @@ const ServiceProviderDetail = () => {
             <div class="ct_right_panel">
                 <Header />
                 <div class="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
-                    <Link to={pageRoutes.service_providers} className="text-dark text-decoration-none">
+                    <Link to={pageRoutes.service_providers} className="ct_back_btn" aria-label="Go Back">
                         <i className="fa-solid fa-chevron-left"></i>
                     </Link>
                     <div>

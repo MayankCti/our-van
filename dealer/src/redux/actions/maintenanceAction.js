@@ -94,3 +94,33 @@ export const createMaintenance = createAsyncThunk(
     }
   }
 );
+
+// Reassign Maintenance Task
+export const reassignMaintenanceTask = createAsyncThunk(
+  "maintenance/reassignMaintenanceTask",
+  async (props, { rejectWithValue }) => {
+    const { data, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url:
+          import.meta.env.VITE_REASSIGN_MAINTENANCE_API ||
+          "/dealer/maintenance/reassign",
+        method: "POST",
+        data,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+

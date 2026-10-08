@@ -3,6 +3,7 @@ import {
   getMaintenanceList,
   getMaintenanceById,
   createMaintenance,
+  reassignMaintenanceTask,
 } from "../actions/maintenanceAction";
 
 const initialState = {
@@ -104,6 +105,17 @@ const maintenanceSlice = createSlice({
         state.isActionLoading = false;
       })
       .addCase(createMaintenance.rejected, (state) => {
+        state.isActionLoading = false;
+      })
+
+      // Reassign Maintenance Task
+      .addCase(reassignMaintenanceTask.pending, (state) => {
+        state.isActionLoading = true;
+      })
+      .addCase(reassignMaintenanceTask.fulfilled, (state) => {
+        state.isActionLoading = false;
+      })
+      .addCase(reassignMaintenanceTask.rejected, (state) => {
         state.isActionLoading = false;
       });
   },

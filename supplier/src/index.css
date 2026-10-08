@@ -127,3 +127,30 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield !important;
 }
+
+.ct_back_btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  text-decoration: none !important;
+  padding: 0 !important;
+}
+
+.ct_back_btn:hover {
+  background-color: #f8fafc !important;
+  border-color: #3d8b37 !important;
+  color: #3d8b37 !important;
+  transform: translateX(-3px);
+  box-shadow: 0 3px 8px rgba(61, 139, 55, 0.15);
+}

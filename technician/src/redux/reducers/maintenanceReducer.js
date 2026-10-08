@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   getTechnicianAssignedTasks,
   getTechnicianMaintenanceDetail,
+  getTechnicianPartsList,
+  updateTechnicianMaintenanceTimer,
 } from "../actions/maintenanceAction";
 
 const initialState = {
@@ -11,15 +13,19 @@ const initialState = {
     total_completed: 0,
     total_pending: 0,
   },
-  taskDetails: null,
   isTasksLoading: false,
-  isDetailsLoading: false,
   tasksError: null,
+
+  taskDetails: null,
+  isDetailsLoading: false,
   detailsError: null,
+
+  partsCatalog: [],
+  isPartsLoading: false,
 };
 
 const maintenanceSlice = createSlice({
-  name: "maintenance",
+  name: "technicianMaintenance",
   initialState,
   reducers: {
     clearMaintenanceDetails: (state) => {
@@ -57,7 +63,7 @@ const maintenanceSlice = createSlice({
       })
       .addCase(getTechnicianAssignedTasks.rejected, (state, action) => {
         state.isTasksLoading = false;
-        state.tasksError = action.payload || "Failed to fetch assigned tasks";
+        state.tasksError = action.payload?.message || action.payload || "Failed to fetch assigned tasks";
       })
 
       // getTechnicianMaintenanceDetail
@@ -71,7 +77,48 @@ const maintenanceSlice = createSlice({
       })
       .addCase(getTechnicianMaintenanceDetail.rejected, (state, action) => {
         state.isDetailsLoading = false;
-        state.detailsError = action.payload || "Failed to fetch maintenance details";
+        state.detailsError = action.payload?.message || action.payload || "Failed to fetch maintenance details";
+      })
+
+      // updateTechnicianMaintenanceTimer
+      .addCase(updateTechnicianMaintenanceTimer.fulfilled, (state, action) => {
+        const timerData =
+          action.payload?.data?.timer ||
+          action.payload?.data ||
+          action.payload?.timer;
+        if (state.taskDetails && timerData) {
+          state.taskDetails = {
+            ...state.taskDetails,
+            timer: {
+              ...(state.taskDetails.timer || {}),
+              ...(typeof timerData === 'object' ? timerData : {}),
+            },
+            timer_status:
+              timerData.timer_status ||
+              (state.taskDetails.timer
+                ? state.taskDetails.timer.timer_status
+                : undefined),
+          };
+        }
+      })
+
+      // getTechnicianPartsList
+      .addCase(getTechnicianPartsList.pending, (state) => {
+        state.isPartsLoading = true;
+      })
+      .addCase(getTechnicianPartsList.fulfilled, (state, action) => {
+        state.isPartsLoading = false;
+        const resData = action.payload?.data || action.payload;
+        if (Array.isArray(resData)) {
+          state.partsCatalog = resData;
+        } else if (resData && Array.isArray(resData.parts)) {
+          state.partsCatalog = resData.parts;
+        } else {
+          state.partsCatalog = [];
+        }
+      })
+      .addCase(getTechnicianPartsList.rejected, (state) => {
+        state.isPartsLoading = false;
       });
   },
 });

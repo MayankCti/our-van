@@ -111,8 +111,8 @@ const OwnerDetail = () => {
     <Layout>
       <div className="ct_right_panel">
         <Header />
-        <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
-          <Link to={pageRoutes.owners} aria-label="Back to Owners" className="text-dark text-decoration-none">
+        <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-3">
+          <Link to={pageRoutes.owners} aria-label="Back to Owners" title="Back to Owners" className="ct_back_btn">
             <i className="fa-solid fa-chevron-left"></i>
           </Link>
           <div>

@@ -117,3 +117,68 @@
 .ct_phone_input_wrapper .react-tel-input .country-list .search-box:focus {
   border-color: #3D8B37 !important;
 }
+
+/* Custom Tab Buttons */
+.ct_tab_btn {
+  padding: 8px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  min-height: 40px;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #475569;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ct_tab_btn:hover {
+  background-color: #F0FDF4;
+  border-color: #3D8B37;
+  color: #275F22;
+}
+
+.ct_tab_btn.active {
+  background: linear-gradient(180deg, #3D8B37 0%, #275F22 100%) !important;
+  border-color: #3D8B37 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(61, 139, 55, 0.25);
+}
+
+.ct_tab_btn.active:hover {
+  background: linear-gradient(180deg, #33772e 0%, #1f4f1b 100%) !important;
+  border-color: #275F22 !important;
+  color: #FFFFFF !important;
+}
+
+.ct_back_btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  text-decoration: none !important;
+  padding: 0 !important;
+}
+
+.ct_back_btn:hover {
+  background-color: #f8fafc !important;
+  border-color: #3d8b37 !important;
+  color: #3d8b37 !important;
+  transform: translateX(-3px);
+  box-shadow: 0 3px 8px rgba(61, 139, 55, 0.15);
+}
+

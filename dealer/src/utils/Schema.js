@@ -349,10 +349,10 @@ export const editPartSchema = Yup.object().shape({
 // Parts Management - Complete Part Request Schema
 export const completePartRequestSchema = Yup.object().shape({
     quantity: Yup.number()
-        .typeError("Quantity must be a valid number")
-        .required("Please enter quantity")
-        .integer("Quantity must be a whole number")
-        .min(1, "Quantity must be at least 1"),
+        .typeError("Stock quantity must be a valid number")
+        .required("Please enter stock quantity")
+        .integer("Stock quantity must be a whole number")
+        .min(1, "Stock quantity must be at least 1"),
     manufacturer: Yup.string()
         .trim()
         .required("Please enter manufacturer name")
@@ -365,12 +365,34 @@ export const completePartRequestSchema = Yup.object().shape({
     service_cost: Yup.number()
         .typeError("Service cost must be a valid number")
         .required("Please enter service cost")
-        .min(0, "Service cost cannot be negative"),
+        .min(0, "Service cost cannot be negative")
+        .test(
+            "greater-than-original",
+            "Service cost must be greater than original cost",
+            function (val) {
+                const { original_cost } = this.parent;
+                if (val === undefined || val === null || isNaN(val) || original_cost === undefined || original_cost === null || isNaN(original_cost)) {
+                    return true;
+                }
+                return Number(val) > Number(original_cost);
+            }
+        ),
     low_stock_threshold: Yup.number()
         .typeError("Low stock threshold must be a valid number")
         .required("Please enter low stock threshold")
         .integer("Low stock threshold must be a whole number")
-        .min(0, "Low stock threshold cannot be negative"),
+        .min(0, "Low stock threshold cannot be negative")
+        .test(
+            "less-than-stock",
+            "Low stock alert threshold must be less than stock quantity",
+            function (val) {
+                const { quantity } = this.parent;
+                if (val === undefined || val === null || isNaN(val) || quantity === undefined || quantity === null || isNaN(quantity)) {
+                    return true;
+                }
+                return Number(val) < Number(quantity);
+            }
+        ),
 });
 
 export const partSchema = addPartSchema;
@@ -512,6 +534,16 @@ export const createMaintenanceSchema = Yup.object().shape({
             })
         )
         .min(1, "Please add at least one service to the maintenance task"),
+});
+
+// Reassign Task Schema
+export const reassignTaskSchema = Yup.object().shape({
+  assignee_type: Yup.string()
+    .oneOf(['supplier', 'technician'], 'Please select a valid assignee type')
+    .required('Please select assignee type'),
+  assignee_id: Yup.number()
+    .typeError('Please select an assignee')
+    .required('Please select an assignee'),
 });
 
 

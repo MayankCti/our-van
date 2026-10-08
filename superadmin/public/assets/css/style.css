@@ -1765,3 +1765,31 @@
  .toggle-switch input[type="checkbox"]:checked+.toggle-switch-background .toggle-switch-handle {
      transform: translateX(20px);
  }
+
+ /* Custom Back Button */
+ .ct_back_btn {
+     width: 38px;
+     height: 38px;
+     min-width: 38px;
+     border-radius: 10px;
+     background-color: #ffffff;
+     border: 1px solid #E2E8F0 !important;
+     color: #334155 !important;
+     display: inline-flex !important;
+     align-items: center;
+     justify-content: center;
+     font-size: 14px;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+     transition: all 0.2s ease-in-out;
+     cursor: pointer;
+     text-decoration: none !important;
+     padding: 0 !important;
+ }
+
+ .ct_back_btn:hover {
+     background-color: #F8FAFC !important;
+     border-color: #3D8B37 !important;
+     color: #3D8B37 !important;
+     transform: translateX(-3px);
+     box-shadow: 0 3px 8px rgba(61, 139, 55, 0.15);
+ }

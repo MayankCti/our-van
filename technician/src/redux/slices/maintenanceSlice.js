@@ -5,11 +5,21 @@ import maintenanceReducer, {
 import {
   getTechnicianAssignedTasks,
   getTechnicianMaintenanceDetail,
+  updateTechnicianMaintenanceTimer,
+  updateTechnicianCdsSheet,
+  getTechnicianPartsList,
+  createTechnicianPartRequest,
+  completeTechnicianMaintenanceTask,
 } from "../actions/maintenanceAction";
 
 export {
   getTechnicianAssignedTasks,
   getTechnicianMaintenanceDetail,
+  updateTechnicianMaintenanceTimer,
+  updateTechnicianCdsSheet,
+  getTechnicianPartsList,
+  createTechnicianPartRequest,
+  completeTechnicianMaintenanceTask,
   clearMaintenanceDetails,
   resetMaintenanceState,
 };

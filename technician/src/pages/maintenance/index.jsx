@@ -56,7 +56,7 @@ const MaintenanceTasks = () => {
       }
       // Status filter
       if (selectedStatus !== 'all') {
-        const tStatus = (task.task_status || '').toLowerCase();
+        const tStatus = (task.task_status || task.status || '').toLowerCase();
         const filterVal = selectedStatus.toLowerCase();
         if (tStatus !== filterVal) {
           return false;
@@ -130,6 +130,53 @@ const MaintenanceTasks = () => {
     }
   };
 
+  const isCommenceTask = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commencedtask' || s === 'commencetask' || s === 'commence' || s === 'overdue';
+  };
+
+  const isCommenced = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commenced' || s === 'inprogress';
+  };
+
+  const isCommencedTask = (status) => {
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    return s === 'commencedtask' || s === 'commenced' || s === 'commence' || s === 'commencetask' || s === 'inprogress' || s === 'overdue';
+  };
+
+  const getTaskRedirectUrl = (status, taskId) => {
+    if (!taskId) return null;
+    const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence' || s === 'overdue') {
+      return `${pageRoutes.maintenance_cds_sheet}?id=${taskId}`;
+    }
+    if (s === 'commenced' || s === 'inprogress') {
+      return `${pageRoutes.maintenance_complete_task}?id=${taskId}`;
+    }
+    return null;
+  };
+
+  const formatStatusLabel = (status) => {
+    if (!status) return 'Pending';
+    const s = String(status).toLowerCase().trim().replace(/[\s_-]+/g, '');
+    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence') {
+      return 'Commence Task';
+    }
+    if (s === 'inprogress' || s === 'in_progress') {
+      return 'In Progress';
+    }
+    if (s === 'commenced') {
+      return 'Commenced';
+    }
+    if (s === 'overdue') {
+      return 'Overdue';
+    }
+    return String(status)
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
   const getPriorityBadgeClass = (priority) => {
     switch ((priority || '').toLowerCase()) {
       case 'high':
@@ -144,14 +191,21 @@ const MaintenanceTasks = () => {
   };
 
   const getStatusBadgeClass = (status) => {
-    switch ((status || '').toLowerCase()) {
+    const s = String(status || '').toLowerCase().replace(/[\s_-]+/g, '');
+    switch (s) {
       case 'completed':
+      case 'accepted':
         return 'bg-success-subtle text-success border border-success-subtle';
-      case 'in_progress':
-      case 'in progress':
+      case 'inprogress':
+      case 'commencedtask':
+      case 'commenced':
+      case 'commence':
+      case 'commencetask':
         return 'bg-primary-subtle text-primary border border-primary-subtle';
       case 'pending':
         return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+      case 'overdue':
+        return 'bg-danger-subtle text-danger border border-danger-subtle';
       case 'cancelled':
       case 'rejected':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
@@ -317,7 +371,7 @@ const MaintenanceTasks = () => {
                 >
                   <option value="all">All Statuses</option>
                   <option value="pending">Pending</option>
-                  <option value="in_progress">In Progress</option>
+                  <option value="in_progress">In Progress / Commenced</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="rejected">Rejected</option>
@@ -366,12 +420,13 @@ const MaintenanceTasks = () => {
                   displayedTasks.map((task, index) => {
                     const rowNumber = currentPage * listPerPages + index + 1;
                     const taskId = task.maintenance_id || task.id;
-                    const van = task.van || {};
+                    const van = task.van || task.van_details || {};
                     const vanName = van.van_name || van.model || 'N/A';
                     const regNumber = van.registration_number || '';
-                    const dealer = task.dealer || {};
-                    const dealerName = dealer.name || dealer.dealer_name || 'N/A';
-                    const taskStatusVal = task.task_status || 'pending';
+                    const dealer = task.dealer || task.dealer_details || {};
+                    const dealerName = dealer.name || dealer.dealer_name || dealer.full_name || 'N/A';
+                    const taskStatusVal = task.task_status || task.status || 'pending';
+                    const redirectUrl = getTaskRedirectUrl(taskStatusVal, taskId);
 
                     return (
                       <tr key={taskId || index}>
@@ -379,7 +434,23 @@ const MaintenanceTasks = () => {
 
                         {/* Task Title */}
                         <td className="ct_fw_600">
-                          {task.title || 'N/A'}
+                          {redirectUrl ? (
+                            <Link
+                              to={redirectUrl}
+                              className="text-decoration-none text-dark d-flex align-items-center gap-1"
+                              title="Click to process task"
+                            >
+                              <span>{task.title || 'N/A'}</span>
+                              <i className="fa-solid fa-arrow-up-right-from-square ct_fs_11 text-muted ms-1"></i>
+                            </Link>
+                          ) : (
+                            <Link
+                              to={`${pageRoutes.maintenance_detail}?id=${taskId}`}
+                              className="text-decoration-none text-dark"
+                            >
+                              {task.title || 'N/A'}
+                            </Link>
+                          )}
                         </td>
 
                         {/* Van Details */}
@@ -434,14 +505,35 @@ const MaintenanceTasks = () => {
                           {formatCurrency(task.total_amount)}
                         </td>
 
-                        {/* Status (Normal Task Status Badge) */}
+                        {/* Status */}
                         <td>
-                          <span
-                            className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize`}
-                            style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
-                          >
-                            {taskStatusVal}
-                          </span>
+                          {getTaskRedirectUrl(taskStatusVal, taskId) ? (
+                            <Link
+                              to={getTaskRedirectUrl(taskStatusVal, taskId)}
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-decoration-none d-inline-flex align-items-center gap-1`}
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                              }}
+                              title={
+                                isCommenceTask(taskStatusVal)
+                                  ? 'Click to open CDS Job Sheet'
+                                  : 'Click to complete maintenance task'
+                              }
+                            >
+                              <span>{formatStatusLabel(taskStatusVal)}</span>
+                              <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '9px' }}></i>
+                            </Link>
+                          ) : (
+                            <span
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1`}
+                              style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
+                            >
+                              {formatStatusLabel(taskStatusVal)}
+                            </span>
+                          )}
                         </td>
 
                         {/* Created Date */}
@@ -459,6 +551,36 @@ const MaintenanceTasks = () => {
                             >
                               <i className="fa-regular fa-eye"></i>
                             </Link>
+
+                            {isCommenceTask(taskStatusVal) && (
+                              <Link
+                                to={`${pageRoutes.maintenance_cds_sheet}?id=${taskId}`}
+                                className="ct_action_icon_btn"
+                                style={{
+                                  backgroundColor: '#EFF6FF',
+                                  color: '#2563EB',
+                                  borderColor: '#DBEAFE',
+                                }}
+                                title="Open CDS Job Sheet"
+                              >
+                                <i className="fa-solid fa-file-signature"></i>
+                              </Link>
+                            )}
+
+                            {isCommenced(taskStatusVal) && (
+                              <Link
+                                to={`${pageRoutes.maintenance_complete_task}?id=${taskId}`}
+                                className="ct_action_icon_btn"
+                                style={{
+                                  backgroundColor: '#ECFDF5',
+                                  color: '#059669',
+                                  borderColor: '#A7F3D0',
+                                }}
+                                title="Complete Maintenance Task"
+                              >
+                                <i className="fa-solid fa-circle-check"></i>
+                              </Link>
+                            )}
                           </div>
                         </td>
                       </tr>

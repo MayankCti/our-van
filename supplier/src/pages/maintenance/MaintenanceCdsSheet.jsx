@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import Layout from '../../layout/Layout';
 import SubHeader from '../../components/SubHeader';
 import SignaturePad from '../../components/SignaturePad';
-import PhoneInputField from '../../components/form/PhoneInputField';
 import {
   getSupplierMaintenanceDetail,
   updateSupplierMaintenanceTimer,
@@ -43,11 +42,6 @@ const MaintenanceCdsSheet = () => {
 
   // Local Form States - all blank by default as requested
   const [workCarriedOut, setWorkCarriedOut] = useState('');
-  const [date, setDate] = useState('');
-  const [jobNo, setJobNo] = useState('');
-  const [personAttending, setPersonAttending] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [mobile, setMobile] = useState('');
   const [workToBeCarriedOut, setWorkToBeCarriedOut] = useState('');
   const [signature, setSignature] = useState('');
 
@@ -180,7 +174,61 @@ const MaintenanceCdsSheet = () => {
     }
   };
 
-  // Handle Part Selection from Dropdown (no unit cost needed for catalog parts)
+  // Get unit cost of a part (checking unit_cost, service_cost, or partsCatalog)
+  const getPartUnitCost = (part) => {
+    if (!part) return 0;
+    if (part.unit_cost !== undefined && part.unit_cost !== null && part.unit_cost !== '') {
+      return Number(part.unit_cost) || 0;
+    }
+    if (part.service_cost !== undefined && part.service_cost !== null && part.service_cost !== '') {
+      return Number(part.service_cost) || 0;
+    }
+    if (part.part_id) {
+      const catalogItem = partsCatalog.find((p) => String(p.id) === String(part.part_id));
+      if (catalogItem) {
+        const raw =
+          catalogItem.service_cost ??
+          catalogItem.original_cost ??
+          catalogItem.cost ??
+          catalogItem.price ??
+          0;
+        return Number(raw) || 0;
+      }
+    }
+    return 0;
+  };
+
+  // Get total cost of a part
+  const getPartTotalCost = (part) => {
+    if (!part) return 0;
+    if (part.total_cost !== undefined && part.total_cost !== null && part.total_cost !== '') {
+      return Number(part.total_cost) || 0;
+    }
+    const unit = getPartUnitCost(part);
+    const qty = Number(part.quantity) || 1;
+    return unit * qty;
+  };
+
+  // Total costs across parts, consumables and grand total
+  const totalPartsCost = partsList.reduce((sum, p) => sum + getPartTotalCost(p), 0);
+  const totalConsumablesCost = consumablesList.reduce(
+    (sum, c) =>
+      sum + (Number(c.total_price) || (Number(c.unit_price) || 0) * (Number(c.quantity) || 1)),
+    0
+  );
+  const grandTotalCost = totalPartsCost + totalConsumablesCost;
+
+  // Currently selected catalog part object and stock
+  const selectedCatalogPartObj = selectedPartId
+    ? partsCatalog.find((p) => String(p.id) === String(selectedPartId))
+    : null;
+  const selectedCatalogPartStock =
+    selectedCatalogPartObj?.stock_quantity !== undefined &&
+    selectedCatalogPartObj?.stock_quantity !== null
+      ? Number(selectedCatalogPartObj.stock_quantity)
+      : undefined;
+
+  // Handle Part Selection from Dropdown
   const handlePartSelectChange = (e) => {
     const partId = e.target.value;
     setSelectedPartId(partId);
@@ -234,6 +282,7 @@ const MaintenanceCdsSheet = () => {
         part_name: trimmedName,
         quantity: qty,
         unit_cost: unitCost,
+        service_cost: unitCost,
         total_cost: totalCost,
       };
 
@@ -274,10 +323,44 @@ const MaintenanceCdsSheet = () => {
         return;
       }
 
+      const selectedCatalogPart = partsCatalog.find((p) => String(p.id) === String(selectedPartId));
+      if (!selectedCatalogPart) {
+        toast.error('Selected part not found in catalog');
+        return;
+      }
+
+      const availableStock =
+        selectedCatalogPart.stock_quantity !== undefined && selectedCatalogPart.stock_quantity !== null
+          ? Number(selectedCatalogPart.stock_quantity)
+          : undefined;
+
+      if (availableStock !== undefined) {
+        if (availableStock <= 0) {
+          toast.error(`"${selectedCatalogPart.part_name || 'This part'}" is out of stock (0 available)`);
+          return;
+        }
+        if (qty > availableStock) {
+          toast.error(`Quantity cannot exceed available stock (${availableStock} available)`);
+          return;
+        }
+      }
+
+      const rawCost =
+        selectedCatalogPart?.service_cost ??
+        selectedCatalogPart?.original_cost ??
+        selectedCatalogPart?.cost ??
+        selectedCatalogPart?.price ??
+        0;
+      const unitCost = Number(rawCost) || 0;
+      const totalCost = Number(qty * unitCost);
+
       const newPart = {
         part_id: Number(selectedPartId),
-        part_name: selectedPartName.trim(),
+        part_name: selectedPartName.trim() || selectedCatalogPart?.part_name || '',
         quantity: qty,
+        unit_cost: unitCost,
+        service_cost: unitCost,
+        total_cost: totalCost,
       };
 
       if (editingPartIndex !== null) {
@@ -431,26 +514,6 @@ const MaintenanceCdsSheet = () => {
       toast.error('Please fill in the "Work Carried Out" field');
       return;
     }
-    if (!date.trim()) {
-      toast.error('Date is required');
-      return;
-    }
-    if (!jobNo.trim()) {
-      toast.error('Job No. is required');
-      return;
-    }
-    if (!personAttending.trim()) {
-      toast.error('Person Attending is required');
-      return;
-    }
-    if (!customerName.trim()) {
-      toast.error('Customer name is required');
-      return;
-    }
-    if (!mobile.trim()) {
-      toast.error('Mobile is required');
-      return;
-    }
     if (!workToBeCarriedOut.trim()) {
       toast.error('Work To Be Carried Out is required');
       return;
@@ -462,26 +525,28 @@ const MaintenanceCdsSheet = () => {
 
     const payload = {
       work_carried_out: workCarriedOut.trim(),
-      date: date.trim(),
-      job_no: jobNo.trim(),
-      person_attending: personAttending.trim(),
-      customer_name: customerName.trim(),
-      mobile: mobile.trim(),
       work_to_be_carried_out: workToBeCarriedOut.trim(),
       cds_signature: signature,
       parts_used: partsList.map((p) => {
+        const unit = getPartUnitCost(p);
+        const total = getPartTotalCost(p);
         if (p.part_id) {
           return {
             part_id: Number(p.part_id),
+            part_name: p.part_name || undefined,
             quantity: Number(p.quantity) || 1,
+            unit_cost: unit,
+            service_cost: unit,
+            total_cost: total,
           };
         }
         return {
           part_id: null,
           part_name: p.part_name || undefined,
           quantity: Number(p.quantity) || 1,
-          unit_cost: p.unit_cost !== undefined ? Number(p.unit_cost) : undefined,
-          total_cost: p.total_cost !== undefined ? Number(p.total_cost) : undefined,
+          unit_cost: unit,
+          service_cost: unit,
+          total_cost: total,
         };
       }),
       consumables: consumablesList.map((c) => ({
@@ -830,7 +895,9 @@ const MaintenanceCdsSheet = () => {
                   ) : (
                     <>
                       <div className="col-12 col-md-5">
-                        <label className="ct_fs_13 ct_fw_600 mb-1 text-muted">Select Part *</label>
+                        <label className="ct_fs_13 ct_fw_600 mb-1 text-muted">
+                          Select Part *
+                        </label>
                         <select
                           className="form-select"
                           value={selectedPartId}
@@ -839,30 +906,71 @@ const MaintenanceCdsSheet = () => {
                           disabled={isPartsLoading}
                         >
                           <option value="">
-                            {isPartsLoading ? 'Loading parts catalog...' : 'Select Part from Catalog...'}
+                            {isPartsLoading
+                              ? 'Loading parts catalog...'
+                              : 'Select Part from Catalog...'}
                           </option>
-                          {partsCatalog.map((p) => {
-                            const isAlreadyInList = partsList.some(
-                              (item, idx) =>
-                                (editingPartIndex === null || idx !== editingPartIndex) &&
-                                item.part_id === p.id
-                            );
-                            return (
-                              <option key={p.id} value={p.id} disabled={isAlreadyInList}>
-                                {p.part_name} {p.manufacturer ? `(${p.manufacturer})` : ''}{' '}
-                                {p.stock_quantity !== undefined ? `(Stock: ${p.stock_quantity})` : ''}{' '}
-                                {isAlreadyInList ? '— (Already added)' : ''}
-                              </option>
-                            );
-                          })}
+                          {partsCatalog
+                            .filter((p) => {
+                              // Remove already added parts from dropdown list unless currently editing
+                              const isAlreadyInList = partsList.some(
+                                (item, idx) =>
+                                  (editingPartIndex === null || idx !== editingPartIndex) &&
+                                  Number(item.part_id) === Number(p.id)
+                              );
+                              return !isAlreadyInList;
+                            })
+                            .map((p) => {
+                              const rawCost =
+                                p.service_cost ?? p.original_cost ?? p.cost ?? p.price;
+                              const costText =
+                                rawCost !== undefined &&
+                                rawCost !== null &&
+                                rawCost !== ''
+                                  ? ` — $${Number(rawCost).toFixed(2)}`
+                                  : '';
+                              const pStock =
+                                p.stock_quantity !== undefined &&
+                                p.stock_quantity !== null
+                                  ? Number(p.stock_quantity)
+                                  : null;
+                              const isOutOfStock = pStock !== null && pStock <= 0;
+                              return (
+                                <option key={p.id} value={p.id} disabled={isOutOfStock}>
+                                  {p.part_name} {p.manufacturer ? `(${p.manufacturer})` : ''}
+                                  {costText}
+                                  {pStock !== null
+                                    ? isOutOfStock
+                                      ? ' [Out of Stock]'
+                                      : ` [Stock: ${pStock}]`
+                                    : ''}
+                                </option>
+                              );
+                            })}
                         </select>
                       </div>
 
                       <div className="col-6 col-md-3">
-                        <label className="ct_fs_13 ct_fw_600 mb-1 text-muted">Quantity *</label>
+                        <div className="d-flex align-items-center justify-content-between mb-1">
+                          <label className="ct_fs_13 ct_fw_600 text-muted mb-0">Quantity *</label>
+                          {selectedCatalogPartStock !== undefined && (
+                            <span
+                              className={`ct_fs_12 ct_fw_600 ${
+                                selectedCatalogPartStock <= 0 ? 'text-danger' : 'text-success'
+                              }`}
+                            >
+                              Stock: {selectedCatalogPartStock}
+                            </span>
+                          )}
+                        </div>
                         <input
                           type="number"
                           min="1"
+                          max={
+                            selectedCatalogPartStock !== undefined && selectedCatalogPartStock > 0
+                              ? selectedCatalogPartStock
+                              : undefined
+                          }
                           placeholder="1"
                           className="form-control"
                           value={partQuantity}
@@ -936,67 +1044,63 @@ const MaintenanceCdsSheet = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {partsList.map((part, idx) => (
-                          <tr
-                            key={idx}
-                            style={{
-                              backgroundColor: editingPartIndex === idx ? '#F1F5F9' : undefined,
-                            }}
-                          >
-                            <td>{idx + 1}</td>
-                            <td className="ct_fw_600">
-                              {part.part_name || `Part #${part.part_id || idx + 1}`}
-                            </td>
-                            <td>
-                              {part.part_id ? (
-                                <span
-                                  className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"
-                                  style={{ fontSize: '12px', fontWeight: '500' }}
-                                >
-                                  <i className="fa-solid fa-boxes-stacked me-1"></i> Catalog
-                                </span>
-                              ) : (
-                                <span
-                                  className="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1"
-                                  style={{ fontSize: '12px', fontWeight: '500' }}
-                                >
-                                  <i className="fa-solid fa-pen-ruler me-1"></i> Manual
-                                </span>
-                              )}
-                            </td>
-                            <td>{part.quantity || 1}</td>
-                            <td>
-                              {part.unit_cost !== undefined && part.unit_cost !== null && part.unit_cost !== ''
-                                ? `$${Number(part.unit_cost).toFixed(2)}`
-                                : '-'}
-                            </td>
-                            <td className="ct_fw_600">
-                              {part.total_cost !== undefined && part.total_cost !== null && part.total_cost !== ''
-                                ? `$${Number(part.total_cost).toFixed(2)}`
-                                : '-'}
-                            </td>
-                            <td className="text-end">
-                              <div className="d-inline-flex align-items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => handleEditPart(idx)}
-                                  className="btn btn-sm btn-outline-primary p-1 px-2 border-0"
-                                  title="Edit part"
-                                >
-                                  <i className="fa-regular fa-pen-to-square"></i>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemovePart(idx)}
-                                  className="btn btn-sm btn-outline-danger p-1 px-2 border-0"
-                                  title="Remove part"
-                                >
-                                  <i className="fa-regular fa-trash-can"></i>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                        {partsList.map((part, idx) => {
+                          const unit = getPartUnitCost(part);
+                          const total = getPartTotalCost(part);
+                          return (
+                            <tr
+                              key={idx}
+                              style={{
+                                backgroundColor: editingPartIndex === idx ? '#F1F5F9' : undefined,
+                              }}
+                            >
+                              <td>{idx + 1}</td>
+                              <td className="ct_fw_600">
+                                {part.part_name || `Part #${part.part_id || idx + 1}`}
+                              </td>
+                              <td>
+                                {part.part_id ? (
+                                  <span
+                                    className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"
+                                    style={{ fontSize: '12px', fontWeight: '500' }}
+                                  >
+                                    <i className="fa-solid fa-boxes-stacked me-1"></i> Catalog
+                                  </span>
+                                ) : (
+                                  <span
+                                    className="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1"
+                                    style={{ fontSize: '12px', fontWeight: '500' }}
+                                  >
+                                    <i className="fa-solid fa-pen-ruler me-1"></i> Manual
+                                  </span>
+                                )}
+                              </td>
+                              <td>{part.quantity || 1}</td>
+                              <td>${unit.toFixed(2)}</td>
+                              <td className="ct_fw_600 text-dark">${total.toFixed(2)}</td>
+                              <td className="text-end">
+                                <div className="d-inline-flex align-items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditPart(idx)}
+                                    className="btn btn-sm btn-outline-primary p-1 px-2 border-0"
+                                    title="Edit part"
+                                  >
+                                    <i className="fa-regular fa-pen-to-square"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePart(idx)}
+                                    className="btn btn-sm btn-outline-danger p-1 px-2 border-0"
+                                    title="Remove part"
+                                  >
+                                    <i className="fa-regular fa-trash-can"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1208,87 +1312,16 @@ const MaintenanceCdsSheet = () => {
                 </div>
               </div>
 
-              {/* 4. Bottom Form Fields (Blank by default for manual entry) */}
+              {/* 4. Bottom Form Fields */}
               <div className="mb-4 pt-3 border-top">
                 <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
-                      Date <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      style={{ borderRadius: '8px', height: '42px', fontSize: '14px' }}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
-                      Job No. <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={jobNo}
-                      onChange={(e) => setJobNo(e.target.value)}
-                      placeholder="Job No."
-                      style={{ borderRadius: '8px', height: '42px', fontSize: '14px' }}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
-                      Person Attending <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={personAttending}
-                      onChange={(e) => setPersonAttending(e.target.value)}
-                      placeholder="Person Attending"
-                      style={{ borderRadius: '8px', height: '42px', fontSize: '14px' }}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
-                      Customer Name <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Customer Name"
-                      style={{ borderRadius: '8px', height: '42px', fontSize: '14px' }}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-12">
-                    <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
-                      Mobile <span className="text-danger">*</span>
-                    </label>
-                    <PhoneInputField
-                      value={mobile}
-                      onChange={(val) => setMobile(val)}
-                      placeholder="Enter mobile number"
-                      country="au"
-                    />
-                  </div>
-
                   <div className="col-12">
                     <label className="ct_fs_13 ct_fw_600 mb-1 ct_head_clr">
                       Work To Be Carried Out <span className="text-danger">*</span>
                     </label>
                     <textarea
                       className="form-control"
-                      rows={2}
+                      rows={3}
                       value={workToBeCarriedOut}
                       onChange={(e) => setWorkToBeCarriedOut(e.target.value)}
                       placeholder="Maintenance Title / Work description"

@@ -64,6 +64,15 @@ const MaintenanceCompleteTask = () => {
     return dateStr;
   };
 
+  // Get today's date in YYYY-MM-DD local time (disable past dates, allow today onwards)
+  const getMinDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Fetch Task Details on Mount
   useEffect(() => {
     if (taskId) {
@@ -172,6 +181,10 @@ const MaintenanceCompleteTask = () => {
     }
     if (!recommendedDueDate.trim()) {
       toast.error('Recommended Due Date is required');
+      return;
+    }
+    if (recommendedDueDate.trim() < getMinDate()) {
+      toast.error('Recommended Due Date cannot be a past date');
       return;
     }
     if (selectedImages.length === 0) {
@@ -334,6 +347,7 @@ const MaintenanceCompleteTask = () => {
                     type="date"
                     className="form-control"
                     value={recommendedDueDate}
+                    min={getMinDate()}
                     onChange={(e) => setRecommendedDueDate(e.target.value)}
                     style={{ borderRadius: '8px', height: '44px', fontSize: '14px' }}
                     required
@@ -408,18 +422,15 @@ const MaintenanceCompleteTask = () => {
 
                   {/* Thumbnail Previews */}
                   {imagePreviews.length > 0 && (
-                    <div className="d-flex flex-wrap gap-3 mt-3">
+                    <div className="upload-imgs ct_custom_scroll d-flex flex-wrap gap-2 mt-3">
                       {imagePreviews.map((preview, index) => (
-                        <div
-                          key={index}
-                          className="position-relative border rounded-3 p-1 bg-white shadow-sm"
-                          style={{ width: '110px', height: '110px' }}
-                        >
+                        <div key={index} className="img-item position-relative">
                           <img
                             src={preview.url}
                             alt={preview.name}
-                            className="w-100 h-100 rounded-2"
-                            style={{ objectFit: 'cover' }}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => preview.url && window.open(preview.url, '_blank')}
+                            title="Click to view full image in new tab"
                           />
                           <button
                             type="button"
@@ -427,23 +438,11 @@ const MaintenanceCompleteTask = () => {
                               e.stopPropagation();
                               handleRemoveImage(index);
                             }}
-                            className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-0 d-flex align-items-center justify-content-center"
-                            style={{
-                              width: '22px',
-                              height: '22px',
-                              fontSize: '11px',
-                              transform: 'translate(25%, -25%)',
-                            }}
+                            className="img-remove"
                             title="Remove image"
                           >
                             <i className="fa-solid fa-xmark"></i>
                           </button>
-                          <div
-                            className="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white text-center text-truncate px-1 rounded-bottom-2"
-                            style={{ fontSize: '10px' }}
-                          >
-                            {preview.name}
-                          </div>
                         </div>
                       ))}
                     </div>

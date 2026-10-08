@@ -456,7 +456,7 @@ const Parts = () => {
     manufacturer: selectedRequest?.part_manufacturer || '',
     original_cost: '',
     service_cost: '',
-    low_stock_threshold: 2,
+    low_stock_threshold: '',
   };
 
   return (
@@ -465,7 +465,7 @@ const Parts = () => {
         title="Parts Management"
         subtitle="Track stock, view pricing, and manage spare parts inventory and requests."
       >
-        {activeTab === 'parts' ? (
+        {activeTab === 'parts' && (
           <button
             type="button"
             onClick={handleOpenAdd}
@@ -473,23 +473,6 @@ const Parts = () => {
           >
             <i className="fa-solid fa-plus"></i>
             <span>Add New Part</span>
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              dispatch(
-                getDealerPartRequests({
-                  status: 0,
-                  search: debouncedRequestSearch,
-                })
-              );
-            }}
-            className="btn btn-outline-success ct_btn_h_42 fs-6 ct_w_100_575 d-flex align-items-center justify-content-center gap-2 bg-white"
-            disabled={isPartRequestsLoading}
-          >
-            <i className={`fa-solid fa-arrows-rotate ${isPartRequestsLoading ? 'fa-spin' : ''}`}></i>
-            <span>Refresh Requests</span>
           </button>
         )}
       </SubHeader>
@@ -501,26 +484,16 @@ const Parts = () => {
           <div className="d-flex align-items-center gap-2 mb-4">
             <button
               type="button"
-              className={`btn px-4 py-2 ct_fs_14 ct_fw_600 border ${
-                activeTab === 'parts'
-                  ? 'ct_green_btn text-white border-0'
-                  : 'bg-white text-muted'
-              }`}
+              className={`ct_tab_btn ${activeTab === 'parts' ? 'active' : ''}`}
               onClick={() => setActiveTab('parts')}
-              style={{ borderRadius: '8px', minHeight: '40px' }}
             >
               Parts ({partsList.length})
             </button>
 
             <button
               type="button"
-              className={`btn px-4 py-2 ct_fs_14 ct_fw_600 border ${
-                activeTab === 'requested_parts'
-                  ? 'ct_green_btn text-white border-0'
-                  : 'bg-white text-muted'
-              }`}
+              className={`ct_tab_btn ${activeTab === 'requested_parts' ? 'active' : ''}`}
               onClick={() => setActiveTab('requested_parts')}
-              style={{ borderRadius: '8px', minHeight: '40px' }}
             >
               Requested Parts ({partRequestsMeta?.totalItems ?? partRequestsList.length})
             </button>
@@ -1051,6 +1024,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="original_cost" />
                             </div>
@@ -1074,6 +1052,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="service_cost" />
                             </div>
@@ -1097,6 +1080,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="stock_quantity" />
                             </div>
@@ -1120,6 +1108,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="low_stock_threshold" />
                             </div>
@@ -1256,6 +1249,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="original_cost" />
                             </div>
@@ -1279,6 +1277,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="service_cost" />
                             </div>
@@ -1302,6 +1305,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="quantity" />
                             </div>
@@ -1325,6 +1333,11 @@ const Parts = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="low_stock_threshold" />
                             </div>

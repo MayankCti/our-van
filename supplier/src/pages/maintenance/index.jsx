@@ -162,7 +162,7 @@ const MaintenanceTasks = () => {
 
   const isCommenceTask = (status) => {
     const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
-    return s === 'commencedtask' || s === 'commencetask' || s === 'commence';
+    return s === 'commencedtask' || s === 'commencetask' || s === 'commence' || s === 'overdue';
   };
 
   const isCommenced = (status) => {
@@ -172,19 +172,39 @@ const MaintenanceTasks = () => {
 
   const isCommencedTask = (status) => {
     const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
-    return s === 'commencedtask' || s === 'commenced' || s === 'commence' || s === 'commencetask' || s === 'inprogress';
+    return s === 'commencedtask' || s === 'commenced' || s === 'commence' || s === 'commencetask' || s === 'inprogress' || s === 'overdue';
   };
 
   const getTaskRedirectUrl = (status, taskId) => {
     if (!taskId) return null;
     const s = String(status || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
-    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence') {
+    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence' || s === 'overdue') {
       return `${pageRoutes.maintenance_cds_sheet}?id=${taskId}`;
     }
     if (s === 'commenced' || s === 'inprogress') {
       return `${pageRoutes.maintenance_complete_task}?id=${taskId}`;
     }
     return null;
+  };
+
+  const formatStatusLabel = (status) => {
+    if (!status) return 'Pending';
+    const s = String(status).toLowerCase().trim().replace(/[\s_-]+/g, '');
+    if (s === 'commencedtask' || s === 'commencetask' || s === 'commence') {
+      return 'Commence Task';
+    }
+    if (s === 'inprogress' || s === 'in_progress') {
+      return 'In Progress';
+    }
+    if (s === 'commenced') {
+      return 'Commenced';
+    }
+    if (s === 'overdue') {
+      return 'Overdue';
+    }
+    return String(status)
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const getPriorityBadgeClass = (priority) => {
@@ -214,6 +234,8 @@ const MaintenanceTasks = () => {
         return 'bg-primary-subtle text-primary border border-primary-subtle';
       case 'pending':
         return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+      case 'overdue':
+        return 'bg-danger-subtle text-danger border border-danger-subtle';
       case 'cancelled':
       case 'rejected':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
@@ -530,7 +552,7 @@ const MaintenanceTasks = () => {
                           {getTaskRedirectUrl(taskStatusVal, taskId) ? (
                             <Link
                               to={getTaskRedirectUrl(taskStatusVal, taskId)}
-                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize text-decoration-none d-inline-flex align-items-center gap-1`}
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-decoration-none d-inline-flex align-items-center gap-1`}
                               style={{
                                 fontSize: '11px',
                                 fontWeight: '600',
@@ -543,15 +565,15 @@ const MaintenanceTasks = () => {
                                   : 'Click to complete maintenance task'
                               }
                             >
-                              <span>{taskStatusVal.replace(/_/g, ' ')}</span>
+                              <span>{formatStatusLabel(taskStatusVal)}</span>
                               <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '9px' }}></i>
                             </Link>
                           ) : (
                             <span
-                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1 text-capitalize`}
+                              className={`badge ${getStatusBadgeClass(taskStatusVal)} px-3 py-1`}
                               style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
                             >
-                              {taskStatusVal.replace(/_/g, ' ')}
+                              {formatStatusLabel(taskStatusVal)}
                             </span>
                           )}
                         </td>

@@ -32,14 +32,15 @@ const SubHeader = ({
     >
       <div className="d-flex align-items-center justify-content-start gap-2">
         {backUrl ? (
-          <Link to={backUrl} className="d-inline-flex align-items-center text-dark text-decoration-none">
+          <Link to={backUrl} className="ct_back_btn" aria-label="Go Back">
             <i className="fa-solid fa-chevron-left"></i>
           </Link>
         ) : (onBack || showBack) ? (
           <button
             type="button"
             onClick={handleBack}
-            className="btn p-0 border-0 bg-transparent d-inline-flex align-items-center text-dark"
+            className="ct_back_btn"
+            aria-label="Go Back"
           >
             <i className="fa-solid fa-chevron-left"></i>
           </button>

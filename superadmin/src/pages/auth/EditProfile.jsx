@@ -72,13 +72,13 @@ const EditProfile = () => {
       <Layout>
          <div className="ct_right_panel">
             <Header />
-            <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-2">
+            <div className="ct_inner_header_bg mt-4 ct_px_30 d-flex align-items-center justify-content-start gap-3">
                <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="btn p-0 border-0 bg-transparent text-decoration-none shadow-none d-inline-flex align-items-center text-dark"
-                  style={{ cursor: "pointer" }}
+                  className="ct_back_btn"
                   aria-label="Go Back"
+                  title="Go Back"
                >
                   <i className="fa-solid fa-chevron-left"></i>
                </button>

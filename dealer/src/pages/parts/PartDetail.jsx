@@ -356,6 +356,11 @@ const PartDetail = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="original_cost" />
                             </div>
@@ -377,6 +382,11 @@ const PartDetail = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="service_cost" />
                             </div>
@@ -398,6 +408,11 @@ const PartDetail = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="stock_quantity" />
                             </div>
@@ -419,6 +434,11 @@ const PartDetail = () => {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 onWheel={(e) => e.target.blur()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <ErrorMessage errors={errors} touched={touched} fieldName="low_stock_threshold" />
                             </div>

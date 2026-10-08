@@ -439,22 +439,59 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
 
                                 {(() => {
                                     const warrantyDocUrl = warranty?.document_url || warranty?.warranty_document || warranty?.warranty_document_url;
-                                    return warrantyDocUrl ? (
-                                        <div className="col-xl-3">
+                                    if (!warrantyDocUrl) return null;
+                                    const fileName = warranty?.document_name || warranty?.file_name || warrantyDocUrl.split('/').pop() || 'Warranty Document';
+                                    const isImg = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(warrantyDocUrl);
+                                    return (
+                                        <div className="col-xl-3 col-md-4 mt-3 mt-xl-0">
                                             <div
-                                                className="ct_doc_custom_box cursor-pointer"
-                                                style={{ cursor: 'pointer' }}
+                                                className="d-flex align-items-center justify-content-between p-2 px-3 border rounded-3 bg-white"
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    minHeight: '48px',
+                                                    transition: 'all 0.2s ease',
+                                                }}
                                                 onClick={() => window.open(warrantyDocUrl, '_blank')}
-                                                title="Click to view warranty document"
+                                                title={`Click to view ${fileName}`}
+                                                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#3D8B37')}
+                                                onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E5E7EB')}
                                             >
-                                                <svg className="me-2" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M14.4375 11.918C14.4375 11.7356 14.3651 11.5608 14.2361 11.4318C14.1072 11.3029 13.9323 11.2305 13.75 11.2305H8.25C8.06766 11.2305 7.8928 11.3029 7.76386 11.4318C7.63493 11.5608 7.5625 11.7356 7.5625 11.918C7.5625 12.1003 7.63493 12.2752 7.76386 12.4041C7.8928 12.533 8.06766 12.6055 8.25 12.6055H13.75C13.9323 12.6055 14.1072 12.533 14.2361 12.4041C14.3651 12.2752 14.4375 12.1003 14.4375 11.918ZM14.4375 15.5846C14.4375 15.4023 14.3651 15.2274 14.2361 15.0985C14.1072 14.9696 13.9323 14.8971 13.75 14.8971H8.25C8.06766 14.8971 7.8928 14.9696 7.76386 15.0985C7.63493 15.2274 7.5625 15.4023 7.5625 15.5846C7.5625 15.767 7.63493 15.9418 7.76386 16.0708C7.8928 16.1997 8.06766 16.2721 8.25 16.2721H13.75C13.9323 16.2721 14.1072 16.1997 14.2361 16.0708C14.3651 15.9418 14.4375 15.767 14.4375 15.5846Z" fill="#2563EB" />
-                                                    <path fillRule="evenodd" clipRule="evenodd" d="M6.41634 2.0625C5.74777 2.0625 5.10659 2.32809 4.63384 2.80084C4.16109 3.27358 3.89551 3.91477 3.89551 4.58333V17.4167C3.89551 18.0852 4.16109 18.7264 4.63384 19.1992C5.10659 19.6719 5.74777 19.9375 6.41634 19.9375H15.583C16.2516 19.9375 16.8928 19.6719 17.3655 19.1992C17.8383 18.7264 18.1038 18.0852 18.1038 17.4167V7.304C18.1038 6.95475 17.9902 6.61558 17.7793 6.33692L15.0312 2.69958C14.8816 2.50169 14.6883 2.34117 14.4662 2.23062C14.2442 2.12008 13.9995 2.06253 13.7515 2.0625H6.41634ZM5.27051 4.58333C5.27051 3.95083 5.78384 3.4375 6.41634 3.4375H13.0622V7.46808C13.0622 7.84758 13.3702 8.15558 13.7497 8.15558H16.7288V17.4167C16.7288 18.0492 16.2155 18.5625 15.583 18.5625H6.41634C5.78384 18.5625 5.27051 18.0492 5.27051 17.4167V4.58333Z" fill="#2563EB" />
-                                                </svg>
-                                                <span>Warranty Document <i className="fa-solid fa-arrow-up-right-from-square ms-1 ct_fs_11"></i></span>
+                                                <div className="d-flex align-items-center gap-2 text-truncate">
+                                                    {isImg ? (
+                                                        <img
+                                                            src={warrantyDocUrl}
+                                                            alt="Warranty doc"
+                                                            style={{
+                                                                width: '28px',
+                                                                height: '28px',
+                                                                objectFit: 'cover',
+                                                                borderRadius: '4px',
+                                                                flexShrink: 0,
+                                                            }}
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = '/assets/img/vehicle_mini_1.jpg';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <svg className="flex-shrink-0" width="20" height="20" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M14.4375 11.918C14.4375 11.7356 14.3651 11.5608 14.2361 11.4318C14.1072 11.3029 13.9323 11.2305 13.75 11.2305H8.25C8.06766 11.2305 7.8928 11.3029 7.76386 11.4318C7.63493 11.5608 7.5625 11.7356 7.5625 11.918C7.5625 12.1003 7.63493 12.2752 7.76386 12.4041C7.8928 12.533 8.06766 12.6055 8.25 12.6055H13.75C13.9323 12.6055 14.1072 12.533 14.2361 12.4041C14.3651 12.2752 14.4375 12.1003 14.4375 11.918ZM14.4375 15.5846C14.4375 15.4023 14.3651 15.2274 14.2361 15.0985C14.1072 14.9696 13.9323 14.8971 13.75 14.8971H8.25C8.06766 14.8971 7.8928 14.9696 7.76386 15.0985C7.63493 15.2274 7.5625 15.4023 7.5625 15.5846C7.5625 15.767 7.63493 15.9418 7.76386 16.0708C7.8928 16.1997 8.06766 16.2721 8.25 16.2721H13.75C13.9323 16.2721 14.1072 16.1997 14.2361 16.0708C14.3651 15.9418 14.4375 15.767 14.4375 15.5846Z" fill="#2563EB" />
+                                                            <path fillRule="evenodd" clipRule="evenodd" d="M6.41634 2.0625C5.74777 2.0625 5.10659 2.32809 4.63384 2.80084C4.16109 3.27358 3.89551 3.91477 3.89551 4.58333V17.4167C3.89551 18.0852 4.16109 18.7264 4.63384 19.1992C5.10659 19.6719 5.74777 19.9375 6.41634 19.9375H15.583C16.2516 19.9375 16.8928 19.6719 17.3655 19.1992C17.8383 18.7264 18.1038 18.0852 18.1038 17.4167V7.304C18.1038 6.95475 17.9902 6.61558 17.7793 6.33692L15.0312 2.69958C14.8816 2.50169 14.6883 2.34117 14.4662 2.23062C14.2442 2.12008 13.9995 2.06253 13.7515 2.0625H6.41634ZM5.27051 4.58333C5.27051 3.95083 5.78384 3.4375 6.41634 3.4375H13.0622V7.46808C13.0622 7.84758 13.3702 8.15558 13.7497 8.15558H16.7288V17.4167C16.7288 18.0492 16.2155 18.5625 15.583 18.5625H6.41634C5.78384 18.5625 5.27051 18.0492 5.27051 17.4167V4.58333Z" fill="#2563EB" />
+                                                        </svg>
+                                                    )}
+                                                    <div className="text-truncate">
+                                                        <div className="ct_fs_13 ct_fw_600 text-dark text-truncate">
+                                                            Warranty Document
+                                                        </div>
+                                                        <div className="ct_fs_11 text-muted text-truncate">
+                                                            {fileName}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <i className="fa-solid fa-arrow-up-right-from-square text-muted ms-2 ct_fs_11 flex-shrink-0"></i>
                                             </div>
                                         </div>
-                                    ) : null;
+                                    );
                                 })()}
                             </div>
                         </section>
