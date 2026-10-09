@@ -60,7 +60,9 @@ const Parts = () => {
 
   // Complete Request Modal state
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showMarkAsAddedModal, setShowMarkAsAddedModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isCompletingRequest, setIsCompletingRequest] = useState(false);
 
   // ==================== Effects ====================
   // Fetch parts inventory
@@ -425,6 +427,47 @@ const Parts = () => {
           ) {
             handleCloseCompleteRequestModal();
             resetForm();
+            dispatch(
+              getDealerPartRequests({
+                status: 0,
+                search: debouncedRequestSearch,
+              })
+            );
+            dispatch(getParts({ search: debouncedSearch }));
+          }
+        },
+      })
+    );
+  };
+
+  // Mark as Added directly handlers
+  const handleOpenMarkAsAddedModal = (req) => {
+    setSelectedRequest(req);
+    setShowMarkAsAddedModal(true);
+  };
+
+  const handleCloseMarkAsAddedModal = () => {
+    setShowMarkAsAddedModal(false);
+    setSelectedRequest(null);
+  };
+
+  const handleConfirmMarkAsAdded = () => {
+    if (!selectedRequest?.id) return;
+    setIsCompletingRequest(true);
+    dispatch(
+      completeDealerPartRequest({
+        id: selectedRequest.id,
+        callback: (res) => {
+          setIsCompletingRequest(false);
+          if (
+            (res?.success === true ||
+              res?.status === true ||
+              res?.statusCode === 200 ||
+              res?.statusCode === 201) &&
+            res?.success !== false &&
+            res?.status !== false
+          ) {
+            handleCloseMarkAsAddedModal();
             dispatch(
               getDealerPartRequests({
                 status: 0,
@@ -867,19 +910,34 @@ const Parts = () => {
                             <td>
                               <div className="d-flex align-items-center gap-2">
                                 {isPending ? (
-                                  <button
-                                    type="button"
-                                    className="ct_action_icon_btn"
-                                    style={{
-                                      backgroundColor: '#ECFDF5',
-                                      color: '#059669',
-                                      borderColor: '#A7F3D0',
-                                    }}
-                                    title="Add Part to Inventory"
-                                    onClick={() => handleOpenCompleteRequest(req)}
-                                  >
-                                    <i className="fa-solid fa-plus"></i>
-                                  </button>
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="ct_action_icon_btn"
+                                      style={{
+                                        backgroundColor: '#ECFDF5',
+                                        color: '#059669',
+                                        borderColor: '#A7F3D0',
+                                      }}
+                                      title="Add Part to Inventory"
+                                      onClick={() => handleOpenCompleteRequest(req)}
+                                    >
+                                      <i className="fa-solid fa-plus"></i>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="ct_action_icon_btn"
+                                      style={{
+                                        backgroundColor: '#DCFCE7',
+                                        color: '#15803D',
+                                        borderColor: '#86EFAC',
+                                      }}
+                                      title="Mark as Added"
+                                      onClick={() => handleOpenMarkAsAddedModal(req)}
+                                    >
+                                      <i className="fa-solid fa-check"></i>
+                                    </button>
+                                  </>
                                 ) : Number(req.status) === 1 ? (
                                   <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style={{ fontSize: '11px', fontWeight: '600', borderRadius: '20px' }}>
                                     <i className="fa-solid fa-check me-1"></i> Completed
@@ -1438,6 +1496,74 @@ const Parts = () => {
                       </div>
                     ) : (
                       'Delete'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== MODAL 4: Mark Part as Added Confirmation Modal ==================== */}
+      {showMarkAsAddedModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1055 }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-4 shadow">
+              <div className="modal-body text-center p-4 p-sm-5">
+                <div className="mb-4">
+                  <div
+                    className="mx-auto d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '68px',
+                      height: '68px',
+                      background: '#DCFCE7',
+                      borderRadius: '50%',
+                    }}
+                  >
+                    <i className="fa-solid fa-check text-success fs-2"></i>
+                  </div>
+                </div>
+
+                <h3 className="ct_fs_20 ct_fw_600 text-dark mb-2">Mark as Added</h3>
+
+                <p className="ct_para_clr mb-4 mx-auto" style={{ maxWidth: '360px', fontSize: '14px' }}>
+                  Are you sure you want to mark the part request for{' '}
+                  <strong className="text-dark">
+                    {selectedRequest?.part_name || 'this part'}
+                  </strong>{' '}
+                  as added?
+                </p>
+
+                <div className="d-flex gap-3 justify-content-center">
+                  <button
+                    type="button"
+                    className="previous action-button-previous px-4 py-2 border-0 flex-grow-1"
+                    onClick={handleCloseMarkAsAddedModal}
+                    disabled={isCompletingRequest || isActionLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="ct_green_btn px-4 py-2 ct_fw_600 flex-grow-1 border-0"
+                    onClick={handleConfirmMarkAsAdded}
+                    disabled={isCompletingRequest || isActionLoading}
+                    style={{ minHeight: '44px', borderRadius: '10px' }}
+                  >
+                    {isCompletingRequest || isActionLoading ? (
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div className="spinner-border spinner-border-sm text-white" role="status"></div>
+                        <span>Updating...</span>
+                      </div>
+                    ) : (
+                      'Confirm'
                     )}
                   </button>
                 </div>
