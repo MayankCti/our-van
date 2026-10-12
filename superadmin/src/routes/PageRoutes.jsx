@@ -19,6 +19,10 @@ const ComponentsLibrary = lazy(() => import("../pages/components library"));
 const WarrantyProviders = lazy(() => import("../pages/warranty providers"));
 const ServiceProviderDetail = lazy(() => import("../pages/service providers/ServiceProviderDetail"));
 const WarrantyProviderDetail = lazy(() => import("../pages/warranty providers/WarrantyProviderDetail"));
+const Technicians = lazy(() => import("../pages/technicians"));
+const TechnicianDetail = lazy(() => import("../pages/technicians/TechnicianDetail"));
+const Suppliers = lazy(() => import("../pages/suppliers"));
+const SupplierDetail = lazy(() => import("../pages/suppliers/SupplierDetail"));
 
 // const Dealers = lazy(() => import("../pages/Dealers"));
 // const CreateDealer = lazy(() => import("../pages/CreateDealer"));
@@ -34,6 +38,10 @@ export const pageRoutes = {
   changePassword: "/change-password",
   dealers: "/dealers",
   dealerDetail: "/dealer-detail",
+  technicians: "/technicians",
+  technician_detail: "/technician-detail",
+  suppliers: "/suppliers",
+  supplier_detail: "/supplier-detail",
   vans: "/vans",
   van_detail: "/van-detail",
   owners: "/owners",
@@ -89,6 +97,30 @@ export const AllRoutes = [
     name: "Dealer Detail",
     path: pageRoutes.dealerDetail,
     element: <DealerDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "Technicians",
+    path: pageRoutes.technicians,
+    element: <Technicians />,
+    isPrivate: true,
+  },
+  {
+    name: "Technician Detail",
+    path: pageRoutes.technician_detail,
+    element: <TechnicianDetail />,
+    isPrivate: true,
+  },
+  {
+    name: "Suppliers",
+    path: pageRoutes.suppliers,
+    element: <Suppliers />,
+    isPrivate: true,
+  },
+  {
+    name: "Supplier Detail",
+    path: pageRoutes.supplier_detail,
+    element: <SupplierDetail />,
     isPrivate: true,
   },
   {

@@ -256,11 +256,94 @@ const MaintenanceDetail = () => {
     quotation.grand_total ??
     (Number(totalServicesCost || 0) + Number(totalPartsCost || 0) + Number(totalConsumablesCost || 0));
 
+  const getTodayDateString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const getDefaultTimeString = () => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
+
+  const parseTimeToHHMM = (timeStr) => {
+    if (!timeStr) return '';
+    const trimmed = String(timeStr).trim();
+    const matchAmPm = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+    if (matchAmPm) {
+      let hours = parseInt(matchAmPm[1], 10);
+      const minutes = matchAmPm[2];
+      const modifier = matchAmPm[3];
+      if (modifier) {
+        if (modifier.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
+      }
+      return `${String(hours).padStart(2, '0')}:${minutes}`;
+    }
+    if (/^\d{2}:\d{2}/.test(trimmed)) {
+      return trimmed.slice(0, 5);
+    }
+    return '';
+  };
+
+  const formatTimeToAMPM = (timeStr) => {
+    if (!timeStr) return '';
+    const trimmed = String(timeStr).trim();
+    if (/AM|PM/i.test(trimmed)) return trimmed;
+    const parts = trimmed.split(':');
+    if (parts.length >= 2) {
+      const hours = parseInt(parts[0], 10);
+      const minutes = parts[1].slice(0, 2);
+      if (!isNaN(hours)) {
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${String(displayHours).padStart(2, '0')}:${minutes} ${ampm}`;
+      }
+    }
+    return trimmed;
+  };
+
+  const getPrefilledDate = (dateVal) => {
+    const today = getTodayDateString();
+    if (!dateVal) return today;
+    const formatted = String(dateVal).split('T')[0];
+    return formatted < today ? today : formatted;
+  };
+
+  const getPrefilledTime = (timeVal, dateVal) => {
+    const parsed = parseTimeToHHMM(timeVal);
+    const today = getTodayDateString();
+    const targetDate = dateVal ? String(dateVal).split('T')[0] : today;
+    if (!parsed) return getDefaultTimeString();
+
+    if (targetDate === today) {
+      const now = new Date();
+      const [h, m] = parsed.split(':').map(Number);
+      if (h * 60 + m <= now.getHours() * 60 + now.getMinutes()) {
+        return getDefaultTimeString();
+      }
+    }
+    return parsed;
+  };
+
   const isTaskRejected = (t) => {
+    if (!t) return false;
     const status = String(t?.status || '').toLowerCase().trim();
     const supplierStatus = String(t?.supplier_status || '').toLowerCase().trim();
     const taskStatus = String(t?.task_status || '').toLowerCase().trim();
-    return status === 'rejected' || supplierStatus === 'rejected' || taskStatus === 'rejected';
+    const ownerStatus = String(t?.owner_status || '').toLowerCase().trim();
+    return (
+      status === 'rejected' ||
+      supplierStatus === 'rejected' ||
+      taskStatus === 'rejected' ||
+      ownerStatus === 'accepted'
+    );
   };
 
   const handleReassignSubmit = (values, { setSubmitting }) => {
@@ -269,6 +352,10 @@ const MaintenanceDetail = () => {
       maintenance_id: Number(task?.id || taskId),
       assignee_type: values.assignee_type,
       assignee_id: Number(values.assignee_id),
+      estimated_hours: String(values.estimated_hours),
+      schedule_date: values.schedule_date,
+      schedule_time: formatTimeToAMPM(values.schedule_time),
+      description: values.description ? values.description.trim() : '',
     };
 
     dispatch(
@@ -1072,187 +1159,283 @@ const MaintenanceDetail = () => {
         <div
           className="modal fade show d-block"
           tabIndex="-1"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1055 }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1055, overflowY: 'auto' }}
           aria-modal="true"
           role="dialog"
         >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 rounded-4 shadow">
-              <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between">
-                <h4 className="ct_fs_18 ct_fw_700 ct_head_clr mb-0">
-                  Reassign Task
-                </h4>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowReassignModal(false)}
-                  disabled={isActionLoading}
-                ></button>
-              </div>
+          <div
+            className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable my-3"
+            style={{ maxHeight: 'calc(100vh - 40px)' }}
+          >
+            <Formik
+              initialValues={{
+                assignee_type: (assignee.type || task.assignee_type) === 'technician' ? 'technician' : 'supplier',
+                assignee_id:
+                  task.assignee_type === 'owner'
+                    ? ''
+                    : (task.assignee_id || task.supplier_id || task.technician_id || assignee.id || ''),
+                estimated_hours:
+                  task.estimated_hours !== undefined && task.estimated_hours !== null
+                    ? String(task.estimated_hours)
+                    : '',
+                schedule_date: getPrefilledDate(task.schedule_date),
+                schedule_time: getPrefilledTime(task.schedule_time, task.schedule_date),
+                description: task.description || '',
+              }}
+              validationSchema={reassignTaskSchema}
+              onSubmit={handleReassignSubmit}
+            >
+              {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
+                const availableAssignees =
+                  values.assignee_type === 'supplier' ? activeSuppliers : activeTechnicians;
 
-              <Formik
-                initialValues={{
-                  assignee_type: (assignee.type || task.assignee_type) === 'technician' ? 'technician' : 'supplier',
-                  assignee_id: '',
-                }}
-                validationSchema={reassignTaskSchema}
-                onSubmit={handleReassignSubmit}
-              >
-                {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
-                  const availableAssignees =
-                    values.assignee_type === 'supplier' ? activeSuppliers : activeTechnicians;
+                return (
+                  <Form
+                    noValidate
+                    className="modal-content border-0 rounded-4 shadow"
+                    style={{ maxHeight: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column' }}
+                  >
+                    <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between flex-shrink-0">
+                      <h4 className="ct_fs_18 ct_fw_700 ct_head_clr mb-0">
+                        Reassign Task
+                      </h4>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => setShowReassignModal(false)}
+                        disabled={isActionLoading}
+                      ></button>
+                    </div>
 
-                  return (
-                    <Form noValidate>
-                      <div className="modal-body px-4 py-3">
-                        <div className="row g-3">
-                          {/* Task Summary Details */}
-                          <div className="col-12">
-                            <div
-                              className="p-3 rounded-3 border"
-                              style={{ backgroundColor: '#F8FAFC' }}
-                            >
-                              <div className="row g-2 ct_fs_13">
-                                <div className="col-sm-6">
-                                  <span className="text-muted d-block ct_fs_12">Task Title</span>
-                                  <span className="ct_fw_700 text-dark">{task.title || 'N/A'}</span>
-                                </div>
-                                <div className="col-sm-6">
-                                  <span className="text-muted d-block ct_fs_12">Vehicle</span>
-                                  <span className="ct_fw_600 text-dark">
-                                    {van.van_name || van.name || 'Vehicle'}
-                                    {van.registration_number ? ` (${van.registration_number})` : ''}
-                                  </span>
-                                </div>
-                                <div className="col-sm-6 mt-2">
-                                  <span className="text-muted d-block ct_fs_12">Previous Assignee</span>
-                                  <span className="ct_fw_600 text-secondary">
-                                    {assignee.name || task.assigned_to_name || 'Unassigned'}
-                                    {assignee.type || task.assignee_type ? ` (${assignee.type || task.assignee_type})` : ''}
-                                  </span>
-                                </div>
-                                <div className="col-sm-6 mt-2">
-                                  <span className="text-muted d-block ct_fs_12">Status</span>
-                                  <span className="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 text-capitalize">
-                                    {task.status || task.supplier_status || 'Rejected'}
-                                  </span>
-                                </div>
+                    <div className="modal-body px-4 py-3" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+                      <div className="row g-3">
+                        {/* Task Summary Details */}
+                        <div className="col-12">
+                          <div
+                            className="p-3 rounded-3 border"
+                            style={{ backgroundColor: '#F8FAFC' }}
+                          >
+                            <div className="row g-2 ct_fs_13">
+                              <div className="col-sm-6">
+                                <span className="text-muted d-block ct_fs_12">Task Title</span>
+                                <span className="ct_fw_700 text-dark">{task.title || 'N/A'}</span>
+                              </div>
+                              <div className="col-sm-6">
+                                <span className="text-muted d-block ct_fs_12">Vehicle</span>
+                                <span className="ct_fw_600 text-dark">
+                                  {van.van_name || van.name || 'Vehicle'}
+                                  {van.registration_number ? ` (${van.registration_number})` : ''}
+                                </span>
+                              </div>
+                              <div className="col-sm-6 mt-2">
+                                <span className="text-muted d-block ct_fs_12">Previous Assignee</span>
+                                <span className="ct_fw_600 text-secondary">
+                                  {assignee.name || task.assigned_to_name || 'Unassigned'}
+                                  {assignee.type || task.assignee_type ? ` (${assignee.type || task.assignee_type})` : ''}
+                                </span>
+                              </div>
+                              <div className="col-sm-6 mt-2">
+                                <span className="text-muted d-block ct_fs_12">Status</span>
+                                <span
+                                  className={`badge ${
+                                    String(task.owner_status || '').toLowerCase() === 'accepted'
+                                      ? 'bg-success-subtle text-success border border-success-subtle'
+                                      : 'bg-danger-subtle text-danger border border-danger-subtle'
+                                  } px-2 py-1 text-capitalize`}
+                                >
+                                  {String(task.owner_status || '').toLowerCase() === 'accepted'
+                                    ? 'Owner Accepted'
+                                    : task.status || task.supplier_status || 'Rejected'}
+                                </span>
                               </div>
                             </div>
-                          </div>
-
-                          {/* Assignee Type */}
-                          <div className="col-12">
-                            <label className="mb-2 ct_label">
-                              Assignee Type <span className="text-danger">*</span>
-                            </label>
-                            <div className="d-flex gap-4 p-3 bg-light rounded-3 border">
-                              <div className="form-check d-flex align-items-center gap-2 mb-0">
-                                <input
-                                  className="form-check-input"
-                                  type="radio"
-                                  name="assignee_type"
-                                  id="reassign_supplier_detail"
-                                  value="supplier"
-                                  checked={values.assignee_type === 'supplier'}
-                                  onChange={() => {
-                                    setFieldValue('assignee_type', 'supplier');
-                                    setFieldValue('assignee_id', '');
-                                  }}
-                                />
-                                <label className="form-check-label ct_fs_14 ct_fw_600" htmlFor="reassign_supplier_detail">
-                                  Supplier
-                                </label>
-                              </div>
-                              <div className="form-check d-flex align-items-center gap-2 mb-0">
-                                <input
-                                  className="form-check-input"
-                                  type="radio"
-                                  name="assignee_type"
-                                  id="reassign_technician_detail"
-                                  value="technician"
-                                  checked={values.assignee_type === 'technician'}
-                                  onChange={() => {
-                                    setFieldValue('assignee_type', 'technician');
-                                    setFieldValue('assignee_id', '');
-                                  }}
-                                />
-                                <label className="form-check-label ct_fs_14 ct_fw_600" htmlFor="reassign_technician_detail">
-                                  Technician
-                                </label>
-                              </div>
-                            </div>
-                            <ErrorMessage errors={errors} touched={touched} fieldName="assignee_type" />
-                          </div>
-
-                          {/* Assignee Select */}
-                          <div className="col-12">
-                            <label className="mb-2 ct_label" htmlFor="assignee_id">
-                              Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'}{' '}
-                              <span className="text-danger">*</span>
-                            </label>
-                            <select
-                              id="assignee_id"
-                              name="assignee_id"
-                              className="form-select ct_input ct_fs_14"
-                              value={values.assignee_id}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                            >
-                              <option value="">
-                                -- Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'} --
-                              </option>
-                              {availableAssignees.map((person) => {
-                                const personId = person.id || person.supplier_id || person.technician_id;
-                                const personName =
-                                  person.name || person.full_name || person.supplier_name || `ID #${personId}`;
-                                return (
-                                  <option key={personId} value={personId}>
-                                    {personName}
-                                    {person.email ? ` (${person.email})` : ''}
-                                  </option>
-                                );
-                              })}
-                            </select>
-                            {availableAssignees.length === 0 && (
-                              <small className="text-muted d-block mt-1">
-                                No active {values.assignee_type === 'supplier' ? 'suppliers' : 'technicians'} available.
-                              </small>
-                            )}
-                            <ErrorMessage errors={errors} touched={touched} fieldName="assignee_id" />
                           </div>
                         </div>
-                      </div>
 
-                      <div className="modal-footer border-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
-                        <button
-                          type="button"
-                          className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
-                          onClick={() => setShowReassignModal(false)}
-                          disabled={isSubmitting || isActionLoading}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="ct_green_btn px-4 py-2 ct_btn_h_45 d-flex align-items-center justify-content-center gap-2"
-                          disabled={isSubmitting || isActionLoading}
-                        >
-                          {isSubmitting || isActionLoading ? (
-                            <>
-                              <span className="spinner-border spinner-border-sm text-white" role="status"></span>
-                              <span>Reassigning...</span>
-                            </>
-                          ) : (
-                            <span>Reassign Task</span>
+                        {/* Assignee Type */}
+                        <div className="col-12">
+                          <label className="mb-2 ct_label">
+                            Assignee Type <span className="text-danger">*</span>
+                          </label>
+                          <div className="d-flex gap-4 p-3 bg-light rounded-3 border">
+                            <div className="form-check d-flex align-items-center gap-2 mb-0">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="assignee_type"
+                                id="reassign_supplier_detail"
+                                value="supplier"
+                                checked={values.assignee_type === 'supplier'}
+                                onChange={() => {
+                                  setFieldValue('assignee_type', 'supplier');
+                                  setFieldValue('assignee_id', '');
+                                }}
+                              />
+                              <label className="form-check-label ct_fs_14 ct_fw_600" htmlFor="reassign_supplier_detail">
+                                Supplier
+                              </label>
+                            </div>
+                            <div className="form-check d-flex align-items-center gap-2 mb-0">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="assignee_type"
+                                id="reassign_technician_detail"
+                                value="technician"
+                                checked={values.assignee_type === 'technician'}
+                                onChange={() => {
+                                  setFieldValue('assignee_type', 'technician');
+                                  setFieldValue('assignee_id', '');
+                                }}
+                              />
+                              <label className="form-check-label ct_fs_14 ct_fw_600" htmlFor="reassign_technician_detail">
+                                Technician
+                              </label>
+                            </div>
+                          </div>
+                          <ErrorMessage errors={errors} touched={touched} fieldName="assignee_type" />
+                        </div>
+
+                        {/* Assignee Select */}
+                        <div className="col-12">
+                          <label className="mb-2 ct_label" htmlFor="assignee_id">
+                            Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'}{' '}
+                            <span className="text-danger">*</span>
+                          </label>
+                          <select
+                            id="assignee_id"
+                            name="assignee_id"
+                            className="form-select ct_input ct_fs_14"
+                            value={values.assignee_id}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          >
+                            <option value="">
+                              -- Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'} --
+                            </option>
+                            {availableAssignees.map((person) => {
+                              const personId = person.id || person.supplier_id || person.technician_id;
+                              const personName =
+                                person.name || person.full_name || person.supplier_name || `ID #${personId}`;
+                              return (
+                                <option key={personId} value={personId}>
+                                  {personName}
+                                  {person.email ? ` (${person.email})` : ''}
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {availableAssignees.length === 0 && (
+                            <small className="text-muted d-block mt-1">
+                              No active {values.assignee_type === 'supplier' ? 'suppliers' : 'technicians'} available.
+                            </small>
                           )}
-                        </button>
+                          <ErrorMessage errors={errors} touched={touched} fieldName="assignee_id" />
+                        </div>
+
+                        {/* Estimated Hours */}
+                        <div className="col-md-4">
+                          <label className="mb-2 ct_label" htmlFor="reassign_estimated_hours_detail">
+                            Estimated Hours <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0.1"
+                            id="reassign_estimated_hours_detail"
+                            name="estimated_hours"
+                            className="form-control ct_input"
+                            placeholder="e.g. 2"
+                            value={values.estimated_hours}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          />
+                          <ErrorMessage errors={errors} touched={touched} fieldName="estimated_hours" />
+                        </div>
+
+                        {/* Schedule Date */}
+                        <div className="col-md-4">
+                          <label className="mb-2 ct_label" htmlFor="reassign_schedule_date_detail">
+                            Schedule Date <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            id="reassign_schedule_date_detail"
+                            name="schedule_date"
+                            min={getTodayDateString()}
+                            className="form-control ct_input"
+                            value={values.schedule_date}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          />
+                          <ErrorMessage errors={errors} touched={touched} fieldName="schedule_date" />
+                        </div>
+
+                        {/* Schedule Time */}
+                        <div className="col-md-4">
+                          <label className="mb-2 ct_label" htmlFor="reassign_schedule_time_detail">
+                            Schedule Time <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="time"
+                            id="reassign_schedule_time_detail"
+                            name="schedule_time"
+                            className="form-control ct_input"
+                            value={values.schedule_time}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          />
+                          <ErrorMessage errors={errors} touched={touched} fieldName="schedule_time" />
+                        </div>
+
+                        {/* Description */}
+                        <div className="col-12">
+                          <label className="mb-2 ct_label" htmlFor="reassign_description_detail">
+                            Description
+                          </label>
+                          <textarea
+                            id="reassign_description_detail"
+                            name="description"
+                            rows="3"
+                            className="form-control ct_input"
+                            placeholder="Provide instructions or updates for assignee..."
+                            value={values.description}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          ></textarea>
+                          <ErrorMessage errors={errors} touched={touched} fieldName="description" />
+                        </div>
                       </div>
-                    </Form>
-                  );
-                }}
-              </Formik>
-            </div>
+                    </div>
+
+                    <div className="modal-footer border-0 pt-2 pb-4 px-4 d-flex gap-2 justify-content-end flex-shrink-0 bg-white" style={{ borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' }}>
+                      <button
+                        type="button"
+                        className="btn ct_btn_gray px-4 py-2 ct_btn_h_45"
+                        onClick={() => setShowReassignModal(false)}
+                        disabled={isSubmitting || isActionLoading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="ct_green_btn px-4 py-2 ct_btn_h_45 d-flex align-items-center justify-content-center gap-2"
+                        disabled={isSubmitting || isActionLoading}
+                      >
+                        {isSubmitting || isActionLoading ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm text-white" role="status"></span>
+                            <span>Reassigning...</span>
+                          </>
+                        ) : (
+                          <span>Reassign Task</span>
+                        )}
+                      </button>
+                    </div>
+                  </Form>
+                );
+              }}
+            </Formik>
           </div>
         </div>
       )}

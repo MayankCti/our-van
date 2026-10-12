@@ -104,7 +104,7 @@ const CreateMaintenance = () => {
     job_location: '',
     schedule_date: getTodayDateString(),
     schedule_time: getDefaultTimeString(),
-    assignee_type: 'supplier',
+    assignee_type: 'owner',
     assignee_id: '',
     services: [],
   };
@@ -126,7 +126,13 @@ const CreateMaintenance = () => {
       schedule_time: formattedTime,
       estimated_hours: Number(values.estimated_hours),
       assignee_type: values.assignee_type,
-      assignee_id: Number(values.assignee_id),
+      assign_type: values.assignee_type,
+      ...(values.assignee_type !== 'owner' && values.assignee_id
+        ? {
+            assignee_id: Number(values.assignee_id),
+            assign_id: Number(values.assignee_id),
+          }
+        : {}),
       services: values.services.map((srv) => ({
         name: srv.name?.trim(),
         cost: Number(srv.cost),
@@ -616,12 +622,29 @@ const CreateMaintenance = () => {
                           </div>
 
                           {/* Assignee Type */}
-                          <div className="col-md-6">
+                          <div className={values.assignee_type === 'owner' ? 'col-12' : 'col-md-6'}>
                             <div className="form-group text-start">
                               <label className="mb-2 ct_label">
                                 Assignee Type <span className="text-danger">*</span>
                               </label>
-                              <div className="d-flex gap-4 mt-2">
+                              <div className="d-flex gap-4 mt-2 flex-wrap">
+                                <div className="form-check d-flex align-items-center gap-2">
+                                  <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="assignee_type"
+                                    id="assignee_owner"
+                                    value="owner"
+                                    checked={values.assignee_type === 'owner'}
+                                    onChange={() => {
+                                      setFieldValue('assignee_type', 'owner');
+                                      setFieldValue('assignee_id', '');
+                                    }}
+                                  />
+                                  <label className="form-check-label ct_fs_14 ct_fw_600" htmlFor="assignee_owner">
+                                    None / Pending Owner Estimate Approval
+                                  </label>
+                                </div>
                                 <div className="form-check d-flex align-items-center gap-2">
                                   <input
                                     className="form-check-input"
@@ -662,38 +685,40 @@ const CreateMaintenance = () => {
                           </div>
 
                           {/* Assignee ID */}
-                          <div className="col-md-6">
-                            <div className="form-group text-start">
-                              <label className="mb-2 ct_label" htmlFor="assignee_id">
-                                Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'}{' '}
-                                <span className="text-danger">*</span>
-                              </label>
-                              <select
-                                id="assignee_id"
-                                name="assignee_id"
-                                className="form-select ct_input ct_fs_14"
-                                value={values.assignee_id}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                              >
-                                <option value="">
-                                  -- Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'} --
-                                </option>
-                                {availableAssignees.map((person) => {
-                                  const personId = person.id || person.supplier_id || person.technician_id;
-                                  const personName =
-                                    person.name || person.full_name || person.supplier_name || `ID #${personId}`;
-                                  return (
-                                    <option key={personId} value={personId}>
-                                      {personName}
-                                      {person.email ? ` (${person.email})` : ''}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-                              <ErrorMessage errors={errors} touched={touched} fieldName="assignee_id" />
+                          {values.assignee_type !== 'owner' && (
+                            <div className="col-md-6">
+                              <div className="form-group text-start">
+                                <label className="mb-2 ct_label" htmlFor="assignee_id">
+                                  Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'}{' '}
+                                  <span className="text-danger">*</span>
+                                </label>
+                                <select
+                                  id="assignee_id"
+                                  name="assignee_id"
+                                  className="form-select ct_input ct_fs_14"
+                                  value={values.assignee_id}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                >
+                                  <option value="">
+                                    -- Select {values.assignee_type === 'supplier' ? 'Supplier' : 'Technician'} --
+                                  </option>
+                                  {availableAssignees.map((person) => {
+                                    const personId = person.id || person.supplier_id || person.technician_id;
+                                    const personName =
+                                      person.name || person.full_name || person.supplier_name || `ID #${personId}`;
+                                    return (
+                                      <option key={personId} value={personId}>
+                                        {personName}
+                                        {person.email ? ` (${person.email})` : ''}
+                                      </option>
+                                    );
+                                  })}
+                                </select>
+                                <ErrorMessage errors={errors} touched={touched} fieldName="assignee_id" />
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </section>
                     </div>

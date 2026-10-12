@@ -49,10 +49,10 @@ const TechnicianDetail = () => {
   const assignedMaintenances = Array.isArray(tech.assigned_maintenances)
     ? tech.assigned_maintenances
     : Array.isArray(tech.tasks)
-    ? tech.tasks
-    : Array.isArray(tech.maintenances)
-    ? tech.maintenances
-    : [];
+      ? tech.tasks
+      : Array.isArray(tech.maintenances)
+        ? tech.maintenances
+        : [];
 
   const formatCurrency = (val) => {
     if (val === undefined || val === null || val === '') return '$0.00';
@@ -214,11 +214,10 @@ const TechnicianDetail = () => {
         {tech?.id && (
           <div className="d-flex align-items-center gap-3 flex-wrap">
             <span
-              className={`badge ${
-                active
+              className={`badge ${active
                   ? 'bg-success-subtle text-success border border-success-subtle'
                   : 'bg-danger-subtle text-danger border border-danger-subtle'
-              }`}
+                }`}
               style={{
                 fontSize: '13px',
                 fontWeight: '600',
@@ -231,9 +230,8 @@ const TechnicianDetail = () => {
 
             <button
               type="button"
-              className={`btn btn-sm ${
-                active ? 'btn-outline-danger' : 'btn-outline-success'
-              } ct_fw_600 px-3 py-1`}
+              className={`btn btn-sm ${active ? 'btn-outline-danger' : 'btn-outline-success'
+                } ct_fw_600 px-3 py-1`}
               data-bs-toggle="modal"
               data-bs-target="#blockTechnicianModal"
               style={{ borderRadius: '8px', fontSize: '13px' }}
@@ -775,16 +773,16 @@ const TechnicianDetail = () => {
                   style={
                     active
                       ? {
-                          backgroundColor: '#EF4444',
-                          borderColor: '#EF4444',
-                          color: '#fff',
-                          borderRadius: '10px',
-                          fontWeight: '600',
-                        }
+                        backgroundColor: '#EF4444',
+                        borderColor: '#EF4444',
+                        color: '#fff',
+                        borderRadius: '10px',
+                        fontWeight: '600',
+                      }
                       : {
-                          borderRadius: '10px',
-                          fontWeight: '600',
-                        }
+                        borderRadius: '10px',
+                        fontWeight: '600',
+                      }
                   }
                   onClick={handleToggleStatus}
                   disabled={isActionLoading}
