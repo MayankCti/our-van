@@ -124,3 +124,57 @@ export const reassignMaintenanceTask = createAsyncThunk(
   }
 );
 
+// Generate Maintenance Invoice
+export const generateMaintenanceInvoice = createAsyncThunk(
+  "maintenance/generateMaintenanceInvoice",
+  async (props, { rejectWithValue }) => {
+    const { id, data, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: `/dealer/maintenance/${id}/invoice`,
+        method: "POST",
+        data,
+        isErrorToast: true,
+        isSuccessToast: true,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+// Get Maintenance Invoice By ID
+export const getMaintenanceInvoice = createAsyncThunk(
+  "maintenance/getMaintenanceInvoice",
+  async (props, { rejectWithValue }) => {
+    const { id, callback } = props;
+    try {
+      const response = await API_REQUEST({
+        url: `/dealer/maintenance/${id}/invoice`,
+        method: "GET",
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+

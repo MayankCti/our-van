@@ -4,6 +4,8 @@ import {
   getMaintenanceById,
   createMaintenance,
   reassignMaintenanceTask,
+  generateMaintenanceInvoice,
+  getMaintenanceInvoice,
 } from "../actions/maintenanceAction";
 
 const initialState = {
@@ -23,6 +25,10 @@ const initialState = {
   isDetailsLoading: false,
   detailsError: null,
 
+  invoiceDetails: null,
+  isInvoiceLoading: false,
+  invoiceError: null,
+
   isActionLoading: false,
 };
 
@@ -33,6 +39,10 @@ const maintenanceSlice = createSlice({
     clearMaintenanceDetails: (state) => {
       state.maintenanceDetails = null;
       state.detailsError = null;
+    },
+    clearInvoiceDetails: (state) => {
+      state.invoiceDetails = null;
+      state.invoiceError = null;
     },
     setMaintenanceList: (state, action) => {
       state.maintenanceList = action.payload;
@@ -117,10 +127,36 @@ const maintenanceSlice = createSlice({
       })
       .addCase(reassignMaintenanceTask.rejected, (state) => {
         state.isActionLoading = false;
+      })
+
+      // Generate Maintenance Invoice
+      .addCase(generateMaintenanceInvoice.pending, (state) => {
+        state.isActionLoading = true;
+      })
+      .addCase(generateMaintenanceInvoice.fulfilled, (state) => {
+        state.isActionLoading = false;
+      })
+      .addCase(generateMaintenanceInvoice.rejected, (state) => {
+        state.isActionLoading = false;
+      })
+
+      // Get Maintenance Invoice By ID
+      .addCase(getMaintenanceInvoice.pending, (state) => {
+        state.isInvoiceLoading = true;
+        state.invoiceError = null;
+      })
+      .addCase(getMaintenanceInvoice.fulfilled, (state, action) => {
+        state.isInvoiceLoading = false;
+        state.invoiceDetails = action.payload?.data || null;
+      })
+      .addCase(getMaintenanceInvoice.rejected, (state, action) => {
+        state.isInvoiceLoading = false;
+        state.invoiceError =
+          action.payload?.message || "Failed to fetch invoice details";
       });
   },
 });
 
-export const { clearMaintenanceDetails, setMaintenanceList } =
+export const { clearMaintenanceDetails, clearInvoiceDetails, setMaintenanceList } =
   maintenanceSlice.actions;
 export default maintenanceSlice.reducer;

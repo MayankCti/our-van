@@ -195,7 +195,9 @@ const MaintenanceDetail = () => {
       case 'rejected':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
       case 'overdue':
-        return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+        return 'ct_badge_overdue';
+      case 'invoiced':
+        return 'ct_badge_invoiced';
       default:
         return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
     }
@@ -229,6 +231,52 @@ const MaintenanceDetail = () => {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
     return name.slice(0, 2).toUpperCase();
+  };
+
+  const getAssigneeInfo = () => {
+    const rawType = String(assignee.type || task.assignee_type || '').toLowerCase().trim();
+    if (rawType === 'owner') {
+      return {
+        title: 'Assigned Owner',
+        badge: 'Owner',
+        icon: 'fa-solid fa-user-tie',
+        subtitle: 'Vehicle Owner',
+        name: assignee.name || task.assigned_to_name || van.owner_name || 'Vehicle Owner',
+        email: assignee.email || van.owner_email || '',
+        contact: assignee.contact || assignee.phone || van.owner_phone || '',
+      };
+    }
+    if (rawType === 'supplier') {
+      return {
+        title: 'Assigned Supplier',
+        badge: 'Supplier',
+        icon: 'fa-solid fa-truck-field',
+        subtitle: 'Registered Supplier',
+        name: assignee.name || task.assigned_to_name || 'Unassigned',
+        email: assignee.email || '',
+        contact: assignee.contact || assignee.phone || '',
+      };
+    }
+    if (rawType === 'technician') {
+      return {
+        title: 'Assigned Technician',
+        badge: 'Technician',
+        icon: 'fa-solid fa-user-gear',
+        subtitle: 'Certified Technician',
+        name: assignee.name || task.assigned_to_name || 'Unassigned',
+        email: assignee.email || '',
+        contact: assignee.contact || assignee.phone || '',
+      };
+    }
+    return {
+      title: 'Assignee Details',
+      badge: rawType ? rawType.replace(/\b\w/g, (c) => c.toUpperCase()) : '',
+      icon: 'fa-solid fa-user',
+      subtitle: rawType ? `${rawType} Assignee` : 'Unassigned',
+      name: assignee.name || task.assigned_to_name || 'Unassigned',
+      email: assignee.email || '',
+      contact: assignee.contact || assignee.phone || '',
+    };
   };
 
   const totalServicesCost =
@@ -332,18 +380,18 @@ const MaintenanceDetail = () => {
     return parsed;
   };
 
-  const isTaskRejected = (t) => {
+  const canAssignTask = (t) => {
     if (!t) return false;
-    const status = String(t?.status || '').toLowerCase().trim();
-    const supplierStatus = String(t?.supplier_status || '').toLowerCase().trim();
-    const taskStatus = String(t?.task_status || '').toLowerCase().trim();
+    const assigneeType = String(t?.assignee_type || t?.assignee?.type || '').toLowerCase().trim();
     const ownerStatus = String(t?.owner_status || '').toLowerCase().trim();
-    return (
-      status === 'rejected' ||
-      supplierStatus === 'rejected' ||
-      taskStatus === 'rejected' ||
-      ownerStatus === 'accepted'
-    );
+    return assigneeType === 'owner' && ownerStatus === 'accepted';
+  };
+
+  const canReassignTask = (t) => {
+    if (!t) return false;
+    const assigneeType = String(t?.assignee_type || t?.assignee?.type || '').toLowerCase().trim();
+    const supplierStatus = String(t?.supplier_status || '').toLowerCase().trim();
+    return assigneeType === 'supplier' && supplierStatus === 'rejected';
   };
 
   const handleReassignSubmit = (values, { setSubmitting }) => {
@@ -406,6 +454,19 @@ const MaintenanceDetail = () => {
                 Priority: {task.priority}
               </span>
             )}
+            {task.owner_status && (
+              <span
+                className={`badge ${getStatusBadgeClass(task.owner_status)} text-capitalize`}
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                }}
+              >
+                Status: {formatStatusLabel(task.owner_status)}
+              </span>
+            )}
             {task.status && (
               <span
                 className={`badge ${getStatusBadgeClass(task.status)}`}
@@ -416,10 +477,22 @@ const MaintenanceDetail = () => {
                   borderRadius: '20px',
                 }}
               >
-                Status: {formatStatusLabel(task.status)}
+                Task Status: {formatStatusLabel(task.status)}
               </span>
             )}
-            {isTaskRejected(task) && (
+            {canAssignTask(task) && (
+              <button
+                type="button"
+                className="btn btn-sm btn-success px-3 py-2 fw-semibold text-white d-inline-flex align-items-center gap-1 shadow-sm ms-1"
+                style={{ borderRadius: '8px', fontSize: '13px', backgroundColor: '#3D8B37', borderColor: '#3D8B37' }}
+                onClick={() => setShowReassignModal(true)}
+                title="Assign Task"
+              >
+                <i className="fa-solid fa-user-plus"></i>
+                <span>Assign Task</span>
+              </button>
+            )}
+            {canReassignTask(task) && (
               <button
                 type="button"
                 className="btn btn-sm btn-warning px-3 py-2 fw-semibold text-dark d-inline-flex align-items-center gap-1 shadow-sm ms-1"
@@ -430,6 +503,28 @@ const MaintenanceDetail = () => {
                 <i className="fa-solid fa-arrows-rotate"></i>
                 <span>Reassign Task</span>
               </button>
+            )}
+            {String(task.status || '').toLowerCase().trim() === 'completed' && (
+              <Link
+                to={`${pageRoutes.generate_invoice}?id=${task.id || taskId}`}
+                className="btn btn-sm btn-primary px-3 py-2 fw-semibold text-white d-inline-flex align-items-center gap-2 shadow-sm ms-1"
+                style={{ borderRadius: '8px', fontSize: '13px' }}
+                title="Generate Invoice"
+              >
+                <i className="fa-solid fa-file-invoice-dollar"></i>
+                <span>Generate Invoice</span>
+              </Link>
+            )}
+            {String(task.status || '').toLowerCase().trim() === 'invoiced' && (
+              <Link
+                to={`${pageRoutes.maintenance_invoice}?id=${task.id || taskId}`}
+                className="btn btn-sm btn-success px-3 py-2 fw-semibold text-white d-inline-flex align-items-center gap-2 shadow-sm ms-1"
+                style={{ borderRadius: '8px', fontSize: '13px', backgroundColor: '#3D8B37', borderColor: '#3D8B37' }}
+                title="View Invoice"
+              >
+                <i className="fa-solid fa-file-invoice"></i>
+                <span>View Invoice</span>
+              </Link>
             )}
           </div>
         )}
@@ -895,7 +990,7 @@ const MaintenanceDetail = () => {
                 <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
                   <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
                     <i className="fa-solid fa-list-check text-success"></i>
-                    <span>Requested Services ({services.length})</span>
+                    <span>Services ({services.length})</span>
                   </h6>
                 </div>
 
@@ -1007,58 +1102,60 @@ const MaintenanceDetail = () => {
               </div>
 
               {/* Assignee Card */}
-              <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
-                  <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
-                    <i
-                      className={`fa-solid ${assignee.type === 'supplier' ? 'fa-truck-field' : 'fa-user-gear'
-                        } text-success`}
-                    ></i>
-                    <span>Assigned {assignee.type === 'supplier' ? 'Supplier' : 'Technician'}</span>
-                  </h6>
-                  {assignee.type && (
-                    <span className="badge bg-light text-muted border px-2 py-1 text-capitalize ct_fs_11">
-                      {assignee.type}
-                    </span>
-                  )}
-                </div>
-
-                <div className="d-flex align-items-center gap-3 mb-3">
-                  <div
-                    className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center ct_fw_700 ct_fs_16 flex-shrink-0"
-                    style={{ width: '48px', height: '48px' }}
-                  >
-                    {getInitials(assignee.name)}
-                  </div>
-                  <div>
-                    <h6 className="ct_fw_700 ct_head_clr mb-0 ct_fs_15">
-                      {assignee.name || 'Unassigned'}
-                    </h6>
-                    <span className="text-muted ct_fs_12">
-                      {assignee.type === 'supplier' ? 'Registered Supplier' : 'Certified Technician'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="d-flex flex-column gap-2 pt-2 border-top ct_fs_13">
-                  {assignee.email && (
-                    <div className="d-flex align-items-center gap-2 text-muted">
-                      <i className="fa-regular fa-envelope text-success"></i>
-                      <a href={`mailto:${assignee.email}`} className="text-decoration-none text-dark">
-                        {assignee.email}
-                      </a>
+              {(() => {
+                const assigneeInfo = getAssigneeInfo();
+                return (
+                  <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
+                      <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
+                        <i className={`${assigneeInfo.icon} text-success`}></i>
+                        <span>{assigneeInfo.title}</span>
+                      </h6>
+                      {assigneeInfo.badge && (
+                        <span className="badge bg-light text-muted border px-2 py-1 text-capitalize ct_fs_11">
+                          {assigneeInfo.badge}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {assignee.contact && (
-                    <div className="d-flex align-items-center gap-2 text-muted">
-                      <i className="fa-solid fa-phone text-success"></i>
-                      <a href={`tel:${assignee.contact}`} className="text-decoration-none text-dark">
-                        {assignee.contact}
-                      </a>
+
+                    <div className="d-flex align-items-center gap-3 mb-3">
+                      <div
+                        className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center ct_fw_700 ct_fs_16 flex-shrink-0"
+                        style={{ width: '48px', height: '48px' }}
+                      >
+                        {getInitials(assigneeInfo.name)}
+                      </div>
+                      <div>
+                        <h6 className="ct_fw_700 ct_head_clr mb-0 ct_fs_15">
+                          {assigneeInfo.name}
+                        </h6>
+                        <span className="text-muted ct_fs_12">
+                          {assigneeInfo.subtitle}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+
+                    <div className="d-flex flex-column gap-2 pt-2 border-top ct_fs_13">
+                      {assigneeInfo.email && (
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="fa-regular fa-envelope text-success"></i>
+                          <a href={`mailto:${assigneeInfo.email}`} className="text-decoration-none text-dark">
+                            {assigneeInfo.email}
+                          </a>
+                        </div>
+                      )}
+                      {assigneeInfo.contact && (
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="fa-solid fa-phone text-success"></i>
+                          <a href={`tel:${assigneeInfo.contact}`} className="text-decoration-none text-dark">
+                            {assigneeInfo.contact}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Quotation & Cost Breakdown Card */}
               <div
@@ -1074,7 +1171,7 @@ const MaintenanceDetail = () => {
 
                 <div className="d-flex flex-column gap-2 ct_fs_14">
                   <div className="d-flex justify-content-between text-light">
-                    <span>Requested Services{services.length ? ` (${services.length})` : ''}:</span>
+                    <span>Services{services.length ? ` (${services.length})` : ''}:</span>
                     <span className="ct_fw_600">
                       {formatCurrency(totalServicesCost)}
                     </span>
@@ -1188,6 +1285,7 @@ const MaintenanceDetail = () => {
               {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
                 const availableAssignees =
                   values.assignee_type === 'supplier' ? activeSuppliers : activeTechnicians;
+                const isAssign = canAssignTask(task);
 
                 return (
                   <Form
@@ -1197,7 +1295,7 @@ const MaintenanceDetail = () => {
                   >
                     <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between flex-shrink-0">
                       <h4 className="ct_fs_18 ct_fw_700 ct_head_clr mb-0">
-                        Reassign Task
+                        {isAssign ? 'Assign Task' : 'Reassign Task'}
                       </h4>
                       <button
                         type="button"
@@ -1228,24 +1326,25 @@ const MaintenanceDetail = () => {
                                 </span>
                               </div>
                               <div className="col-sm-6 mt-2">
-                                <span className="text-muted d-block ct_fs_12">Previous Assignee</span>
+                                <span className="text-muted d-block ct_fs_12">
+                                  {isAssign ? 'Assignee' : 'Previous Assignee'}
+                                </span>
                                 <span className="ct_fw_600 text-secondary">
-                                  {assignee.name || task.assigned_to_name || 'Unassigned'}
+                                  {assignee.name || task.assigned_to_name || (isAssign ? 'Owner' : 'Unassigned')}
                                   {assignee.type || task.assignee_type ? ` (${assignee.type || task.assignee_type})` : ''}
                                 </span>
                               </div>
                               <div className="col-sm-6 mt-2">
                                 <span className="text-muted d-block ct_fs_12">Status</span>
                                 <span
-                                  className={`badge ${
-                                    String(task.owner_status || '').toLowerCase() === 'accepted'
-                                      ? 'bg-success-subtle text-success border border-success-subtle'
-                                      : 'bg-danger-subtle text-danger border border-danger-subtle'
-                                  } px-2 py-1 text-capitalize`}
+                                  className={`badge ${isAssign
+                                    ? 'bg-success-subtle text-success border border-success-subtle'
+                                    : 'bg-danger-subtle text-danger border border-danger-subtle'
+                                    } px-2 py-1 text-capitalize`}
                                 >
-                                  {String(task.owner_status || '').toLowerCase() === 'accepted'
+                                  {isAssign
                                     ? 'Owner Accepted'
-                                    : task.status || task.supplier_status || 'Rejected'}
+                                    : task.supplier_status || 'Supplier Rejected'}
                                 </span>
                               </div>
                             </div>
@@ -1425,10 +1524,10 @@ const MaintenanceDetail = () => {
                         {isSubmitting || isActionLoading ? (
                           <>
                             <span className="spinner-border spinner-border-sm text-white" role="status"></span>
-                            <span>Reassigning...</span>
+                            <span>{isAssign ? 'Assigning...' : 'Reassigning...'}</span>
                           </>
                         ) : (
-                          <span>Reassign Task</span>
+                          <span>{isAssign ? 'Assign Task' : 'Reassign Task'}</span>
                         )}
                       </button>
                     </div>

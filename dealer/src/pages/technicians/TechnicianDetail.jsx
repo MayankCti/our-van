@@ -115,6 +115,10 @@ const TechnicianDetail = () => {
       case 'cancelled':
       case 'rejected':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
+      case 'overdue':
+        return 'ct_badge_overdue';
+      case 'invoiced':
+        return 'ct_badge_invoiced';
       default:
         return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
     }

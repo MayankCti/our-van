@@ -157,18 +157,18 @@ const Maintenance = () => {
     return parsed;
   };
 
-  const isTaskRejected = (task) => {
+  const canAssignTask = (task) => {
     if (!task) return false;
-    const status = String(task?.status || '').toLowerCase().trim();
-    const supplierStatus = String(task?.supplier_status || '').toLowerCase().trim();
-    const taskStatus = String(task?.task_status || '').toLowerCase().trim();
+    const assigneeType = String(task?.assignee_type || task?.assignee?.type || '').toLowerCase().trim();
     const ownerStatus = String(task?.owner_status || '').toLowerCase().trim();
-    return (
-      status === 'rejected' ||
-      supplierStatus === 'rejected' ||
-      taskStatus === 'rejected' ||
-      ownerStatus === 'accepted'
-    );
+    return assigneeType === 'owner' && ownerStatus === 'accepted';
+  };
+
+  const canReassignTask = (task) => {
+    if (!task) return false;
+    const assigneeType = String(task?.assignee_type || task?.assignee?.type || '').toLowerCase().trim();
+    const supplierStatus = String(task?.supplier_status || '').toLowerCase().trim();
+    return assigneeType === 'supplier' && supplierStatus === 'rejected';
   };
 
   const handleOpenReassignModal = (task) => {
@@ -333,7 +333,9 @@ const Maintenance = () => {
       case 'rejected':
         return 'bg-danger-subtle text-danger border border-danger-subtle';
       case 'overdue':
-        return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+        return 'ct_badge_overdue';
+      case 'invoiced':
+        return 'ct_badge_invoiced';
       default:
         return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
     }
@@ -447,6 +449,7 @@ const Maintenance = () => {
                   <th>Priority</th>
                   <th>Total Cost</th>
                   <th>Status</th>
+                  <th>Task Status</th>
                   <th>Created Date</th>
                   <th>Action</th>
                 </tr>
@@ -454,7 +457,7 @@ const Maintenance = () => {
               <tbody>
                 {isMaintenanceLoading ? (
                   <tr>
-                    <td colSpan="11" className="text-center py-5">
+                    <td colSpan="12" className="text-center py-5">
                       <div className="spinner-border spinner-border-sm text-success" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
@@ -463,7 +466,7 @@ const Maintenance = () => {
                   </tr>
                 ) : filteredTasks.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="text-center py-5 text-muted ct_fs_14">
+                    <td colSpan="12" className="text-center py-5 text-muted ct_fs_14">
                       {searchTerm || selectedPriority !== 'all' || selectedStatus !== 'all'
                         ? 'No maintenance tasks match your filter criteria.'
                         : 'No maintenance tasks created yet.'}
@@ -522,7 +525,21 @@ const Maintenance = () => {
                           {formatCurrency(task.total_amount)}
                         </td>
 
-                        {/* Status */}
+                        {/* Status (Owner Status) */}
+                        <td>
+                          {task.owner_status ? (
+                            <span
+                              className={`badge ${getStatusBadgeClass(task.owner_status)} px-3 py-1 text-capitalize`}
+                              style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}
+                            >
+                              {formatStatusLabel(task.owner_status)}
+                            </span>
+                          ) : (
+                            <span className="text-muted ct_fs_13">N/A</span>
+                          )}
+                        </td>
+
+                        {/* Task Status */}
                         <td>
                           <span
                             className={`badge ${getStatusBadgeClass(task.status)} px-3 py-1`}
@@ -547,7 +564,22 @@ const Maintenance = () => {
                             >
                               <i className="fa-regular fa-eye"></i>
                             </Link>
-                            {isTaskRejected(task) && (
+                            {canAssignTask(task) && (
+                              <button
+                                type="button"
+                                className="ct_action_icon_btn border-0"
+                                style={{
+                                  backgroundColor: '#DCFCE7',
+                                  color: '#16A34A',
+                                  cursor: 'pointer',
+                                }}
+                                onClick={() => handleOpenReassignModal(task)}
+                                title="Assign Task"
+                              >
+                                <i className="fa-solid fa-user-plus"></i>
+                              </button>
+                            )}
+                            {canReassignTask(task) && (
                               <button
                                 type="button"
                                 className="ct_action_icon_btn border-0"
@@ -631,6 +663,7 @@ const Maintenance = () => {
               {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
                 const availableAssignees =
                   values.assignee_type === 'supplier' ? activeSuppliers : activeTechnicians;
+                const isAssign = canAssignTask(reassigningTask);
 
                 return (
                   <Form
@@ -640,7 +673,7 @@ const Maintenance = () => {
                   >
                     <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-center justify-content-between flex-shrink-0">
                       <h4 className="ct_fs_18 ct_fw_700 ct_head_clr mb-0">
-                        Reassign Task
+                        {isAssign ? 'Assign Task' : 'Reassign Task'}
                       </h4>
                       <button
                         type="button"
@@ -671,24 +704,25 @@ const Maintenance = () => {
                                 </span>
                               </div>
                               <div className="col-sm-6 mt-2">
-                                <span className="text-muted d-block ct_fs_12">Previous Assignee</span>
+                                <span className="text-muted d-block ct_fs_12">
+                                  {isAssign ? 'Assignee' : 'Previous Assignee'}
+                                </span>
                                 <span className="ct_fw_600 text-secondary">
-                                  {reassigningTask.assigned_to_name || 'Unassigned'}
+                                  {reassigningTask.assigned_to_name || (isAssign ? 'Owner' : 'Unassigned')}
                                   {reassigningTask.assignee_type ? ` (${reassigningTask.assignee_type})` : ''}
                                 </span>
                               </div>
                               <div className="col-sm-6 mt-2">
                                 <span className="text-muted d-block ct_fs_12">Status</span>
                                 <span
-                                  className={`badge ${
-                                    String(reassigningTask.owner_status || '').toLowerCase() === 'accepted'
-                                      ? 'bg-success-subtle text-success border border-success-subtle'
-                                      : 'bg-danger-subtle text-danger border border-danger-subtle'
-                                  } px-2 py-1 text-capitalize`}
+                                  className={`badge ${isAssign
+                                    ? 'bg-success-subtle text-success border border-success-subtle'
+                                    : 'bg-danger-subtle text-danger border border-danger-subtle'
+                                    } px-2 py-1 text-capitalize`}
                                 >
-                                  {String(reassigningTask.owner_status || '').toLowerCase() === 'accepted'
+                                  {isAssign
                                     ? 'Owner Accepted'
-                                    : reassigningTask.status || reassigningTask.supplier_status || 'Rejected'}
+                                    : reassigningTask.supplier_status || 'Supplier Rejected'}
                                 </span>
                               </div>
                             </div>
@@ -868,10 +902,10 @@ const Maintenance = () => {
                         {isSubmitting || isActionLoading ? (
                           <>
                             <span className="spinner-border spinner-border-sm text-white" role="status"></span>
-                            <span>Reassigning...</span>
+                            <span>{isAssign ? 'Assigning...' : 'Reassigning...'}</span>
                           </>
                         ) : (
-                          <span>Reassign Task</span>
+                          <span>{isAssign ? 'Assign Task' : 'Reassign Task'}</span>
                         )}
                       </button>
                     </div>

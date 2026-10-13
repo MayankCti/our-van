@@ -24,6 +24,8 @@ const Services = lazy(() => import("../pages/services"));
 const Maintenance = lazy(() => import("../pages/maintenance"));
 const MaintenanceDetail = lazy(() => import("../pages/maintenance/MaintenanceDetail"));
 const CreateMaintenance = lazy(() => import("../pages/maintenance/CreateMaintenance"));
+const GenerateInvoice = lazy(() => import("../pages/maintenance/GenerateInvoice"));
+const MaintenanceInvoice = lazy(() => import("../pages/maintenance/MaintenanceInvoice"));
 
 export const pageRoutes = {
   login: "/login",
@@ -49,6 +51,8 @@ export const pageRoutes = {
   maintenance: "/maintenance",
   maintenance_detail: "/maintenance-detail",
   create_maintenance: "/create-maintenance",
+  generate_invoice: "/generate-invoice",
+  maintenance_invoice: "/maintenance-invoice",
 };
 
 export const AllRoutes = [
@@ -182,6 +186,18 @@ export const AllRoutes = [
     name: "Create Maintenance Task",
     path: pageRoutes.create_maintenance,
     element: <CreateMaintenance />,
+    isPrivate: true,
+  },
+  {
+    name: "Generate Invoice",
+    path: pageRoutes.generate_invoice,
+    element: <GenerateInvoice />,
+    isPrivate: true,
+  },
+  {
+    name: "Maintenance Invoice",
+    path: pageRoutes.maintenance_invoice,
+    element: <MaintenanceInvoice />,
     isPrivate: true,
   },
   {

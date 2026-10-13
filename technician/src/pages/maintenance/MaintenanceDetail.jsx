@@ -758,7 +758,7 @@ const MaintenanceDetail = () => {
                 <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
                   <h6 className="ct_head_clr ct_fw_700 mb-0 d-flex align-items-center gap-2">
                     <i className="fa-solid fa-list-check text-success"></i>
-                    <span>Requested Services ({services.length})</span>
+                    <span>Services ({services.length})</span>
                   </h6>
                 </div>
 
@@ -914,7 +914,7 @@ const MaintenanceDetail = () => {
 
                 <div className="d-flex flex-column gap-2 ct_fs_14">
                   <div className="d-flex justify-content-between text-light">
-                    <span>Requested Services{services.length ? ` (${services.length})` : ''}:</span>
+                    <span>Services{services.length ? ` (${services.length})` : ''}:</span>
                     <span className="ct_fw_600">{formatCurrency(totalServicesCost)}</span>
                   </div>
 
