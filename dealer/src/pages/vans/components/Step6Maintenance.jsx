@@ -30,6 +30,7 @@ const Step6Maintenance = ({ onPrev, onNext, initialData = {}, vanId }) => {
         }
 
         const payload = {
+            vanId: !isNaN(Number(activeVanId)) ? Number(activeVanId) : activeVanId,
             first_service_date: values.first_service_date,
             assigned_service_centre: values.assigned_service_centre ? values.assigned_service_centre.trim() : '',
             notes: values.notes ? values.notes.trim() : '',

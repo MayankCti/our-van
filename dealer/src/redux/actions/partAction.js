@@ -94,16 +94,24 @@ export const createPart = createAsyncThunk(
 export const updatePart = createAsyncThunk(
   "part/updatePart",
   async (props, { rejectWithValue }) => {
-    const { id, data, callback } = props;
+    const { id, partId, data, callback } = props;
     try {
-      const endpoint = (
-        import.meta.env.VITE_UPDATE_PART_API || "/dealer/parts/:id"
-      ).replace(":id", id);
+      const rawEndpoint = import.meta.env.VITE_UPDATE_PART_API || "/dealer/parts";
+      const endpoint = rawEndpoint.replace("/:id", "").replace(":id", "");
+      const targetId = partId || id || data?.partId || data?.id;
+      const numId = !isNaN(Number(targetId)) ? Number(targetId) : targetId;
+      const requestData = {
+        partId: numId,
+        ...(data || {}),
+      };
+      if (requestData.partId !== undefined && !isNaN(Number(requestData.partId))) {
+        requestData.partId = Number(requestData.partId);
+      }
 
       const response = await API_REQUEST({
         url: endpoint,
         method: "PATCH",
-        data,
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });
@@ -190,15 +198,27 @@ export const completeDealerPartRequest = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { id, data, callback } = props;
     try {
-      const endpoint = (
+      const rawEndpoint =
         import.meta.env.VITE_COMPLETE_DEALER_PART_REQUEST_API ||
-        "/dealer/part-requests/:id/complete"
-      ).replace(":id", id);
+        "/dealer/part-requests/complete";
+      const endpoint = rawEndpoint
+        .replace("/:id/complete", "/complete")
+        .replace("/:id", "")
+        .replace(":id", "");
+      const finalId = id || data?.id;
+      const numId = !isNaN(Number(finalId)) ? Number(finalId) : finalId;
+      const requestData = {
+        id: numId,
+        ...(data || {}),
+      };
+      if (requestData.id !== undefined && !isNaN(Number(requestData.id))) {
+        requestData.id = Number(requestData.id);
+      }
 
       const response = await API_REQUEST({
         url: endpoint,
         method: "PATCH",
-        data,
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });

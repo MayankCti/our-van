@@ -206,6 +206,7 @@ const Step5Documents = ({ onPrev, onNext, initialData = {}, vanId }) => {
 
         if (newFilesToUpload.length > 0) {
             const formData = new FormData();
+            formData.append('vanId', activeVanId);
             newFilesToUpload.forEach(([key, file]) => {
                 formData.append(key, file);
             });

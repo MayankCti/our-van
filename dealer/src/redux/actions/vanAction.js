@@ -37,14 +37,20 @@ export const createVanStep2 = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_STEP_2_API || "/dealer/vans/:vanId/step-2").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_STEP_2_API || "/dealer/vans/step-2";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || payload?.vanId;
+      const requestData = {
+        vanId: !isNaN(Number(finalVanId)) ? Number(finalVanId) : finalVanId,
+        ...(payload || {}),
+      };
+      if (requestData.vanId !== undefined && !isNaN(Number(requestData.vanId))) {
+        requestData.vanId = Number(requestData.vanId);
+      }
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
-        data: payload,
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });
@@ -276,10 +282,16 @@ export const createVanStep3 = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_STEP_3_API || "/dealer/vans/:vanId/step-3").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_STEP_3_API || "/dealer/vans/step-3";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || (payload instanceof FormData ? payload.get("vanId") : payload?.vanId);
+
+      if (payload instanceof FormData) {
+        if (finalVanId && !payload.has("vanId")) {
+          payload.append("vanId", String(finalVanId));
+        }
+      }
+
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
@@ -310,10 +322,16 @@ export const createVanStep4 = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_STEP_4_API || "/dealer/vans/:vanId/step-4").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_STEP_4_API || "/dealer/vans/step-4";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || (payload instanceof FormData ? payload.get("vanId") : payload?.vanId);
+
+      if (payload instanceof FormData) {
+        if (finalVanId && !payload.has("vanId")) {
+          payload.append("vanId", String(finalVanId));
+        }
+      }
+
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
@@ -344,10 +362,16 @@ export const createVanStep5 = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_STEP_5_API || "/dealer/vans/:vanId/step-5/upload").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_STEP_5_API || "/dealer/vans/step-5/upload";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || (payload instanceof FormData ? payload.get("vanId") : payload?.vanId);
+
+      if (payload instanceof FormData) {
+        if (finalVanId && !payload.has("vanId")) {
+          payload.append("vanId", String(finalVanId));
+        }
+      }
+
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
@@ -378,14 +402,20 @@ export const createVanStep6 = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_STEP_6_API || "/dealer/vans/:vanId/step-6").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_STEP_6_API || "/dealer/vans/step-6";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || payload?.vanId;
+      const requestData = {
+        vanId: !isNaN(Number(finalVanId)) ? Number(finalVanId) : finalVanId,
+        ...(payload || {}),
+      };
+      if (requestData.vanId !== undefined && !isNaN(Number(requestData.vanId))) {
+        requestData.vanId = Number(requestData.vanId);
+      }
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
-        data: payload,
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });
@@ -437,15 +467,22 @@ export const getVanReview = createAsyncThunk(
 export const publishVan = createAsyncThunk(
   "van/publishVan",
   async (props, { rejectWithValue }) => {
-    const { vanId, callback } = props;
+    const { vanId, payload, callback } = props;
     try {
-      const endpoint = (import.meta.env.VITE_VAN_PUBLISH_API || "/dealer/vans/:vanId/publish").replace(
-        ":vanId",
-        vanId
-      );
+      const rawEndpoint = import.meta.env.VITE_VAN_PUBLISH_API || "/dealer/vans/publish";
+      const endpoint = rawEndpoint.replace("/:vanId", "").replace(":vanId", "");
+      const finalVanId = vanId || payload?.vanId;
+      const requestData = {
+        vanId: !isNaN(Number(finalVanId)) ? Number(finalVanId) : finalVanId,
+        ...(payload || {}),
+      };
+      if (requestData.vanId !== undefined && !isNaN(Number(requestData.vanId))) {
+        requestData.vanId = Number(requestData.vanId);
+      }
       const response = await API_REQUEST({
         url: endpoint,
         method: "POST",
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });

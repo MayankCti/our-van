@@ -96,14 +96,23 @@ export const updateService = createAsyncThunk(
   async (props, { rejectWithValue }) => {
     const { id, data, callback } = props;
     try {
-      const endpoint = (
-        import.meta.env.VITE_UPDATE_SERVICE_API || "/dealer/services/:id"
-      ).replace(":id", id);
+      const rawEndpoint =
+        import.meta.env.VITE_UPDATE_SERVICE_API || "/dealer/services";
+      const endpoint = rawEndpoint.replace("/:id", "").replace(":id", "");
+      const finalId = id || data?.id;
+      const numId = !isNaN(Number(finalId)) ? Number(finalId) : finalId;
+      const requestData = {
+        id: numId,
+        ...(data || {}),
+      };
+      if (requestData.id !== undefined && !isNaN(Number(requestData.id))) {
+        requestData.id = Number(requestData.id);
+      }
 
       const response = await API_REQUEST({
         url: endpoint,
         method: "PATCH",
-        data,
+        data: requestData,
         isErrorToast: true,
         isSuccessToast: true,
       });

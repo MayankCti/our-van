@@ -24,7 +24,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
             expiry_date: source?.expiry_date ? source.expiry_date.split('T')[0] : '',
             claim_instructions:
                 source?.claim_instructions ||
-                'Please submit required documents.',
+                '.',
             claim_email: source?.claim_email || '',
             claim_phone: source?.claim_phone || '',
             warranty_document: source?.warranty_document || null,
@@ -85,6 +85,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
         }
 
         const formData = new FormData();
+        formData.append('vanId', activeVanId);
         formData.append('provider', values.provider ? values.provider.trim() : '');
         formData.append('coverage_type', values.coverage_type ? values.coverage_type.trim() : '');
         formData.append('start_date', values.start_date || '');
@@ -292,7 +293,7 @@ const Step4Warranty = ({ onPrev, onNext, initialData = {}, vanId }) => {
                                                 const isImg = values.warranty_document instanceof File
                                                     ? values.warranty_document.type.startsWith('image/')
                                                     : (values.doc_preview && !values.doc_preview.toLowerCase().endsWith('.pdf')) ||
-                                                      (values.existing_doc_url && /\.(png|jpe?g|webp)$/i.test(values.existing_doc_url));
+                                                    (values.existing_doc_url && /\.(png|jpe?g|webp)$/i.test(values.existing_doc_url));
 
                                                 return (
                                                     <div className={`img-item position-relative ${!isImg ? 'doc-item' : ''}`}>

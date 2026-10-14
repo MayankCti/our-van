@@ -526,6 +526,7 @@ const Step3Components = ({ onPrev, onNext, initialData, vanId }) => {
         });
 
         const formData = new FormData();
+        formData.append('vanId', activeVanId);
         formData.append('components', JSON.stringify(componentsPayload));
 
         if (fileMeta.length > 0) {

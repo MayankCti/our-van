@@ -121,10 +121,14 @@ const Services = () => {
     };
 
     if (editingService?.id) {
+      const updatePayload = {
+        id: Number(editingService.id),
+        ...payload,
+      };
       dispatch(
         updateService({
           id: editingService.id,
-          data: payload,
+          data: updatePayload,
           callback: (res) => {
             setSubmitting(false);
             if (

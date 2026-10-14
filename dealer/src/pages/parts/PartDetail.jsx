@@ -51,6 +51,7 @@ const PartDetail = () => {
   // Handle Edit Submit
   const handleSubmitEdit = (values, { setSubmitting }) => {
     const payload = {
+      partId: Number(partId),
       part_name: values.part_name?.trim(),
       manufacturer: values.manufacturer?.trim(),
       original_cost: Number(values.original_cost),
@@ -62,6 +63,7 @@ const PartDetail = () => {
     dispatch(
       updatePart({
         id: partId,
+        partId: Number(partId),
         data: payload,
         callback: (res) => {
           setSubmitting(false);

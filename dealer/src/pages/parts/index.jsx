@@ -312,10 +312,15 @@ const Parts = () => {
     };
 
     if (editingPart?.id) {
+      const updatePayload = {
+        partId: Number(editingPart.id),
+        ...payload,
+      };
       dispatch(
         updatePart({
           id: editingPart.id,
-          data: payload,
+          partId: Number(editingPart.id),
+          data: updatePayload,
           callback: (res) => {
             setSubmitting(false);
             if (
@@ -404,6 +409,7 @@ const Parts = () => {
   const handleSubmitCompleteRequest = (values, { setSubmitting, resetForm }) => {
     if (!selectedRequest?.id) return;
     const payload = {
+      id: Number(selectedRequest.id),
       quantity: Number(values.quantity),
       manufacturer: values.manufacturer?.trim(),
       original_cost: Number(values.original_cost),
@@ -457,6 +463,7 @@ const Parts = () => {
     dispatch(
       completeDealerPartRequest({
         id: selectedRequest.id,
+        data: { id: Number(selectedRequest.id) },
         callback: (res) => {
           setIsCompletingRequest(false);
           if (

@@ -108,6 +108,9 @@ const Step7Review = ({ onPrev, vanId, modalTargetId = "#successModal", onComplet
         dispatch(
             publishVan({
                 vanId: activeVanId,
+                payload: {
+                    vanId: !isNaN(Number(activeVanId)) ? Number(activeVanId) : activeVanId,
+                },
                 callback: (response) => {
                     if (response?.success || response?.status === true || response?.statusCode === 200) {
                         pipClearVanDraft();

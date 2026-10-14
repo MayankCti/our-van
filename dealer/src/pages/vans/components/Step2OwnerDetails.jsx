@@ -172,6 +172,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
         }
 
         const payload = {
+            vanId: !isNaN(Number(activeVanId)) ? Number(activeVanId) : activeVanId,
             owner_id: String(selectedOwnerId),
         };
 
@@ -212,6 +213,7 @@ const Step2OwnerDetails = ({ onPrev, onNext, initialData = {}, vanId, ownerId, i
         }
 
         const payload = {
+            vanId: !isNaN(Number(activeVanId)) ? Number(activeVanId) : activeVanId,
             owner_name: values.owner_name.trim(),
             email: values.email.trim(),
             phone_number: values.phone_number.trim(),
