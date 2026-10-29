@@ -44,6 +44,16 @@ const Dashboard = () => {
     return !isNaN(num) ? Math.min(Math.max(Math.round(num), 0), 100) : 0;
   };
 
+  const formatCurrency = (val) => {
+    if (val === undefined || val === null || val === '') return '$0.00';
+    const num = typeof val === 'number' ? val : parseFloat(val);
+    if (isNaN(num)) return '$0.00';
+    return `$${num.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
   return (
     <Layout>
       <SubHeader
@@ -79,20 +89,74 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Card 3 - Warranty Alerts */}
+            {/* Card 3 - Pending Invoices */}
             <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
-                  <img src="/assets/img/dash_icon_3.png" alt="" />
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H12" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M14 2V8H20" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M8 13H11" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M8 17H11" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="17.5" cy="17.5" r="4.5" stroke="#3D8B37" strokeWidth="1.5" />
+                    <path d="M17.5 15.5V17.5L19 18.5" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
                 </div>
-                <div className="ct_card_content">
-                  <p>Warranty Alerts</p>
-                  <h3>{isDashboardLoading && dashboardData == null ? "..." : summary.warrantyAlerts ?? 0}</h3>
+                <div className="ct_card_content flex-grow-1">
+                  <p>Pending Invoices</p>
+                  <div className="d-flex align-items-baseline justify-content-between gap-2 flex-wrap">
+                    <h3 className="mb-0">
+                      {isDashboardLoading && dashboardData == null
+                        ? "..."
+                        : (summary.pending_invoices_count ?? summary.pendingInvoicesCount ?? 0)}
+                    </h3>
+                    <span className="ct_fs_13 ct_fw_500 text-muted">
+                      Total Amount:{" "}
+                      <span className="ct_fw_700 text-dark">
+                        {isDashboardLoading && dashboardData == null
+                          ? "..."
+                          : formatCurrency(summary.pending_invoices_total ?? summary.pendingInvoicesTotal)}
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Card 4 - Upcoming Services */}
+            {/* Card 4 - Total Invoices */}
+            <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
+              <div className="ct_dash_card">
+                <div className="ct_icon_box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M14 2V8H20" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16 13H8" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16 17H8" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M10 9H8" stroke="#3D8B37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className="ct_card_content flex-grow-1">
+                  <p>Total Invoices</p>
+                  <div className="d-flex align-items-baseline justify-content-between gap-2 flex-wrap">
+                    <h3 className="mb-0">
+                      {isDashboardLoading && dashboardData == null
+                        ? "..."
+                        : (summary.total_invoices_count ?? summary.totalInvoicesCount ?? 0)}
+                    </h3>
+                    <span className="ct_fs_13 ct_fw_500 text-muted">
+                      Total Amount:{" "}
+                      <span className="ct_fw_700 text-dark">
+                        {isDashboardLoading && dashboardData == null
+                          ? "..."
+                          : formatCurrency(summary.total_invoices_total ?? summary.totalInvoicesTotal)}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 5 - Upcoming Services */}
             <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
@@ -105,7 +169,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Card 5 - Total Suppliers */}
+            {/* Card 6 - Total Suppliers */}
             <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
@@ -123,7 +187,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Card 6 - Total Technicians */}
+            {/* Card 7 - Total Technicians */}
             <div className="col-xl-4 col-lg-6 mb-4 col-md-6 col-sm-6">
               <div className="ct_dash_card">
                 <div className="ct_icon_box">
