@@ -26,6 +26,7 @@ const MaintenanceDetail = lazy(() => import("../pages/maintenance/MaintenanceDet
 const CreateMaintenance = lazy(() => import("../pages/maintenance/CreateMaintenance"));
 const GenerateInvoice = lazy(() => import("../pages/maintenance/GenerateInvoice"));
 const MaintenanceInvoice = lazy(() => import("../pages/maintenance/MaintenanceInvoice"));
+const CalendarPage = lazy(() => import("../pages/calendar"));
 
 export const pageRoutes = {
   login: "/login",
@@ -53,6 +54,7 @@ export const pageRoutes = {
   create_maintenance: "/create-maintenance",
   generate_invoice: "/generate-invoice",
   maintenance_invoice: "/maintenance-invoice",
+  calendar: "/calendar",
 };
 
 export const AllRoutes = [
@@ -198,6 +200,12 @@ export const AllRoutes = [
     name: "Maintenance Invoice",
     path: pageRoutes.maintenance_invoice,
     element: <MaintenanceInvoice />,
+    isPrivate: true,
+  },
+  {
+    name: "Calendar",
+    path: pageRoutes.calendar,
+    element: <CalendarPage />,
     isPrivate: true,
   },
   {

@@ -6,6 +6,7 @@ import {
   reassignMaintenanceTask,
   generateMaintenanceInvoice,
   getMaintenanceInvoice,
+  getDealerCalendar,
 } from "../actions/maintenanceAction";
 
 const initialState = {
@@ -29,6 +30,10 @@ const initialState = {
   isInvoiceLoading: false,
   invoiceError: null,
 
+  calendarData: null,
+  isCalendarLoading: false,
+  calendarError: null,
+
   isActionLoading: false,
 };
 
@@ -43,6 +48,10 @@ const maintenanceSlice = createSlice({
     clearInvoiceDetails: (state) => {
       state.invoiceDetails = null;
       state.invoiceError = null;
+    },
+    clearCalendarData: (state) => {
+      state.calendarData = null;
+      state.calendarError = null;
     },
     setMaintenanceList: (state, action) => {
       state.maintenanceList = action.payload;
@@ -153,10 +162,29 @@ const maintenanceSlice = createSlice({
         state.isInvoiceLoading = false;
         state.invoiceError =
           action.payload?.message || "Failed to fetch invoice details";
+      })
+
+      // Get Dealer Calendar
+      .addCase(getDealerCalendar.pending, (state) => {
+        state.isCalendarLoading = true;
+        state.calendarError = null;
+      })
+      .addCase(getDealerCalendar.fulfilled, (state, action) => {
+        state.isCalendarLoading = false;
+        state.calendarData = action.payload?.data || null;
+      })
+      .addCase(getDealerCalendar.rejected, (state, action) => {
+        state.isCalendarLoading = false;
+        state.calendarError =
+          action.payload?.message || "Failed to fetch calendar data";
       });
   },
 });
 
-export const { clearMaintenanceDetails, clearInvoiceDetails, setMaintenanceList } =
-  maintenanceSlice.actions;
+export const {
+  clearMaintenanceDetails,
+  clearInvoiceDetails,
+  clearCalendarData,
+  setMaintenanceList,
+} = maintenanceSlice.actions;
 export default maintenanceSlice.reducer;

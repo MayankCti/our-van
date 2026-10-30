@@ -177,4 +177,39 @@ export const getMaintenanceInvoice = createAsyncThunk(
   }
 );
 
+// Get Dealer Calendar Data
+export const getDealerCalendar = createAsyncThunk(
+  "maintenance/getDealerCalendar",
+  async (props = {}, { rejectWithValue }) => {
+    const { month, year, date, callback } = props;
+    try {
+      const params = {};
+      if (month !== undefined) params.month = month;
+      if (year !== undefined) params.year = year;
+      if (date !== undefined) params.date = date;
+
+      const response = await API_REQUEST({
+        url:
+          import.meta.env.VITE_GET_DEALER_CALENDAR_API ||
+          "/dealer/calander",
+        method: "GET",
+        params: Object.keys(params).length > 0 ? params : undefined,
+        isErrorToast: true,
+        isSuccessToast: false,
+      });
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+      return response;
+    } catch (error) {
+      if (typeof callback === "function") {
+        callback(null, error);
+      }
+      return rejectWithValue(error?.data || error);
+    }
+  }
+);
+
+
 

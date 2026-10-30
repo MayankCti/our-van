@@ -156,6 +156,23 @@ const Sidebar = () => {
                 </svg>
             ),
         },
+        {
+            name: "Calendar",
+            path: pageRoutes.calendar,
+            icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="4" width="18" height="18" rx="3" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16 2V6" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M8 2V6" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 10H21" stroke="#475569" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="8" cy="14" r="1" fill="#475569" />
+                    <circle cx="12" cy="14" r="1" fill="#475569" />
+                    <circle cx="16" cy="14" r="1" fill="#475569" />
+                    <circle cx="8" cy="18" r="1" fill="#475569" />
+                    <circle cx="12" cy="18" r="1" fill="#475569" />
+                </svg>
+            ),
+        },
     ];
 
     return (
